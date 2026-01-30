@@ -1,0 +1,18 @@
+spring:
+  application:
+    name: TCGWatcher-Backend
+  docker:
+    compose:
+      enabled: true
+      file: ${user.dir}/deployment/compose.yml
+      lifecycle-management: start_only
+      start:
+        skip: if_running
+
+  liquibase:
+    parameters:
+      watcher_readonly.password: ${WATCHER_READONLY_PWD}
+      migration.password: ${MIGRATION_PWD}
+      watcher_mig.password: ${WATCHER_MIG_PWD}
+      watcher_app.password: ${WATCHER_APP_PWD}
+      application.password: ${APPLICATION_PWD}

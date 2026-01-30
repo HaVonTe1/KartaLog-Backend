@@ -1,4 +1,10 @@
 # Compiled class file
+
+# Environment files containing secrets
+.env
+.env.*
+
+# Compiled class file
 *.class
 
 # Log file

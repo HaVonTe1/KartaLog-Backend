@@ -13,9 +13,15 @@
   </parent>
 
   <properties>
-    <java.version>24</java.version>
     <kotlin.version>2.2.21</kotlin.version>
     <spring.boot.version>4.0.2</spring.boot.version>
+
+
+    <java.main.version>24</java.main.version>
+    <java.version>${java.main.version}</java.version>
+    <maven.compiler.source>${java.main.version}</maven.compiler.source>
+    <maven.compiler.target>${java.main.version}</maven.compiler.target>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
   <dependencyManagement>
     <dependencies>

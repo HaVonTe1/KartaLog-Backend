@@ -1,0 +1,12 @@
+services:
+  postgres:
+    image: postgres:18.1
+    ports:
+      - "51915:5432"
+    environment:
+      - POSTGRES_PASSWORD=admin
+      - POSTGRES_DB=tcgwatcherdb
+    volumes:
+      - ./postgres/initdb.d:/docker-entrypoint-initdb.d/
+    env_file:
+      - ../.env
