@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <artifactId>app</artifactId>
+  <packaging>pom</packaging>
+
+  <parent>
+    <groupId>havonte1.github.com</groupId>
+    <artifactId>tcgwatcher-backend</artifactId>
+    <version>LocalBuild</version>
+  </parent>
+
+  <properties>
+    <java.version>24</java.version>
+    <kotlin.version>2.2.21</kotlin.version>
+    <spring.boot.version>4.0.2</spring.boot.version>
+  </properties>
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-dependencies</artifactId>
+        <version>${spring.boot.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.jetbrains.kotlin</groupId>
+        <artifactId>kotlin-bom</artifactId>
+        <version>${kotlin.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+      <dependency>
+        <groupId>havonte1.github.com</groupId>
+        <artifactId>domain</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>havonte1.github.com</groupId>
+        <artifactId>application</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>havonte1.github.com</groupId>
+        <artifactId>adapter</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>havonte1.github.com</groupId>
+        <artifactId>adapter-rest</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>havonte1.github.com</groupId>
+        <artifactId>adapter-persistence</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>havonte1.github.com</groupId>
+        <artifactId>boot</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+    </dependencies>
+
+  </dependencyManagement>
+
+  <modules>
+    <module>domain</module>
+    <module>application</module>
+    <module>adapter</module>
+    <module>boot</module>
+  </modules>
+</project>

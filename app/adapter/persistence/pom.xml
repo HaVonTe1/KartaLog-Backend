@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <artifactId>adapter-persistence</artifactId>
+  <packaging>jar</packaging>
+
+  <parent>
+    <groupId>havonte1.github.com</groupId>
+    <artifactId>app</artifactId>
+    <version>LocalBuild</version>
+    <relativePath>../../pom.xml</relativePath>
+  </parent>
+
+  <dependencies>
+    <dependency>
+      <groupId>havonte1.github.com</groupId>
+      <artifactId>domain</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>havonte1.github.com</groupId>
+      <artifactId>application</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-data-jpa</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.postgresql</groupId>
+      <artifactId>postgresql</artifactId>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.jetbrains.kotlin</groupId>
+      <artifactId>kotlin-stdlib-jdk8</artifactId>
+    </dependency>
+  </dependencies>
+</project>
