@@ -1,38 +1,118 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns="http://maven.apache.org/POM/4.0.0"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
   <artifactId>adapter-rest</artifactId>
+  <build>
+    <plugins>
+      <plugin>
+        <artifactId>openapi-generator-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <configuration>
+              <apiPackage>com.github.havonte1.adapter.in.rest.api</apiPackage>
+              <configOptions>
+                <annotationLibrary>none</annotationLibrary>
+                <artifactId>${project.artifactId}</artifactId>
+                <artifactVersion>${project.version}</artifactVersion>
+                <dateLibrary>java8</dateLibrary>
+                <documentationProvider>source</documentationProvider>
+                <generateForOpenFeign>false</generateForOpenFeign>
+                <groupId>${project.groupId}</groupId>
+                <useJakartaEe>true</useJakartaEe>
+                <useSpringBuiltInValidation>true</useSpringBuiltInValidation>
+                <interfaceOnly>true</interfaceOnly>
+                <library>spring-boot</library>
+                <openApiNullable>false</openApiNullable>
+                <performBeanValidation>false</performBeanValidation>
+                <sourceFolder>src/main/java</sourceFolder>
+                <useBeanValidation>true</useBeanValidation>
+                <useSpringBoot3>true</useSpringBoot3>
+                <useTags>true</useTags>
+              </configOptions>
+              <generateApiDocumentation>false</generateApiDocumentation>
+              <generateApiTests>false</generateApiTests>
+              <generateModelDocumentation>false</generateModelDocumentation>
+
+              <generateModelTests>false</generateModelTests>
+              <generatorName>spring</generatorName>
+              <inputSpec>${project.basedir}/../../../contract/openapi.yaml</inputSpec>
+
+              <library>spring-cloud</library>
+              <modelPackage>com.github.havonte1.adapter.in.rest.model</modelPackage>
+              <output>${project.build.directory}/generated-sources/openapi</output>
+
+            </configuration>
+            <goals>
+              <goal>generate</goal>
+            </goals>
+            <id>generate-api</id>
+          </execution>
+        </executions>
+        <groupId>org.openapitools</groupId>
+        <version>${openapi-generator-maven-plugin.version}</version>
+      </plugin>
+      <plugin>
+        <artifactId>build-helper-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <configuration>
+              <sources>
+                <source>${project.build.directory}/generated-sources/openapi/src/main/java</source>
+              </sources>
+            </configuration>
+            <goals>
+              <goal>add-source</goal>
+            </goals>
+            <id>add-source</id>
+            <phase>generate-sources</phase>
+          </execution>
+        </executions>
+        <groupId>org.codehaus.mojo</groupId>
+        <version>3.4.0</version>
+      </plugin>
+    </plugins>
+  </build>
+  <dependencies>
+    <dependency>
+      <artifactId>application</artifactId>
+      <groupId>havonte1.github.com</groupId>
+    </dependency>
+    <dependency>
+      <artifactId>spring-boot-starter-web</artifactId>
+      <groupId>org.springframework.boot</groupId>
+    </dependency>
+    <dependency>
+      <artifactId>jackson-module-kotlin</artifactId>
+      <groupId>com.fasterxml.jackson.module</groupId>
+    </dependency>
+    <dependency>
+      <artifactId>kotlin-reflect</artifactId>
+      <groupId>org.jetbrains.kotlin</groupId>
+    </dependency>
+    <dependency>
+      <artifactId>kotlin-stdlib</artifactId>
+      <groupId>org.jetbrains.kotlin</groupId>
+    </dependency>
+    <dependency>
+      <groupId>jakarta.validation</groupId>
+      <artifactId>jakarta.validation-api</artifactId>
+    </dependency>
+
+  </dependencies>
+
+  <modelVersion>4.0.0</modelVersion>
+
   <packaging>jar</packaging>
 
   <parent>
-    <groupId>havonte1.github.com</groupId>
     <artifactId>app</artifactId>
-    <version>LocalBuild</version>
+    <groupId>havonte1.github.com</groupId>
     <relativePath>../../pom.xml</relativePath>
+    <version>LocalBuild</version>
   </parent>
+  <properties>
+    <openapi-generator-maven-plugin.version>7.18.0</openapi-generator-maven-plugin.version>
 
-  <dependencies>
-    <dependency>
-      <groupId>havonte1.github.com</groupId>
-      <artifactId>application</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-web</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>com.fasterxml.jackson.module</groupId>
-      <artifactId>jackson-module-kotlin</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.jetbrains.kotlin</groupId>
-      <artifactId>kotlin-reflect</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.jetbrains.kotlin</groupId>
-      <artifactId>kotlin-stdlib</artifactId>
-    </dependency>
-  </dependencies>
+  </properties>
 </project>

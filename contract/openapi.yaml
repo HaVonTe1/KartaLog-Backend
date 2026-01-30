@@ -1,0 +1,87 @@
+openapi: 3.0.3
+info:
+  title: TCGWatcher API
+  version: 0.1.0
+  description: |
+    Minimal OpenAPI contract for the TCGWatcher backend.
+    This file will be expanded with the full use‑case APIs.
+  contact:
+    url: https://github.com/HaVonTe1
+  license:
+    name: Creative Commons
+    url: https://creativecommons.org/licenses/
+servers:
+  - url: https://havonte.ddns.net:8080
+    description: Production server
+paths:
+  /collectables/:
+    get:
+      summary: List / search collectables
+      tags:
+        - collectables
+      description: |
+        Placeholder endpoint that will later support search parameters.
+        Currently it provides pagination support and returns an array of collectables.
+      operationId: listCollectables
+      parameters:
+        - name: page
+          in: query
+          description: Page number (starting at 0)
+          required: false
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+        - name: size
+          in: query
+          description: Items per page
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            default: 20
+        - name: query
+          in: query
+          description: Search query for collectable products
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful response – a list of collectables
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ProductDTO'
+components:
+  schemas:
+    ProductDTO:
+      type: object
+      description: Data Transfer Object representing a product/collectable
+      properties:
+        id:
+          type: integer
+          format: int64
+        externalId:
+          type: integer
+          format: int64
+        setName:
+          type: string
+          nullable: true
+        rarity:
+          type: string
+          nullable: true
+        imageUrl:
+          type: string
+          format: uri
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+          nullable: true
+        updatedAt:
+          type: string
+          format: date-time
+          nullable: true
