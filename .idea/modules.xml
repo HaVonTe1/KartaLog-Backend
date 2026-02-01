@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/app/adapter/persistence/adapter-persistence.iml" filepath="$PROJECT_DIR$/app/adapter/persistence/adapter-persistence.iml" />
+      <module fileurl="file://$PROJECT_DIR$/app/adapter/rest/adapter-rest.iml" filepath="$PROJECT_DIR$/app/adapter/rest/adapter-rest.iml" />
+      <module fileurl="file://$PROJECT_DIR$/app/domain/domain.iml" filepath="$PROJECT_DIR$/app/domain/domain.iml" />
+    </modules>
+  </component>
+</project>

@@ -17,7 +17,7 @@
     <spring.boot.version>4.0.2</spring.boot.version>
 
 
-    <java.main.version>24</java.main.version>
+    <java.main.version>17</java.main.version>
     <java.version>${java.main.version}</java.version>
     <maven.compiler.source>${java.main.version}</maven.compiler.source>
     <maven.compiler.target>${java.main.version}</maven.compiler.target>
@@ -81,11 +81,9 @@
   </modules>
 
   <build>
-    <sourceDirectory>src/main/kotlin</sourceDirectory>
     <testSourceDirectory>${project.basedir}/src/test/kotlin</testSourceDirectory>
 
-    <pluginManagement>
-      <plugins>
+    <plugins>
         <plugin>
           <groupId>org.jetbrains.kotlin</groupId>
           <artifactId>kotlin-maven-plugin</artifactId>
@@ -96,6 +94,13 @@
               <phase>compile</phase>
               <goals>
                 <goal>compile</goal>
+              </goals>
+            </execution>
+            <execution>
+              <id>test-compile</id>
+              <phase>test-compile</phase>
+              <goals>
+                <goal>test-compile</goal>
               </goals>
             </execution>
           </executions>
@@ -129,6 +134,9 @@
             </dependency>
           </dependencies>
         </plugin>
+      </plugins>
+      <pluginManagement>
+      <plugins>
 
       </plugins>
     </pluginManagement>

@@ -4,42 +4,32 @@
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
   <artifactId>adapter-rest</artifactId>
   <build>
+    <sourceDirectory>src/main/kotlin</sourceDirectory>
+    <testSourceDirectory>src/test/kotlin</testSourceDirectory>
     <plugins>
       <plugin>
         <artifactId>openapi-generator-maven-plugin</artifactId>
         <executions>
           <execution>
             <configuration>
-              <apiPackage>com.github.havonte1.adapter.in.rest.api</apiPackage>
+              <apiPackage>com.github.havonte1.adapter.inbound.rest.api</apiPackage>
               <configOptions>
-                <annotationLibrary>none</annotationLibrary>
-                <artifactId>${project.artifactId}</artifactId>
-                <artifactVersion>${project.version}</artifactVersion>
-                <dateLibrary>java8</dateLibrary>
-                <documentationProvider>source</documentationProvider>
-                <generateForOpenFeign>false</generateForOpenFeign>
-                <groupId>${project.groupId}</groupId>
-                <useJakartaEe>true</useJakartaEe>
-                <useSpringBuiltInValidation>true</useSpringBuiltInValidation>
+                <library>jaxrs-spec</library>
                 <interfaceOnly>true</interfaceOnly>
-                <library>spring-boot</library>
-                <openApiNullable>false</openApiNullable>
-                <performBeanValidation>false</performBeanValidation>
-                <sourceFolder>src/main/java</sourceFolder>
+                <omitGradleWrapper>true</omitGradleWrapper>
+                <packageName>com.github.havonte1.adapter.inbound.rest.api</packageName>
+                <returnResponse>false</returnResponse>
                 <useBeanValidation>true</useBeanValidation>
-                <useSpringBoot3>true</useSpringBoot3>
-                <useTags>true</useTags>
+                <useJakartaEe>true</useJakartaEe>
               </configOptions>
               <generateApiDocumentation>false</generateApiDocumentation>
               <generateApiTests>false</generateApiTests>
               <generateModelDocumentation>false</generateModelDocumentation>
 
               <generateModelTests>false</generateModelTests>
-              <generatorName>spring</generatorName>
+              <generatorName>kotlin-server</generatorName>
               <inputSpec>${project.basedir}/../../../contract/openapi.yaml</inputSpec>
-
-              <library>spring-cloud</library>
-              <modelPackage>com.github.havonte1.adapter.in.rest.model</modelPackage>
+              <modelPackage>com.github.havonte1.adapter.inbound.rest.model</modelPackage>
               <output>${project.build.directory}/generated-sources/openapi</output>
 
             </configuration>
@@ -58,7 +48,7 @@
           <execution>
             <configuration>
               <sources>
-                <source>${project.build.directory}/generated-sources/openapi/src/main/java</source>
+                <source>${project.build.directory}/generated-sources/openapi/src/main/kotlin</source>
               </sources>
             </configuration>
             <goals>
@@ -91,12 +81,26 @@
       <groupId>org.jetbrains.kotlin</groupId>
     </dependency>
     <dependency>
-      <artifactId>kotlin-stdlib</artifactId>
+      <artifactId>kotlin-stdlib-jdk8</artifactId>
+      <version>${kotlin.version}</version>
       <groupId>org.jetbrains.kotlin</groupId>
     </dependency>
     <dependency>
       <groupId>jakarta.validation</groupId>
       <artifactId>jakarta.validation-api</artifactId>
+    </dependency>
+    <!-- Source: https://mvnrepository.com/artifact/jakarta.ws.rs/jakarta.ws.rs-api -->
+    <dependency>
+      <groupId>jakarta.ws.rs</groupId>
+      <artifactId>jakarta.ws.rs-api</artifactId>
+      <version>4.0.0</version>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.jetbrains.kotlin</groupId>
+      <artifactId>kotlin-test</artifactId>
+      <version>${kotlin.version}</version>
+      <scope>test</scope>
     </dependency>
 
   </dependencies>
@@ -114,5 +118,6 @@
   <properties>
     <openapi-generator-maven-plugin.version>7.18.0</openapi-generator-maven-plugin.version>
 
+    <kotlin.version>2.2.21</kotlin.version>
   </properties>
 </project>
