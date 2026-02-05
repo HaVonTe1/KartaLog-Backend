@@ -82,7 +82,6 @@
     </dependency>
     <dependency>
       <artifactId>kotlin-stdlib-jdk8</artifactId>
-      <version>${kotlin.version}</version>
       <groupId>org.jetbrains.kotlin</groupId>
     </dependency>
     <dependency>

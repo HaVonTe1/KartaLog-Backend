@@ -7,11 +7,12 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <module name="application" />
+        <module name="adapter-webscraper" />
+        <module name="domain" />
         <module name="boot" />
         <module name="adapter-rest" />
         <module name="adapter-persistence" />
         <module name="deployment" />
-        <module name="domain" />
       </profile>
     </annotationProcessing>
   </component>

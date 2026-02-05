@@ -8,5 +8,5 @@ import com.github.havonte1.domain.model.Product
  */
 interface SearchUseCase {
     /** Return a list of products that match the (future) search criteria. */
-    fun search(): List<Product>
+    fun search(searchString: String): List<Product>
 }

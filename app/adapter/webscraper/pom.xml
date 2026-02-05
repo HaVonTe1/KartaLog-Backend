@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <artifactId>adapter-webscraper</artifactId>
+
+    <packaging>jar</packaging>
+    <description>Web‑scraping adapter using Jsoup and Playwright for external data acquisition.</description>
+
+    <parent>
+        <groupId>havonte1.github.com</groupId>
+        <artifactId>app</artifactId>
+        <version>LocalBuild</version>
+        <relativePath>../../pom.xml</relativePath>
+    </parent>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.jsoup</groupId>
+            <artifactId>jsoup</artifactId>
+            <version>1.17.2</version>
+        </dependency>
+        <dependency>
+            <groupId>com.microsoft.playwright</groupId>
+            <artifactId>playwright</artifactId>
+            <version>1.41.0</version>
+        </dependency>
+        <dependency>
+            <groupId>havonte1.github.com</groupId>
+            <artifactId>application</artifactId>
+        </dependency>
+            <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>2.0.12</version>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <sourceDirectory>src/main/kotlin</sourceDirectory>
+        <testSourceDirectory>src/test/kotlin</testSourceDirectory>
+    </build>
+</project>

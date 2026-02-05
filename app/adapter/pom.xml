@@ -15,5 +15,6 @@
   <modules>
     <module>rest</module>
     <module>persistence</module>
-  </modules>
+    <module>webscraper</module>
+    </modules>
 </project>
