@@ -24,13 +24,15 @@ class CardMarketScraperAdapter  : CardMarketScraperPort {
     override fun search(searchString: String): List<Product> {
         logger.info { "${"Scraping CardMarket for {}"} $searchString" }
         val results = mutableListOf<Product>()
-        Playwright.create().use { playwright ->
+        val playwright = Playwright.create()
+        try {
             val browser: Browser = playwright.chromium().launch(LaunchOptions().setHeadless(true))
             val page = browser.newPage()
             val url = "https://www.cardmarket.com/de/Pokemon/Products/Search?searchString=$searchString"
             page.navigate(url)
             val content = page.content()
-            val doc: Document = Jsoup.parse(content)
+            val cleanedContent = content.replace("\\\"", "\"")
+            val doc: Document = Jsoup.parse(cleanedContent.trim())
             val cards = doc.select(".article-card")
             for (card in cards) {
                 val idAttr = card.attr("data-id")
@@ -46,8 +48,11 @@ class CardMarketScraperAdapter  : CardMarketScraperPort {
                         imageUrl = imageUrl
                     )
                 )
-            }
+
+                        }
             browser.close()
+        } finally {
+            playwright.close()
         }
         return results
     }
