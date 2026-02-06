@@ -1,21 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="CompilerConfiguration">
-    <annotationProcessing>
-      <profile name="Maven default annotation processors profile" enabled="true">
-        <sourceOutputDir name="target/generated-sources/annotations" />
-        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
-        <outputRelativeToContentRoot value="true" />
-        <module name="application" />
-        <module name="adapter-webscraper" />
-        <module name="domain" />
-        <module name="boot" />
-        <module name="adapter-rest" />
-        <module name="adapter-persistence" />
-      </profile>
-    </annotationProcessing>
+    <bytecodeTargetLevel target="17">
+      <module name="adapter" target="17" />
+      <module name="adapter-persistence" target="17" />
+      <module name="adapter-rest" target="17" />
+      <module name="adapter-webscraper" target="17" />
+      <module name="app" target="17" />
+      <module name="application" target="17" />
+      <module name="boot" target="17" />
+      <module name="deployment" target="17" />
+      <module name="domain" target="17" />
+      <module name="my-backend" target="17" />
+    </bytecodeTargetLevel>
   </component>
   <component name="JavacSettings">
+    <option name="ADDITIONAL_OPTIONS_STRING" value="-parameters" />
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
       <module name="adapter-persistence" options="-parameters" />
       <module name="adapter-rest" options="-parameters" />
@@ -23,6 +23,7 @@
       <module name="application" options="-parameters" />
       <module name="boot" options="-parameters" />
       <module name="domain" options="-parameters" />
+      <module name="my-backend" options="-parameters" />
     </option>
   </component>
 </project>

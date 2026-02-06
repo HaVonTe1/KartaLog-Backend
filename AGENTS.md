@@ -20,9 +20,16 @@
 9. [Cursor / Copilot Rules](#cursor-copilot-rules)
 10. [Tips for Agentic Workflows](#tips-for-agentic-workflows)
 ---
+
+## AGENTS.md hierarchy
+- `adapter/AGENTS.md` – adapter layer (REST, persistence, web‑scraper)
+- `domain/AGENTS.md` – domain entities & ports
+- `application/AGENTS.md` – use‑case services
+- `deployment/AGENTS.md` – deployment / CI details
+
 ## Project Overview
 - **Language:** Kotlin (target JVM 24) & Java (legacy)
-- **Build System:** Maven multi‑module (`pom.xml` at repo root + per‑module)
+- **Build System:** Gradle multi‑module (`build.gradle.kts` at repo root + per‑module)
 - **Modules:** `domain`, `application`, `adapter` (`rest`, `persistence`), `boot`
 - **Testing:** JUnit 5 via Surefire (supports method‑level selection)
 - **Static Analysis:** Detekt, Checkstyle, optional SpotBugs, Ktlint
@@ -31,42 +38,42 @@
 All commands run from the repository root (`/Users/dirkkutzer/dev/src/TCGWatcher-Backend`).
 | Action | Maven Command | Description |
 |--------|---------------|-------------|
-| Clean | `mvn clean` | Remove all `target/` directories |
-| Compile | `mvn compile` | Compile source sets |
-| Package | `mvn package` | Assemble JAR/WAR artifacts |
-| Install | `mvn install` | Deploy to local `~/.m2` repo |
-| Run All Tests | `mvn test` | Execute unit & integration tests |
-| Skip Tests | `mvn package -DskipTests` | Faster build when tests aren't needed |
-| Detekt | `mvn detekt:check` | Kotlin lint |
-| Checkstyle | `mvn checkstyle:check` | Java lint |
-| SpotBugs | `mvn spotbugs:check` | Byte‑code analysis |
-| Ktlint (format) | `mvn ktlint:format` | Auto‑format Kotlin sources |
-> Tip: Use `mvn -q …` for quieter output and `-T 1C` for parallel builds.
+| Clean | `./gradlew clean` | Remove all `target/` directories |
+| Compile | `./gradlew compileKotlin` | Compile source sets |
+| Package | `./gradlew build` | Assemble JAR/WAR artifacts |
+| Publish | `./gradlew publishToMavenLocal` | Deploy to local `~/.m2` repo |
+| Run All Tests | `./gradlew test` | Execute unit & integration tests |
+| Skip Tests | `./gradlew build -x test` | Faster build when tests aren't needed |
+| Detekt | `./gradlew detekt` | Kotlin lint |
+| Checkstyle | `./gradlew checkstyleMain` | Java lint |
+| SpotBugs | `./gradlew spotbugsMain` | Byte‑code analysis |
+| Ktlint (format) | `./gradlew ktlintFormat` | Auto‑format Kotlin sources |
+> Tip: Use `./gradlew -q …` for quieter output and `--parallel` for parallel builds.
 ---
 ## Running a Single Test
 Target a specific test class or method to speed feedback.
 ```bash
 # Full class name (any package depth)
-mvn -Dtest=com.example.service.MyServiceTest test
+./gradlew test --tests "com.example.service.MyServiceTest"
 
-# Specific method inside the class
-mvn -Dtest=MyServiceTest#shouldCreateUser test
+# Specific method (Gradle does not support method selector directly; use the class name)
+./gradlew test --tests "MyServiceTest"
 ```
 *Surefire must be ≥ 3.0.0‑M5 for method‑level selection.*
 ---
 ## Advanced Build & Test Options
-- **Run with coverage:** `mvn test -Pcoverage` (coverage profile defined in `pom.xml`).
-- **Fail‑fast:** Add `-DfailIfNoTests=false` to ignore missing tests during CI.
-- **Integration tests:** Use `-Pintegration-tests` profile to activate `src/integration-test/java`.
-- **Skipping lint:** `mvn verify -DskipChecks` disables Detekt/Checkstyle temporarily.
-- **Verbose output:** `-X` flag for Maven debugging.
+- **Run with coverage:** `./gradlew test jacocoTestReport` (generates JaCoCo coverage report).
+- **Fail‑fast:** Gradle fails fast by default; to ignore missing tests use `-x test`. 
+- **Integration tests:** Run `./gradlew integrationTest` (requires an `integrationTest` source set).
+- **Skipping lint:** `./gradlew build -x detekt -x checkstyleMain` disables Detekt/Checkstyle temporarily.
+- **Verbose output:** Use `--info` or `--debug` flags for Gradle debugging.
 ---
 ## Linting & Code Quality
 1. **Detekt** – Config: `detekt.yml`. Common rule groups: `comments`, `complexity`, `naming`, `performance`.
 2. **Checkstyle** – Config: `checkstyle.xml` (under `.idea`).
-3. **SpotBugs** – Optional, run via `mvn spotbugs:check`.
+3. **SpotBugs** – Optional, run via `./gradlew spotbugsMain`.
 4. **Ktlint** – Formatter, available via Maven plugin or pre‑commit hook.
-5. **Pre‑commit** – If `.git/hooks/pre-commit` exists, ensure it runs `mvn verify`.
+5. **Pre‑commit** – If `.git/hooks/pre-commit` exists, ensure it runs `./gradlew build`.
 ---
 ## Code Style Guidelines
 All agents must follow these conventions.
@@ -136,10 +143,10 @@ import org.slf4j.Logger;
 - Use streams sparingly; favor readability over clever one‑liners.
 ---
 ## CI / CD Tips
-- **GitHub Actions:** `mvn -B verify -DskipTests` for fast lint checks on PRs.
-- Run full test suite on `push` to `main` with `mvn test`.
-- Cache Maven dependencies (`~/.m2/repository`) to speed builds.
-- Fail the workflow on any lint error (`detekt:check`/`checkstyle:check`).
+- **GitHub Actions:** `./gradlew build -x test` for fast lint checks on PRs.
+- Run full test suite on `push` to `main` with `./gradlew test`.
+- Cache Gradle dependencies (`~/.gradle/caches`) to speed builds.
+- Fail the workflow on any lint error (`./gradlew detekt`/`./gradlew checkstyleMain`).
 - Publish JaCoCo coverage report as an artifact for PR comment.
 ---
 ## Git & Branch Conventions
@@ -159,7 +166,7 @@ The repository currently **does not contain** a `.cursor` directory, `.cursorrul
 - **Read before edit:** Always `read` a file before `edit`/`write`.
 - **Idempotent changes:** Verify dependencies aren’t already present before adding.
 - **Commit granularity:** Keep logical changes isolated; do not auto‑commit unless explicitly asked.
-- **Testing:** After any change, run `mvn -q test` (or a targeted test) to verify integrity.
+- **Testing:** After any change, run `./gradlew -q test` (or a targeted test) to verify integrity.
 - **Performance:** Use `-T 1C` for parallel Maven builds.
 - **Documentation:** Update `README.md` or module docs only after functional changes.
 - **Memory:** Store reusable knowledge in `.github/instructions/memory.instruction.md` with proper front‑matter.
