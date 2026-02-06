@@ -166,7 +166,7 @@ The repository currently **does not contain** a `.cursor` directory, `.cursorrul
 - **Read before edit:** Always `read` a file before `edit`/`write`.
 - **Idempotent changes:** Verify dependencies aren’t already present before adding.
 - **Commit granularity:** Keep logical changes isolated; do not auto‑commit unless explicitly asked.
-- **Testing:** After any change, run `./gradlew -q test` (or a targeted test) to verify integrity.
+- **Testing:** After any change, run `./gradlew test` (or a targeted test) to verify integrity.
 - **Performance:** Use `-T 1C` for parallel Maven builds.
 - **Documentation:** Update `README.md` or module docs only after functional changes.
 - **Memory:** Store reusable knowledge in `.github/instructions/memory.instruction.md` with proper front‑matter.

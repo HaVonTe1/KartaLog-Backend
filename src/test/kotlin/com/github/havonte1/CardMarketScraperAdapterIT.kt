@@ -37,7 +37,11 @@ class CardMarketScraperAdapterIT {
         @JvmStatic
         fun checkPlaywrightAvailable() {
             try {
-                Playwright.create().use { it.chromium().launch() }
+                Playwright.create().use { it.chromium().launch(
+                com.microsoft.playwright.BrowserType.LaunchOptions()
+                    .setHeadless(false)
+                    .setArgs(listOf("--disable-blink-features=AutomationControlled"))
+            ) }
             } catch (e: Exception) {
                 Assumptions.assumeTrue(false, "Playwright cannot start: ${"$"}{e.message}")
             }

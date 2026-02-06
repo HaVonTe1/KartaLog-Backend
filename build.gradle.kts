@@ -25,6 +25,15 @@ sourceSets["main"].java.srcDir("$buildDir/generated/src/main/kotlin")
 
 tasks.withType<Test> {
     useJUnitPlatform()
+    // Show stdout/stderr from tests (including logger output) even when Gradle runs in quiet mode
+    testLogging {
+        // Log the result of each test
+        events("passed", "skipped", "failed")
+        // Show any println or logger output to the console
+        showStandardStreams = true
+        // Show full exception details
+        exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
+    }
 }
 
 kotlin {
