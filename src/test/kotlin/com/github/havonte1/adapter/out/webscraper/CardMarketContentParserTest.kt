@@ -16,7 +16,7 @@ class CardMarketContentParserTest {
     fun `extractProductsFromHtml parses view‑source HTML correctly`() {
         val resourcePath = "src/test/resources/pikachu_gallery_50.html"
 
-        val file: File = File(resourcePath)
+        val file = File(resourcePath)
         Assumptions.assumeTrue(file.exists(), "Ressource fehlt, Test wird übersprungen");
         val content = Files.readString(Paths.get(resourcePath))
         val products = parser.extractProductsFromHtml(content, 1)

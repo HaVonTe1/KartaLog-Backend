@@ -15,8 +15,13 @@ import io.mockk.mockkStatic
 import io.mockk.unmockkAll
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Assumptions
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
+import java.io.File
+import java.nio.file.Files
+import java.nio.file.Paths
 
 /**
  * Unit test for {@link CardMarketScraperAdapter}.
@@ -26,25 +31,17 @@ import org.junit.jupiter.api.Test
  */
 class CardMarketScraperAdapterTest {
 
-    // Sample HTML that mimics the structure expected by the adapter
-    private val fakeHtml = """
-        <html>
-        <body>
-            <div class=\"article-card\" data-id=\"12345\">
-                <span class=\"product-set\">Base Set</span>
-                <span class=\"product-rarity\">Rare</span>
-                <img src=\"https://example.com/card.jpg\" />
-            </div>
-        </body>
-        </html>
-    """.trimIndent()
+
 
     @AfterEach
     fun tearDown() = unmockkAll()
 
-    @Disabled
     @Test
     fun `search returns one product built from HTML`() {
+        val resourcePath = "src/test/resources/pikachu_gallery_50.html"
+
+        val file = File(resourcePath)
+        Assumptions.assumeTrue(file.exists(), "Ressource fehlt, Test wird übersprungen");
         // ----- Mock Playwright static factory -----
         mockkStatic(Playwright::class)
 
@@ -64,18 +61,27 @@ class CardMarketScraperAdapterTest {
         // Navigation and content retrieval
         val responseMock = mockk<Response>(relaxed = true)
         every { pageMock.navigate(any<String>()) } returns responseMock
-        every { pageMock.content() } returns fakeHtml
+        val content = Files.readString(Paths.get(resourcePath))
+        every { pageMock.content() } returns content
 
         // ----- Execute the adapter -----
         val adapter: CardMarketScraperPort = CardMarketScraperAdapter()
-        val result: List<Product> = adapter.search("test")
+        val result: List<Product> = adapter.search("Pikachu")
 
         // ----- Verify -----
-        assertEquals(1, result.size, "Exactly one product should be parsed")
-        val product = result.first()
-        assertEquals(12345L, product.externalId, "External ID should be parsed from data-id attribute")
-        assertEquals("Base Set", product.setName, "Set name should be extracted")
-        assertEquals("Rare", product.rarity, "Rarity should be extracted")
-        assertEquals("https://example.com/card.jpg", product.imageUrl, "Image URL should be extracted")
+        assertEquals(30, result.size, "Exactly one product should be parsed")
+        val first = result.first()
+        assertEquals("/Pokemon/Products/Singles/Celebrations/Pikachu-V1-CEL005", first.cmId)
+        assertEquals("https://product-images.s3.cardmarket.com/51/CEL/576750/576750.jpg", first.imageUrl)
+        assertEquals("Pikachu", first.names["de"])
+        
+        assertEquals("/de/Pokemon/Products/Singles/Celebrations/Pikachu-V1-CEL005", first.cmLink)
+        assertEquals("Pokemon", first.genre)
+        assertEquals("Singles", first.type)
+        assertEquals("0,99 €", first.price)
+        assertEquals("?", first.priceTrendInfo?.value)
+        assertTrue(first.priceTrendInfo?.valid == false)
+        assertEquals("CEL 005", first.codeInfo?.value)
+        assertTrue(first.codeInfo?.valid == true)
     }
 }

@@ -24,25 +24,28 @@ class CardMarketWebFetcher {
     fun fetch(searchString: String): String {
         logger.info { "Fetching CardMarket page for \"$searchString\"" }
         val playwright = Playwright.create()
-        try {
+        playwright.use { playwright ->
             val browser: Browser = playwright.chromium().launch(
                 LaunchOptions()
-                    .setHeadless(false) // headless false can bypass some Cloudflare checks
-                    .setArgs(listOf("--disable-blink-features=AutomationControlled"))
+                    .setHeadless(true)
+
             )
-            val page: Page = browser.newPage()
+            val contextOptions = Browser.NewContextOptions()
+
+                .setUserAgent("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36")
+
+            val context = browser.newContext(contextOptions)
+            val page: Page = context.newPage()
             val url = "https://www.cardmarket.com/de/Pokemon/Products/Search?searchString=$searchString"
             page.navigate(url)
             logger.debug { "Navigated to ${page.url()}" }
-            page.waitForLoadState(LoadState.NETWORKIDLE)
+            page.waitForLoadState(LoadState.DOMCONTENTLOADED)
 
 
             val content = page.content()
             logger.debug { "Fetched content length: ${content.length}" }
             browser.close()
             return content
-        } finally {
-            playwright.close()
         }
     }
 }
