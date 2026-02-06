@@ -15,4 +15,14 @@
       </profile>
     </annotationProcessing>
   </component>
+  <component name="JavacSettings">
+    <option name="ADDITIONAL_OPTIONS_OVERRIDE">
+      <module name="adapter-persistence" options="-parameters" />
+      <module name="adapter-rest" options="-parameters" />
+      <module name="adapter-webscraper" options="-parameters" />
+      <module name="application" options="-parameters" />
+      <module name="boot" options="-parameters" />
+      <module name="domain" options="-parameters" />
+    </option>
+  </component>
 </project>

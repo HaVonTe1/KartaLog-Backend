@@ -1,4 +1,4 @@
-package com.github.havonte1.boot
+package com.github.havonte1
 
 import com.github.havonte1.domain.model.Product
 import com.github.havonte1.domain.port.out.CardMarketScraperPort
@@ -10,7 +10,17 @@ import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.boot.testcontainers.service.connection.ServiceConnection
+
 import org.springframework.context.annotation.ComponentScan
+import com.github.havonte1.TcgWatcherApplication
+import org.testcontainers.containers.PostgreSQLContainer
+import org.testcontainers.junit.jupiter.Container
+import org.testcontainers.junit.jupiter.Testcontainers
+import com.github.havonte1.adapter.out.webscraper.CardMarketScraperAdapter
+import org.springframework.test.context.ContextConfiguration
+import org.springframework.boot.SpringBootConfiguration
+import org.springframework.context.annotation.Import
 
 /**
  * Integration test for {@link CardMarketScraperAdapter} that runs with a real Playwright
@@ -21,7 +31,7 @@ import org.springframework.context.annotation.ComponentScan
  * wired configuration works as expected.
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-//@ComponentScan(basePackages = ["com.github.havonte1"])
+@Testcontainers
 class CardMarketScraperAdapterIT {
 
     @Autowired
@@ -47,6 +57,10 @@ class CardMarketScraperAdapterIT {
         fun cleanup() {
             // No explicit cleanup required; Playwright resources are closed by the adapter.
         }
+        @Container
+        @ServiceConnection
+        @JvmStatic
+        val postgres = PostgreSQLContainer("postgres:15-alpine")
     }
 
     @Test

@@ -190,7 +190,7 @@
         <artifactId>spring-boot-maven-plugin</artifactId>
         <version>${spring.boot.version}</version>
         <configuration>
-          <mainClass>com.github.havonte1.boot.ApplicationKt</mainClass>
+          <mainClass>com.github.havonte1.boot.TcgWatcherApplicationKt</mainClass>
         </configuration>
         <executions>
           <execution>

@@ -10,8 +10,25 @@
   <packaging>pom</packaging>
 
   <properties>
+    <failsafe-maven-plugin.version>3.5.4</failsafe-maven-plugin.version>
+    <java.main.version>17</java.main.version>
+
+
+    <java.version>${java.main.version}</java.version>
+    <kotlin.version>2.2.21</kotlin.version>
+    <maven.compiler.source>${java.main.version}</maven.compiler.source>
+    <maven.compiler.target>${java.main.version}</maven.compiler.target>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+    <spring.boot.version>4.0.2</spring.boot.version>
+
   </properties>
+
+  <parent>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-parent</artifactId>
+    <version>4.0.2</version>
+  </parent>
 
   <modules>
     <module>app</module>

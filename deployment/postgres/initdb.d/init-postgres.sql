@@ -2,7 +2,7 @@
 
 -- Database and default public privileges are managed externally.
 -- Connecting to the target database is handled by Spring datasource.
-create schema watcher;
+CREATE SCHEMA IF NOT EXISTS watcher;
 
 create user watcher_readonly with password '${watcher_readonly.password}' login;
 alter role watcher_readonly in database tcgwatcherdb set search_path = watcher,public;
