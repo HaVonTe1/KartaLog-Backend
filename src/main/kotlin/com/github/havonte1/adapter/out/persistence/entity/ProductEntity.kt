@@ -1,5 +1,6 @@
 package com.github.havonte1.adapter.out.persistence.entity
 
+import com.github.havonte1.adapter.out.persistence.entity.NameTranslationEntity
 import jakarta.persistence.CascadeType
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
@@ -13,6 +14,7 @@ import org.hibernate.annotations.CreationTimestamp
 import org.hibernate.annotations.UpdateTimestamp
 import java.time.Instant
 import com.github.havonte1.domain.model.Product
+import java.io.Serializable
 
 /**
  * JPA entity representing a product (collectible card).
@@ -37,6 +39,36 @@ data class ProductEntity(
     @Column(name = "image_url")
     val imageUrl: String? = null,
 
+    @Column(name = "code_info")
+    val codeInfo: String? = null,
+
+    @Column(name = "code_info_valid")
+    val codeInfoValid: Boolean? = null,
+
+    @Column(name = "genre")
+    val genre: String? = null,
+
+    @Column(name = "type")
+    val type: String? = null,
+
+    @Column(name = "cm_id")
+    val cmId: String? = null,
+
+    @Column(name = "cm_link")
+    val cmLink: String? = null,
+
+    @Column(name = "img_link")
+    val imgLink: String? = null,
+
+    @Column(name = "price")
+    val price: String? = null,
+
+    @Column(name = "price_trend")
+    val priceTrend: String? = null,
+
+    @Column(name = "price_trend_valid")
+    val priceTrendValid: Boolean? = null,
+
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     val createdAt: Instant? = null,
@@ -51,19 +83,8 @@ data class ProductEntity(
         orphanRemoval = true,
         fetch = FetchType.LAZY
     )
-    val localizedStrings: MutableSet<LocalizedStringEntity> = mutableSetOf()
-) {
-    fun toDomain(): Product {
-        val domainLocalized = localizedStrings.map { it.toDomain() }.toMutableSet()
-        return Product(
-            id = id,
-            externalId = externalId,
-            setName = setName,
-            rarity = rarity,
-            imageUrl = imageUrl,
-            createdAt = createdAt,
-            updatedAt = updatedAt,
-            localizedStrings = domainLocalized
-        )
-    }
+    val nameTranslations: MutableSet<NameTranslationEntity> = mutableSetOf()
+): Serializable {
+    // JPA requires a no‑arg constructor
+    constructor(): this(0, 0)
 }

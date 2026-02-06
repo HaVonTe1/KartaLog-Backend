@@ -15,15 +15,4 @@ import java.time.Instant
  */
 object CollectablesMapper {
 
-    /** Convert a generated DTO into a domain [Product]. */
-    fun toDomain(dto: ProductDTO): Product = Product(
-        id = dto.id?.toLong() ?: 0L,
-        externalId = dto.externalId ?: 0L,
-        setName = dto.setName,
-        rarity = dto.rarity,
-        imageUrl = dto.imageUrl?.toString(),
-        createdAt = dto.createdAt?.toInstant(),
-        updatedAt = dto.updatedAt?.toInstant(),
-        localizedStrings = mutableSetOf()
-    )
 }

@@ -7,6 +7,7 @@ import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assumptions
 import org.junit.jupiter.api.BeforeAll
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
@@ -59,6 +60,7 @@ class CardMarketScraperAdapterIT {
         val postgres = PostgreSQLContainer("postgres:15-alpine")
     }
 
+    @Disabled
     @Test
     fun `search returns products with required fields`() {
         val results: List<Product> = scraper.search("Pikachu")

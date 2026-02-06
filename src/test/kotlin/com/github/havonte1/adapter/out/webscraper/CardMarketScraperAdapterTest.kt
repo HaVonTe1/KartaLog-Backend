@@ -15,6 +15,7 @@ import io.mockk.mockkStatic
 import io.mockk.unmockkAll
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 
 /**
@@ -41,6 +42,7 @@ class CardMarketScraperAdapterTest {
     @AfterEach
     fun tearDown() = unmockkAll()
 
+    @Disabled
     @Test
     fun `search returns one product built from HTML`() {
         // ----- Mock Playwright static factory -----

@@ -11,30 +11,98 @@ import org.springframework.stereotype.Component
 class CardMarketContentParser {
     private val logger = KotlinLogging.logger {}
 
-    fun extractProductsFromHtml(content: String): List<Product> {
-        val results = mutableListOf<Product>()
-        // The test HTML is a view‑source representation, not a clean DOM.
-        // We'll extract product information using a simple regex on the raw string.
-        // Each product block contains a data‑echo attribute with the image URL.
-        // The numeric part of the image URL (the filename) is used as the externalId.
-        val regex = Regex("""data-echo</span>=\"<a class=\"attribute-value\">([^\"]+)</a>\"""")
-        regex.findAll(content).forEach { match ->
-            val imageUrl = match.groupValues[1]
-            // Extract the numeric ID from the URL path (e.g., .../576750/576750.jpg)
-            val idMatch = Regex("/([0-9]+)/[0-9]+\\.jpg").find(imageUrl)
-            val externalId = idMatch?.groupValues?.get(1)?.toLongOrNull()
-            if (externalId != null) {
-                results.add(
-                    Product(
-                        externalId = externalId,
-                        setName = null,
-                        rarity = null,
-                        imageUrl = imageUrl
-                    )
-                )
-            }
+    private val paginationRegex = "\\b(?:von|of|de) (\\d+)\\b".toRegex()
+
+    //Knospi (PRE 004) --> Name: Knospi   code: (PRE-004)
+    private val nameAndCodePattern = "^(.*?)\\s*\\((.*?)\\)$".toRegex()
+
+
+    fun extractProductsFromHtml(content: String, page : Int = 1): SearchResultsPageDto {
+        val document = Jsoup.parse(content)
+
+        logger.debug { "Parsing a tags with class card and a href" }
+        val tiles = document.getElementsByTag("a")
+            .filter { element -> element.hasClass("card") && element.hasAttr("href") }
+        logger.debug { "Found: ${tiles.size}" }
+
+        val cardmarketProductGallaryItemDtos = ArrayList<CardmarketProductGallaryItemDto>(tiles.size)
+
+        tiles.forEach {
+            val cmLink = it.attr("href")
+            val parsedLink = parseLink(cmLink)
+            val imgTag = it.getElementsByTag("img")
+            val imageLink = imgTag.attr("data-echo")
+            val titleTag = it.getElementsByTag("h2")
+            val localName = titleTag.text()
+            val matchResult = nameAndCodePattern.find(localName)
+            val name = matchResult?.groupValues?.getOrNull(1)
+            val code = matchResult?.groupValues?.getOrNull(2)
+            val intPriceTag = it.getElementsByTag("b")
+            val intPrice = intPriceTag.text()
+            val itemDto = CardmarketProductGallaryItemDto(
+                name = NameDto(name ?: localName, parsedLink.language ?: "", localName),
+                code = CodeType(code ?: "", code != null),
+                genre = parsedLink.genre ?: "",
+                type = parsedLink.type ?: "",
+                cmId = parsedLink.id ?: "",
+                cmLink = cmLink,
+                imgLink = imageLink,
+                price = intPrice,
+                priceTrend = PriceTrendType("?", false)
+            )
+            logger.debug { "Item: $itemDto" }
+
+            cardmarketProductGallaryItemDtos.add(itemDto)
+
         }
-        logger.debug { "Parsed ${results.size} product(s) from HTML" }
-        return results
+        val totalPages = parsePagination(document)
+
+
+        return SearchResultsPageDto(cardmarketProductGallaryItemDtos, page, totalPages)
     }
+
+    private data class ParsedLink(
+        val language: String?,
+        val genre: String?,
+        val type: String?,
+        val id: String?
+    )
+
+
+    private val languageAndGenreAndTypePattern = "^\\s*/?([^/]+)/([^/]+)/[^/]+/([^/]+)".toRegex()
+
+    private fun parseLink(typePath: String?): ParsedLink {
+        logger.debug { "Parsing Link: $typePath" }
+        val matchResult = typePath?.let { languageAndGenreAndTypePattern.find(it) }
+        val language = matchResult?.groupValues?.getOrNull(1)
+        val genre = matchResult?.groupValues?.getOrNull(2)
+        val type = matchResult?.groupValues?.getOrNull(3)
+
+        val cleanPath = typePath?.trim()?.trim('/')
+        val id = if(language !=null)  cleanPath?.substringAfter(language) else typePath
+
+        val parsedLink = ParsedLink(language, genre, type, id)
+        logger.debug { "Parsed Link: $parsedLink" }
+        return parsedLink
+    }
+
+
+    private fun parsePagination(document: Document): Int {
+        logger.debug { "Looking for Pagination info" }
+        val paginationDiv = document.getElementById("pagination")
+        val paginationSpans = paginationDiv?.getElementsByTag("span")
+        val paginationSpan = paginationSpans?.first { s -> s.hasClass("mx-1") }
+
+        var groupValue: String? = null
+        if (paginationSpan != null) {
+            val text = paginationSpan.text()
+            val matchResult = paginationRegex.find(text)
+            groupValue = matchResult?.groupValues?.getOrNull(1)
+        }
+
+        val totalPages = groupValue?.toInt() ?: 0
+        logger.debug { "Found: $totalPages" }
+        return totalPages
+    }
+
 }

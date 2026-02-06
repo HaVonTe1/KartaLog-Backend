@@ -13,7 +13,8 @@ import org.springframework.stereotype.Component
 @Component
 class CardMarketScraperAdapter(
     private val webFetcher: CardMarketWebFetcher = CardMarketWebFetcher(),
-    private val contentParser: CardMarketContentParser = CardMarketContentParser()
+    private val contentParser: CardMarketContentParser = CardMarketContentParser(),
+    private val mapper: CardMarketProductMapper = CardMarketProductMapper()
 ) :
     CardMarketScraperPort {
     private val logger = KotlinLogging.logger {}
@@ -26,8 +27,8 @@ class CardMarketScraperAdapter(
         logger.info { "Scraping CardMarket for $searchString" }
 
         val content = webFetcher.fetch(searchString)
-        val products = contentParser.extractProductsFromHtml( content)
-        return products
+        val result = contentParser.extractProductsFromHtml( content)
+        return mapper.toProducts(result)
     }
 
 }

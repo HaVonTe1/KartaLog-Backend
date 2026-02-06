@@ -2,13 +2,8 @@ package com.github.havonte1.domain.model
 
 import java.time.Instant
 
-/**
- * Core domain aggregate representing a collectible card (e.g., a Pokémon card).
- *
- * * `externalId` – Identifier from the source provider (CardMarket).
- * * Multilingual textual values are stored in [LocalizedString] records.
- */
- data class Product(
+
+data class Product(
     val id: Long = 0,
     /** Identifier from CardMarket (or other external source) */
     val externalId: Long,
@@ -22,11 +17,30 @@ import java.time.Instant
     val createdAt: Instant? = null,
     /** Last update timestamp */
     val updatedAt: Instant? = null,
-    /** Translatable strings linked to this product */
-    val localizedStrings: MutableSet<LocalizedString> = mutableSetOf()
+    /** Map of locale code to translated product name */
+    val names: Map<String, String> = emptyMap(),
+
+    /** Code value with validity flag */
+    val codeInfo: StringWithValidity? = null,
+    /** Genre of the product */
+    val genre: String? = null,
+    /** Type of the product */
+    val type: String? = null,
+    /** CardMarket identifier as string */
+    val cmId: String? = null,
+    /** Direct link to CardMarket product page */
+    val cmLink: String? = null,
+    /** Image link from CardMarket */
+    val imgLink: String? = null,
+    /** Price string from CardMarket */
+    val price: String? = null,
+    /** Price trend with validity flag */
+    val priceTrendInfo: StringWithValidity? = null
 ) {
-    /** Helper to add a localized string. */
-    fun addLocalizedString(ls: LocalizedString) {
-        (localizedStrings as MutableSet).add(ls)
-    }
+
 }
+
+data class StringWithValidity(
+    val value: String? = null,
+    val valid: Boolean? = null
+)

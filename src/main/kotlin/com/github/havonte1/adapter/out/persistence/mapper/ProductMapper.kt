@@ -1,11 +1,9 @@
 package com.github.havonte1.adapter.out.persistence.mapper
 
-import com.github.havonte1.adapter.out.persistence.entity.LanguageEntity
-import com.github.havonte1.adapter.out.persistence.entity.LocalizedStringEntity
+import com.github.havonte1.adapter.out.persistence.entity.NameTranslationEntity
 import com.github.havonte1.adapter.out.persistence.entity.ProductEntity
-import com.github.havonte1.domain.model.Language
-import com.github.havonte1.domain.model.LocalizedString
 import com.github.havonte1.domain.model.Product
+import com.github.havonte1.domain.model.StringWithValidity
 import org.springframework.stereotype.Component
 
 /**
@@ -17,35 +15,43 @@ import org.springframework.stereotype.Component
 class ProductMapper {
     /** Convert a domain [Product] into a JPA [ProductEntity]. */
     fun toEntity(product: Product): ProductEntity {
-        // Create the product entity without localized strings first to avoid circular reference issues
+        // Create the product entity with an empty set of name translations
         val entity = ProductEntity(
             id = product.id,
             externalId = product.externalId,
             setName = product.setName,
             rarity = product.rarity,
             imageUrl = product.imageUrl,
+            codeInfo = product.codeInfo?.value,
+            codeInfoValid = product.codeInfo?.valid,
+            genre = product.genre,
+            type = product.type,
+            cmId = product.cmId,
+            cmLink = product.cmLink,
+            imgLink = product.imgLink,
+            price = product.price,
+            priceTrend = product.priceTrendInfo?.value,
+            priceTrendValid = product.priceTrendInfo?.valid,
             createdAt = product.createdAt,
             updatedAt = product.updatedAt,
-            localizedStrings = mutableSetOf()
+            nameTranslations = mutableSetOf()
         )
-        // Map each localized string, creating language and localized string entities
-        product.localizedStrings.forEach { ls ->
-            val languageEntity = LanguageEntity(ls.language.code, ls.language.name)
-            val lsEntity = LocalizedStringEntity(
-                id = ls.id,
+        // Map each name translation from the product's names map
+        product.names.forEach { (locale, name) ->
+            val translation = NameTranslationEntity(
+                id = 0, // let JPA generate ID
                 product = entity,
-                language = languageEntity,
-                type = ls.type,
-                value = ls.value
+                languageCode = locale,
+                name = name
             )
-            entity.localizedStrings.add(lsEntity)
+            entity.nameTranslations.add(translation)
         }
         return entity
     }
 
     /** Convert a JPA [ProductEntity] into a domain [Product]. */
     fun toDomain(entity: ProductEntity): Product {
-        val domainLocalized = entity.localizedStrings.map { toDomain(it) }.toMutableSet()
+        val namesMap = entity.nameTranslations.associate { it.languageCode to it.name }
         return Product(
             id = entity.id,
             externalId = entity.externalId,
@@ -54,28 +60,17 @@ class ProductMapper {
             imageUrl = entity.imageUrl,
             createdAt = entity.createdAt,
             updatedAt = entity.updatedAt,
-            localizedStrings = domainLocalized
+            names = namesMap,
+            codeInfo = if (entity.codeInfo != null) StringWithValidity(entity.codeInfo, entity.codeInfoValid) else null,
+            genre = entity.genre,
+            type = entity.type,
+            cmId = entity.cmId,
+            cmLink = entity.cmLink,
+            imgLink = entity.imgLink,
+            price = entity.price,
+            priceTrendInfo = if (entity.priceTrend != null) StringWithValidity(entity.priceTrend, entity.priceTrendValid) else null
         )
     }
 
-    private fun toDomain(lsEntity: LocalizedStringEntity): LocalizedString {
-        // Build a minimal Product representation to avoid deep recursion (localized strings will be attached later)
-        val minimalProduct = Product(
-            id = lsEntity.product.id,
-            externalId = lsEntity.product.externalId,
-            setName = lsEntity.product.setName,
-            rarity = lsEntity.product.rarity,
-            imageUrl = lsEntity.product.imageUrl,
-            createdAt = lsEntity.product.createdAt,
-            updatedAt = lsEntity.product.updatedAt,
-            localizedStrings = mutableSetOf()
-        )
-        return LocalizedString(
-            id = lsEntity.id,
-            product = minimalProduct,
-            language = Language(lsEntity.language.code, lsEntity.language.name),
-            type = lsEntity.type,
-            value = lsEntity.value
-        )
-    }
+
 }
