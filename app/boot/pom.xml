@@ -11,8 +11,8 @@
     <version>LocalBuild</version>
   </parent>
   <properties>
-    <hibernate.version>7.2.0.Final</hibernate.version>
-    <native-maven-plugin.version>0.10.4</native-maven-plugin.version>
+    <hibernate.version>8.0.0.Alpha1</hibernate.version>
+    <native-maven-plugin.version>0.11.4</native-maven-plugin.version>
 
   </properties>
 

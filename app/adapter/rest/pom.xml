@@ -115,8 +115,7 @@
     <version>LocalBuild</version>
   </parent>
   <properties>
-    <openapi-generator-maven-plugin.version>7.18.0</openapi-generator-maven-plugin.version>
+    <openapi-generator-maven-plugin.version>7.19.0</openapi-generator-maven-plugin.version>
 
-    <kotlin.version>2.2.21</kotlin.version>
   </properties>
 </project>
