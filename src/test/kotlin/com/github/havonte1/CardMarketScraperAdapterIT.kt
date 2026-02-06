@@ -16,6 +16,7 @@ import org.testcontainers.containers.PostgreSQLContainer
 import org.testcontainers.junit.jupiter.Container
 import org.testcontainers.junit.jupiter.Testcontainers
 import org.springframework.test.context.TestPropertySource
+import org.springframework.test.context.junit.jupiter.DisabledIf
 
 /**
  * Integration test for {@link CardMarketScraperAdapter} that runs with a real Playwright
@@ -60,9 +61,10 @@ class CardMarketScraperAdapterIT {
         val postgres = PostgreSQLContainer("postgres:15-alpine")
     }
 
-    @Disabled
+    @DisabledIf()
     @Test
     fun `search returns products with required fields`() {
+
         val results: List<Product> = scraper.search("Pikachu")
         Assertions.assertTrue(results.isNotEmpty(), "Expected at least one product for search term 'Pikachu'")
         results.forEach { product ->

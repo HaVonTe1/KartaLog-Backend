@@ -31,7 +31,13 @@ class CardMarketContentParser {
             val cmLink = it.attr("href")
             val parsedLink = parseLink(cmLink)
             val imgTag = it.getElementsByTag("img")
-            val imageLink = imgTag.attr("data-echo")
+            var imageLink = imgTag.attr("data-echo")
+            if(imageLink.isEmpty())
+            {
+                val imageLinkBySrc = imgTag.attr("src")
+                if(imageLinkBySrc.startsWith("https"))
+                    imageLink = imageLinkBySrc;
+            }
             val titleTag = it.getElementsByTag("h2")
             val localName = titleTag.text()
             val matchResult = nameAndCodePattern.find(localName)
