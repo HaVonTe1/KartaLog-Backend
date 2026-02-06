@@ -1,10 +1,11 @@
 package com.github.havonte1.application
 
-import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 
 import com.github.havonte1.domain.model.Product
 import com.github.havonte1.domain.port.out.CardMarketScraperPort
+import com.sun.org.slf4j.internal.LoggerFactory
+import io.github.oshai.kotlinlogging.KotlinLogging
 
 /**
  * Spring service implementing the [SearchUseCase].
@@ -15,12 +16,11 @@ class CollectablesService(
     private val scraperPort: CardMarketScraperPort
 ) : SearchUseCase {
 
-    private val logger = LoggerFactory.getLogger(this::class.java)
-
+    private val logger = KotlinLogging.logger {}
     /** Returns cards scraped from CardMarket for the given search string. */
     override fun search(searchString: String): List<Product> {
-        logger.info("Searching CardMarket for '{}'", searchString)
+        logger.info { "${"Searching CardMarket for '{}'"} $searchString" }
         return scraperPort.search(searchString)
     }
-}
+
 }

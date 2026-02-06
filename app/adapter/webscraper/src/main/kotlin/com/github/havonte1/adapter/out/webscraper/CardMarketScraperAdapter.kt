@@ -5,9 +5,9 @@ import com.github.havonte1.domain.port.out.CardMarketScraperPort
 import com.microsoft.playwright.Browser
 import com.microsoft.playwright.BrowserType.LaunchOptions
 import com.microsoft.playwright.Playwright
+import io.github.oshai.kotlinlogging.KotlinLogging
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
-import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 
 /**
@@ -15,15 +15,14 @@ import org.springframework.stereotype.Component
  * Scrapes CardMarket product listings and maps them to {@link Product} domain objects.
  */
 @Component
-class CardMarketScraperAdapter @JvmOverloads constructor() : CardMarketScraperPort {
-    private val logger = LoggerFactory.getLogger(CardMarketScraperAdapter::class.java)
-
+class CardMarketScraperAdapter  : CardMarketScraperPort {
+    private val logger = KotlinLogging.logger {}
     /**
      * Executes a search on CardMarket and returns a list of products.
      * Only externalId, setName, rarity and imageUrl are populated; other fields remain null.
      */
     override fun search(searchString: String): List<Product> {
-        logger.info("Scraping CardMarket for {}", searchString)
+        logger.info { "${"Scraping CardMarket for {}"} $searchString" }
         val results = mutableListOf<Product>()
         Playwright.create().use { playwright ->
             val browser: Browser = playwright.chromium().launch(LaunchOptions().setHeadless(true))
