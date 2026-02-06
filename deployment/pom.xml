@@ -11,7 +11,7 @@
   </parent>
 
   <artifactId>deployment</artifactId>
-  <packaging>jar</packaging>
+  <packaging>pom</packaging>
   <name>deployment</name>
   <description>Docker deployment helpers for TCGWatcher Backend</description>
 

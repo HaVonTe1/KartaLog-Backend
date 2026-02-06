@@ -1,102 +1,171 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns="http://maven.apache.org/POM/4.0.0"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
   <artifactId>app</artifactId>
-  <packaging>pom</packaging>
+  <build>
+    <pluginManagement>
+      <plugins>
 
-  <parent>
-    <groupId>havonte1.github.com</groupId>
-    <artifactId>tcgwatcher-backend</artifactId>
-    <version>LocalBuild</version>
-  </parent>
+      </plugins>
+    </pluginManagement>
+    <plugins>
+      <plugin>
+        <artifactId>kotlin-maven-plugin</artifactId>
+        <configuration>
+          <args>
+            <arg>-Xjsr305=strict</arg>
+            <arg>-Xannotation-default-target=param-property</arg>
+          </args>
+          <compilerPlugins>
+            <plugin>spring</plugin>
+            <plugin>jpa</plugin>
+            <plugin>all-open</plugin>
+          </compilerPlugins>
+          <jvmTarget>17</jvmTarget>
+          <pluginOptions>
+            <option>all-open:annotation=jakarta.persistence.Entity</option>
+            <option>all-open:annotation=jakarta.persistence.MappedSuperclass</option>
+            <option>all-open:annotation=jakarta.persistence.Embeddable</option>
+          </pluginOptions>
+        </configuration>
+        <dependencies>
+          <dependency>
+            <artifactId>kotlin-maven-allopen</artifactId>
+            <groupId>org.jetbrains.kotlin</groupId>
+            <version>${kotlin.version}</version>
+          </dependency>
+          <dependency>
+            <artifactId>kotlin-maven-noarg</artifactId>
+            <groupId>org.jetbrains.kotlin</groupId>
+            <version>${kotlin.version}</version>
+          </dependency>
+        </dependencies>
+        <executions>
+          <execution>
+            <goals>
+              <goal>compile</goal>
+            </goals>
+            <id>compile</id>
+            <phase>compile</phase>
+          </execution>
+          <execution>
+            <goals>
+              <goal>test-compile</goal>
+            </goals>
+            <id>test-compile</id>
+            <phase>test-compile</phase>
+          </execution>
+        </executions>
+        <groupId>org.jetbrains.kotlin</groupId>
+        <version>${kotlin.version}</version>
+      </plugin>
+      <plugin>
+        <artifactId>maven-failsafe-plugin</artifactId>
+        <configuration>
 
-  <properties>
-    <kotlin.version>2.3.10</kotlin.version>
-    <spring.boot.version>4.0.2</spring.boot.version>
+          <redirectTestOutputToFile>false</redirectTestOutputToFile>
 
+          <testFailureIgnore>false</testFailureIgnore>
+        </configuration>
+        <executions>
+          <execution>
+            <goals>
+              <goal>integration-test</goal>
+              <goal>verify</goal>
+            </goals>
+            <phase>integration-test</phase>
+          </execution>
+        </executions>
+        <groupId>org.apache.maven.plugins</groupId>
+        <version>${failsafe-maven-plugin.version}</version>
 
-    <java.main.version>17</java.main.version>
-    <java.version>${java.main.version}</java.version>
-    <maven.compiler.source>${java.main.version}</maven.compiler.source>
-    <maven.compiler.target>${java.main.version}</maven.compiler.target>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-  </properties>
+      </plugin>
+    </plugins>
+
+    <sourceDirectory>${project.basedir}/src/main/kotlin</sourceDirectory>
+    <testSourceDirectory>${project.basedir}/src/test/kotlin</testSourceDirectory>
+  </build>
+  <dependencies>
+    <dependency>
+      <artifactId>kotlin-stdlib</artifactId>
+      <groupId>org.jetbrains.kotlin</groupId>
+      <version>${kotlin.version}</version>
+    </dependency>
+    <dependency>
+      <artifactId>kotlin-logging-jvm</artifactId>
+      <groupId>io.github.oshai</groupId>
+    </dependency>
+  </dependencies>
+
   <dependencyManagement>
     <dependencies>
       <dependency>
-        <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-dependencies</artifactId>
+        <groupId>org.springframework.boot</groupId>
+        <scope>import</scope>
+        <type>pom</type>
         <version>${spring.boot.version}</version>
-        <type>pom</type>
-        <scope>import</scope>
       </dependency>
       <dependency>
-        <groupId>org.jetbrains.kotlin</groupId>
         <artifactId>kotlin-bom</artifactId>
-        <version>${kotlin.version}</version>
-        <type>pom</type>
+        <groupId>org.jetbrains.kotlin</groupId>
         <scope>import</scope>
+        <type>pom</type>
+        <version>${kotlin.version}</version>
       </dependency>
 
       <dependency>
-        <groupId>havonte1.github.com</groupId>
         <artifactId>domain</artifactId>
+        <groupId>havonte1.github.com</groupId>
         <version>${project.version}</version>
       </dependency>
       <dependency>
-        <groupId>havonte1.github.com</groupId>
         <artifactId>application</artifactId>
+        <groupId>havonte1.github.com</groupId>
         <version>${project.version}</version>
       </dependency>
       <dependency>
-        <groupId>havonte1.github.com</groupId>
         <artifactId>adapter</artifactId>
+        <groupId>havonte1.github.com</groupId>
         <version>${project.version}</version>
       </dependency>
       <dependency>
-        <groupId>havonte1.github.com</groupId>
         <artifactId>adapter-rest</artifactId>
+        <groupId>havonte1.github.com</groupId>
         <version>${project.version}</version>
       </dependency>
       <dependency>
-        <groupId>havonte1.github.com</groupId>
         <artifactId>adapter-persistence</artifactId>
+        <groupId>havonte1.github.com</groupId>
         <version>${project.version}</version>
       </dependency>
       <dependency>
+        <artifactId>adapter-webscraper</artifactId>
         <groupId>havonte1.github.com</groupId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
         <artifactId>boot</artifactId>
+        <groupId>havonte1.github.com</groupId>
         <version>${project.version}</version>
       </dependency>
 
       <dependency>
-        <groupId>io.github.oshai</groupId>
         <artifactId>kotlin-logging-jvm</artifactId>
+        <groupId>io.github.oshai</groupId>
         <version>7.0.14</version>
       </dependency>
       <dependency>
-        <groupId>org.slf4j</groupId>
         <artifactId>slf4j-api</artifactId>
+        <groupId>org.slf4j</groupId>
         <version>2.0.17</version>
       </dependency>
     </dependencies>
 
   </dependencyManagement>
 
-  <dependencies>
-    <dependency>
-      <groupId>org.jetbrains.kotlin</groupId>
-      <artifactId>kotlin-stdlib</artifactId>
-      <version>${kotlin.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>io.github.oshai</groupId>
-      <artifactId>kotlin-logging-jvm</artifactId>
-    </dependency>
-  </dependencies>
-
+  <modelVersion>4.0.0</modelVersion>
   <modules>
     <module>domain</module>
     <module>application</module>
@@ -104,66 +173,26 @@
     <module>boot</module>
   </modules>
 
-  <build>
-    <sourceDirectory>${project.basedir}/src/main/kotlin</sourceDirectory>
-    <testSourceDirectory>${project.basedir}/src/test/kotlin</testSourceDirectory>
+  <packaging>pom</packaging>
 
-    <plugins>
-        <plugin>
-          <groupId>org.jetbrains.kotlin</groupId>
-          <artifactId>kotlin-maven-plugin</artifactId>
-          <version>${kotlin.version}</version>
-          <executions>
-            <execution>
-              <id>compile</id>
-              <phase>compile</phase>
-              <goals>
-                <goal>compile</goal>
-              </goals>
-            </execution>
-            <execution>
-              <id>test-compile</id>
-              <phase>test-compile</phase>
-              <goals>
-                <goal>test-compile</goal>
-              </goals>
-            </execution>
-          </executions>
-          <configuration>
-            <jvmTarget>17</jvmTarget>
-            <args>
-              <arg>-Xjsr305=strict</arg>
-              <arg>-Xannotation-default-target=param-property</arg>
-            </args>
-            <compilerPlugins>
-              <plugin>spring</plugin>
-              <plugin>jpa</plugin>
-              <plugin>all-open</plugin>
-            </compilerPlugins>
-            <pluginOptions>
-              <option>all-open:annotation=jakarta.persistence.Entity</option>
-              <option>all-open:annotation=jakarta.persistence.MappedSuperclass</option>
-              <option>all-open:annotation=jakarta.persistence.Embeddable</option>
-            </pluginOptions>
-          </configuration>
-          <dependencies>
-            <dependency>
-              <groupId>org.jetbrains.kotlin</groupId>
-              <artifactId>kotlin-maven-allopen</artifactId>
-              <version>${kotlin.version}</version>
-            </dependency>
-            <dependency>
-              <groupId>org.jetbrains.kotlin</groupId>
-              <artifactId>kotlin-maven-noarg</artifactId>
-              <version>${kotlin.version}</version>
-            </dependency>
-          </dependencies>
-        </plugin>
-      </plugins>
-      <pluginManagement>
-      <plugins>
+  <parent>
+    <artifactId>tcgwatcher-backend</artifactId>
+    <groupId>havonte1.github.com</groupId>
+    <version>LocalBuild</version>
+  </parent>
 
-      </plugins>
-    </pluginManagement>
-  </build>
+  <properties>
+    <failsafe-maven-plugin.version>3.5.4</failsafe-maven-plugin.version>
+    <java.main.version>17</java.main.version>
+
+
+    <java.version>${java.main.version}</java.version>
+    <kotlin.version>2.2.21</kotlin.version>
+    <maven.compiler.source>${java.main.version}</maven.compiler.source>
+    <maven.compiler.target>${java.main.version}</maven.compiler.target>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+    <spring.boot.version>4.0.2</spring.boot.version>
+
+  </properties>
 </project>

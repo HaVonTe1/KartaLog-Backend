@@ -12,7 +12,6 @@
         <module name="boot" />
         <module name="adapter-rest" />
         <module name="adapter-persistence" />
-        <module name="deployment" />
       </profile>
     </annotationProcessing>
   </component>
