@@ -14,7 +14,7 @@
 
 ## DOCKER / CONTAINER NOTES
 - Base images: `openjdk:24-jdk-slim` for JVM runtime.
-- Multi‑stage build: compile in `maven:3.9-jdk-24` stage, copy `target/*.jar` to runtime stage.
+- Multi‑stage build: compile in `gradle:9-jdk-24` stage, copy `build/libs/*.jar` to runtime stage.
 - Dockerfile placed in `deployment/docker/` per service (e.g., `app`, `worker`).
 - Entrypoint: `java -jar /app.jar`.
 - Healthcheck: `curl -f http://localhost:8080/actuator/health || exit 1`.
@@ -23,7 +23,7 @@
 ## CI/CD HOOKS
 - GitHub Actions workflow in `.github/workflows/deploy.yml`.
 - Steps:
-  1. `checkout` + cache Maven `~/.m2`.
+  1. `checkout` + cache Gradle `~/.gradle/caches`.
   2. `mvn -q verify` (lint + tests).
   3. `docker build` for each service, push to GHCR.
   4. Deploy via Helm chart or `kubectl apply -f k8s/`.

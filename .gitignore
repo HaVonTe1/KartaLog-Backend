@@ -31,6 +31,7 @@ replay_pid*
 /.sisyphus/
 
 **/target/**
+**/build/**
 /.mvn/settings.xml
 /.mvn/maven.config
 /.mvn/jvm.config
