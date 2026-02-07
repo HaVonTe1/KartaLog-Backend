@@ -15,7 +15,7 @@ import kotlin.io.path.exists
  * Returns the raw HTML content of the CardMarket search page.
  */
 
-class CardMarketWebFetcher {
+class CardMarketWebFetcher : CardMarketWebFetcherPort {
     private val logger = KotlinLogging.logger {}
 
     /**
@@ -23,7 +23,8 @@ class CardMarketWebFetcher {
      * The function creates a Playwright instance, launches a Chromium browser,
      * navigates to the search URL, waits for network idle, and returns the page content.
      */
-    fun fetch(searchString: String): String {
+
+    override fun fetch(searchString: String): String {
         logger.info { "Fetching CardMarket page for \"$searchString\"" }
         val playwright = Playwright.create()
         playwright.use { playwright ->

@@ -3,15 +3,8 @@ package com.github.havonte1.adapter.out.webscraper
 import com.github.havonte1.domain.model.Product
 import com.github.havonte1.domain.port.out.CardMarketScraperPort
 import com.github.havonte1.adapter.out.webscraper.cardmarket.CardMarketScraperAdapter
-import com.microsoft.playwright.Browser
-import com.microsoft.playwright.BrowserType
-import com.microsoft.playwright.Page
-import com.microsoft.playwright.Playwright
-import com.microsoft.playwright.Response
-import io.mockk.every
-import io.mockk.mockk
-import io.mockk.mockkStatic
-import io.mockk.unmockkAll
+
+
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -20,6 +13,7 @@ import org.junit.jupiter.api.Test
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.Paths
+import com.github.havonte1.adapter.out.webscraper.cardmarket.CardMarketWebFetcherPort
 
 /**
  * Unit test for {@link CardMarketScraperAdapter}.
@@ -29,41 +23,22 @@ import java.nio.file.Paths
  */
 class CardMarketScraperAdapterTest {
 
-
-
-    @AfterEach
-    fun tearDown() = unmockkAll()
-
     @Test
     fun `search returns one product built from HTML`() {
         val resourcePath = "src/test/resources/pikachu_gallery_50.html"
 
         val file = File(resourcePath)
         Assumptions.assumeTrue(file.exists(), "Ressource fehlt, Test wird übersprungen");
-        // ----- Mock Playwright static factory -----
-        mockkStatic(Playwright::class)
+        // Use a simple test implementation of CardMarketWebFetcherPort that reads the HTML file.
+        class TestCardMarketWebFetcher(private val resourcePath: String) : CardMarketWebFetcherPort {
+            override fun fetch(searchString: String): String = Files.readString(Paths.get(resourcePath))
+        }
 
-        // Mock the Playwright instance returned by Playwright.create()
-        val playwrightMock = mockk<Playwright>(relaxed = true)
-        every { Playwright.create() } returns playwrightMock
-
-        // Mock the Chromium launch chain
-        val browserMock = mockk<Browser>(relaxed = true)
-        val browserTypeMock = mockk<BrowserType>(relaxed = true)
-        val pageMock = mockk<Page>(relaxed = true)
-
-        every { playwrightMock.chromium() } returns browserTypeMock
-        every { browserTypeMock.launch(any()) } returns browserMock
-        every { browserMock.newPage() } returns pageMock
-
-        // Navigation and content retrieval
-        val responseMock = mockk<Response>(relaxed = true)
-        every { pageMock.navigate(any<String>()) } returns responseMock
-        val content = Files.readString(Paths.get(resourcePath))
-        every { pageMock.content() } returns content
+        val testFetcher = TestCardMarketWebFetcher(resourcePath)
+        val adapter: CardMarketScraperPort = CardMarketScraperAdapter(testFetcher)
 
         // ----- Execute the adapter -----
-        val adapter: CardMarketScraperPort = CardMarketScraperAdapter()
+
         val result: List<Product> = adapter.search("Pikachu")
 
         // ----- Verify -----
