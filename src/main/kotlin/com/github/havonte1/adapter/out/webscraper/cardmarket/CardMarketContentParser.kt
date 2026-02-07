@@ -1,11 +1,8 @@
-package com.github.havonte1.adapter.out.webscraper
+package com.github.havonte1.adapter.out.webscraper.cardmarket
 
-import com.github.havonte1.domain.model.Product
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
-import org.springframework.stereotype.Component
-
 
 
 class CardMarketContentParser {

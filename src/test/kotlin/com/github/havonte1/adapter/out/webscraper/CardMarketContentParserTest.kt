@@ -1,5 +1,6 @@
 package com.github.havonte1.adapter.out.webscraper
 
+import com.github.havonte1.adapter.out.webscraper.cardmarket.CardMarketContentParser
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Assumptions

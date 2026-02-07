@@ -1,4 +1,4 @@
-package com.github.havonte1.adapter.out.webscraper
+package com.github.havonte1.adapter.out.webscraper.cardmarket
 
 import com.microsoft.playwright.Browser
 import com.microsoft.playwright.BrowserContext
@@ -7,8 +7,6 @@ import com.microsoft.playwright.options.LoadState
 import com.microsoft.playwright.Page
 import com.microsoft.playwright.Playwright
 import io.github.oshai.kotlinlogging.KotlinLogging
-import org.springframework.stereotype.Component
-import java.io.File
 import java.nio.file.Paths
 import kotlin.io.path.exists
 

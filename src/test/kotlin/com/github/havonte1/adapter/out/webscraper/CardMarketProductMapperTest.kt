@@ -1,5 +1,9 @@
 package com.github.havonte1.adapter.out.webscraper
 
+import com.github.havonte1.adapter.out.webscraper.cardmarket.CardMarketProductMapper
+import com.github.havonte1.adapter.out.webscraper.cardmarket.CardmarketProductGallaryItemDto
+import com.github.havonte1.adapter.out.webscraper.cardmarket.NameDto
+import com.github.havonte1.adapter.out.webscraper.cardmarket.SearchResultsPageDto
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
@@ -10,7 +14,7 @@ class CardMarketProductMapperTest {
 
     @Test
     fun `toProducts maps SearchResultsPageDto correctly`() {
-        
+
         val nameDto = NameDto(value = "Pikachu", languageCode = "en")
         val item = CardmarketProductGallaryItemDto(
             name = nameDto,
@@ -29,7 +33,7 @@ class CardMarketProductMapperTest {
         assertEquals(1, products.size, "Exactly one product should be produced")
         val product = products.first()
 
-        
+
         assertEquals(12345L, product.externalId, "externalId should be parsed from cmId string")
         assertEquals("https://images.cardmarket.com/12345.jpg", product.imageUrl)
         assertEquals("12345", product.cmId)

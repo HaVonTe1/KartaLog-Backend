@@ -1,4 +1,4 @@
-package com.github.havonte1.adapter.out.webscraper
+package com.github.havonte1.adapter.out.webscraper.cardmarket
 
 import com.github.havonte1.domain.model.Product
 

@@ -2,9 +2,8 @@ package com.github.havonte1.adapter.out.webscraper
 
 import com.github.havonte1.domain.model.Product
 import com.github.havonte1.domain.port.out.CardMarketScraperPort
-import com.github.havonte1.adapter.out.webscraper.CardMarketScraperAdapter
+import com.github.havonte1.adapter.out.webscraper.cardmarket.CardMarketScraperAdapter
 import com.microsoft.playwright.Browser
-import com.microsoft.playwright.BrowserContext
 import com.microsoft.playwright.BrowserType
 import com.microsoft.playwright.Page
 import com.microsoft.playwright.Playwright
@@ -17,7 +16,6 @@ import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Assumptions
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import java.io.File
 import java.nio.file.Files
@@ -74,7 +72,7 @@ class CardMarketScraperAdapterTest {
         assertEquals("/Pokemon/Products/Singles/Celebrations/Pikachu-V1-CEL005", first.cmId)
         assertEquals("https://product-images.s3.cardmarket.com/51/CEL/576750/576750.jpg", first.imageUrl)
         assertEquals("Pikachu", first.names["de"])
-        
+
         assertEquals("/de/Pokemon/Products/Singles/Celebrations/Pikachu-V1-CEL005", first.cmLink)
         assertEquals("Pokemon", first.genre)
         assertEquals("Singles", first.type)

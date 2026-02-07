@@ -1,4 +1,4 @@
-package com.github.havonte1.adapter.out.webscraper
+package com.github.havonte1.adapter.out.webscraper.cardmarket
 
 data class SearchResultsPageDto(
     val results: List<CardmarketProductGallaryItemDto>, //TODO: use a generic type
