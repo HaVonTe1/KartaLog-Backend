@@ -57,4 +57,42 @@
                                   constraintName="fk_name_translation_product"
                                   onDelete="CASCADE"/>
     </changeSet>
+
+    <changeSet id="20260207-03" author="dirk">
+        <createTable tableName="search_results" schemaName="watcher">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+            <column name="query" type="VARCHAR(255)" >
+                <constraints nullable="false" unique="true" />
+            </column>
+            <column name="created_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP" />
+        </createTable>
+
+        <createTable tableName="search_result_products" schemaName="watcher">
+            <column name="search_result_id" type="BIGINT">
+                <constraints nullable="false" />
+            </column>
+            <column name="product_id" type="BIGINT">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+
+        <addForeignKeyConstraint baseTableName="search_result_products"
+                                  baseColumnNames="search_result_id"
+                                  baseTableSchemaName="watcher"
+                                  referencedTableName="search_results"
+                                  referencedColumnNames="id"
+                                  referencedTableSchemaName="watcher"
+                                  constraintName="fk_search_result_product"
+                                  onDelete="CASCADE"/>
+        <addForeignKeyConstraint baseTableName="search_result_products"
+                                  baseColumnNames="product_id"
+                                  baseTableSchemaName="watcher"
+                                  referencedTableName="products"
+                                  referencedColumnNames="id"
+                                  referencedTableSchemaName="watcher"
+                                  constraintName="fk_search_result_product_product"
+                                  onDelete="CASCADE"/>
+    </changeSet>
 </databaseChangeLog>

@@ -1,10 +1,15 @@
 package io.github.havonte1.tcgwatcher.backend.application
 
 
-import io.github.havonte1.tcgwatcher.backend.domain.model.Product
-import io.github.havonte1.tcgwatcher.backend.domain.port.out.CardMarketScraperPort
-import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Service
+import io.github.oshai.kotlinlogging.KotlinLogging
+
+import io.github.havonte1.tcgwatcher.backend.domain.model.Product
+import io.github.havonte1.tcgwatcher.backend.domain.model.SearchResult
+import io.github.havonte1.tcgwatcher.backend.domain.port.out.CardMarketScraperPort
+import io.github.havonte1.tcgwatcher.backend.domain.port.out.ProductRepository
+import io.github.havonte1.tcgwatcher.backend.domain.port.out.SearchResultRepository
+
 
 /**
  * Spring service implementing the [SearchUseCase].
@@ -12,14 +17,36 @@ import org.springframework.stereotype.Service
  */
 @Service
 class CollectablesService(
-    private val scraperPort: CardMarketScraperPort
+    private val scraperPort: CardMarketScraperPort,
+    private val productRepository: ProductRepository,
+    private val searchResultRepository: SearchResultRepository
 ) : SearchUseCase {
 
     private val logger = KotlinLogging.logger {}
 
-    /** Returns cards scraped from CardMarket for the given search string. */
+    /** Returns cards for the given query, using cached results when available. */
     override fun search(searchString: String): List<Product> {
-        logger.info { "Searching CardMarket for '$searchString'" }
-        return scraperPort.search(searchString)
+        logger.info { "Searching for collectables with query='$searchString'" }
+
+        
+        val cached = searchResultRepository.findByQuery(searchString)
+        if (cached != null) {
+            logger.debug { "Cache hit for query='$searchString' – returning ${cached.products.size} products" }
+            return cached.products
+        }
+
+        // 2️⃣ Cache miss – invoke the scraper
+        logger.debug { "Cache miss for query='$searchString' – invoking scraper" }
+        val scraped: List<Product> = scraperPort.search(searchString)
+
+        // Persist each product (avoid duplicates via unique externalId constraint)
+        scraped.forEach { productRepository.save(it) }
+
+        // Store the full search result for future calls
+        val searchResult = SearchResult(query = searchString, products = scraped)
+        searchResultRepository.save(searchResult)
+
+        logger.info { "Scrape completed and cached (${scraped.size} products) for query='$searchString'" }
+        return scraped
     }
 }
