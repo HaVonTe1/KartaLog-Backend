@@ -44,11 +44,11 @@ class CardMarketScraperAdapterTest {
         // ----- Verify -----
         assertEquals(30, result.size, "Exactly one product should be parsed")
         val first = result.first()
-        assertEquals("/Pokemon/Products/Singles/Celebrations/Pikachu-V1-CEL005", first.cmId)
-        assertEquals("https://product-images.s3.cardmarket.com/51/CEL/576750/576750.jpg", first.imageUrl)
+        // cmId should be the last segment of the parsed link
+        assertEquals("Pikachu-V1-CEL005", first.cmId)
+        assertEquals("https://product-images.s3.cardmarket.com/51/CEL/576750/576750.jpg", first.imgLink)
         assertEquals("Pikachu", first.names["de"])
 
-        assertEquals("/de/Pokemon/Products/Singles/Celebrations/Pikachu-V1-CEL005", first.cmLink)
         assertEquals("Pokemon", first.genre)
         assertEquals("Singles", first.type)
         assertEquals("0,99 €", first.price)

@@ -27,7 +27,7 @@ class CardMarketScraperAdapter(
         logger.info { "Scraping CardMarket for $searchString" }
 
         val content = webFetcher.fetch(searchString)
-        val result = contentParser.extractProductsFromHtml( content)
+        val result = contentParser.extractProductsFromHtml(content)
         return mapper.toProducts(result)
     }
 

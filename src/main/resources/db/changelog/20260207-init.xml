@@ -95,4 +95,5 @@
                                   constraintName="fk_search_result_product_product"
                                   onDelete="CASCADE"/>
     </changeSet>
+
 </databaseChangeLog>

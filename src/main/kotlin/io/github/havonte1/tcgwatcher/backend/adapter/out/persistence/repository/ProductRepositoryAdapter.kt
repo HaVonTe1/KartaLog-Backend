@@ -14,12 +14,22 @@ class ProductRepositoryAdapter(
     private val jpaRepository: ProductJpaRepository,
     private val mapper: ProductMapper
 ) : ProductRepository {
+    override fun deleteAll() {
+        jpaRepository.deleteAll()
+    }
 
     @Transactional
     override fun save(product: Product): Product {
         val entity = mapper.toEntity(product)
         val saved = jpaRepository.save(entity)
         return mapper.toDomain(saved)
+    }
+
+    @Transactional
+    override fun saveAll(products: List<Product>): List<Product> {
+        val entities = products.map { mapper.toEntity(it) }
+        val productEntities = jpaRepository.saveAll(entities)
+        return productEntities.map { mapper.toDomain(it) }
     }
 
     @Transactional(readOnly = true)

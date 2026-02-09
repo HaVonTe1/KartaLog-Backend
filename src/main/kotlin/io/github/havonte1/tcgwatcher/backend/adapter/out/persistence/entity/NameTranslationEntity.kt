@@ -16,7 +16,7 @@ import java.io.Serializable
  * Stored as a separate table to allow many languages per product.
  */
 @Entity
-@Table(name = "product_name_translations")
+@Table(name = "product_name_translations", schema = "watcher")
 class NameTranslationEntity(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

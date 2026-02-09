@@ -7,7 +7,7 @@ object CollectablesMapper {
             externalId = product.externalId,
             setName = product.setName,
             rarity = product.rarity,
-            imageUrl = product.imageUrl?.let { java.net.URI.create(it) },
+            imageUrl = product.imgLink?.let { java.net.URI.create(it) },
             createdAt = product.createdAt?.let { java.time.OffsetDateTime.ofInstant(it, java.time.ZoneOffset.UTC) },
             updatedAt = product.updatedAt?.let { java.time.OffsetDateTime.ofInstant(it, java.time.ZoneOffset.UTC) }
         )

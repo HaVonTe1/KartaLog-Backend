@@ -34,11 +34,9 @@ class CardMarketProductMapperTest {
         assertEquals(1, products.size, "Exactly one product should be produced")
         val product = products.first()
 
-
-        assertEquals(12345L, product.externalId, "externalId should be parsed from cmId string")
-        assertEquals("https://images.cardmarket.com/12345.jpg", product.imageUrl)
+        // externalId should come from the imgLink filename
+        assertEquals(12345L, product.externalId, "externalId should be parsed from imgLink filename")
         assertEquals("12345", product.cmId)
-        assertEquals("https://cardmarket.com/product/12345", product.cmLink)
         assertEquals("https://images.cardmarket.com/12345.jpg", product.imgLink)
         assertEquals("10,00 €", product.price)
         assertEquals("up", product.priceTrendInfo?.value)

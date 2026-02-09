@@ -11,8 +11,6 @@ data class Product(
     val setName: String? = null,
     /** Rarity string as provided by the source (e.g., "Rare", "Ultra Rare") */
     val rarity: String? = null,
-    /** URL to an image of the card */
-    val imageUrl: String? = null,
     /** Creation timestamp */
     val createdAt: Instant? = null,
     /** Last update timestamp */
@@ -28,8 +26,6 @@ data class Product(
     val type: String? = null,
     /** CardMarket identifier as string */
     val cmId: String? = null,
-    /** Direct link to CardMarket product page */
-    val cmLink: String? = null,
     /** Image link from CardMarket */
     val imgLink: String? = null,
     /** Price string from CardMarket */

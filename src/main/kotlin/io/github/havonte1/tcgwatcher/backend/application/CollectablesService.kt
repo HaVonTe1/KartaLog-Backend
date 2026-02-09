@@ -28,7 +28,6 @@ class CollectablesService(
     override fun search(searchString: String): List<Product> {
         logger.info { "Searching for collectables with query='$searchString'" }
 
-        
         val cached = searchResultRepository.findByQuery(searchString)
         if (cached != null) {
             logger.debug { "Cache hit for query='$searchString' – returning ${cached.products.size} products" }
@@ -39,8 +38,7 @@ class CollectablesService(
         logger.debug { "Cache miss for query='$searchString' – invoking scraper" }
         val scraped: List<Product> = scraperPort.search(searchString)
 
-        // Persist each product (avoid duplicates via unique externalId constraint)
-        scraped.forEach { productRepository.save(it) }
+       // val products = productRepository.saveAll(scraped)
 
         // Store the full search result for future calls
         val searchResult = SearchResult(query = searchString, products = scraped)

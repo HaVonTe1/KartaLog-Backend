@@ -6,6 +6,8 @@ import io.github.havonte1.tcgwatcher.backend.domain.model.SearchResult
  * Outbound port for persisting and retrieving cached search results.
  */
 interface SearchResultRepository {
+    /** Delete all cached search results – used in tests to reset state */
+    fun deleteAll()
     /** Find a cached result by its query string. */
     fun findByQuery(query: String): SearchResult?
 

@@ -25,4 +25,9 @@ class SearchResultRepositoryAdapter(
         val saved = jpaRepository.save(entity)
         return mapper.toDomain(saved)
     }
+
+    @Transactional
+    override fun deleteAll() {
+        jpaRepository.deleteAll()
+    }
 }

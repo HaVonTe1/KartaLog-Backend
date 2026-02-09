@@ -10,8 +10,13 @@ import io.github.havonte1.tcgwatcher.backend.domain.model.Product
  * domain core only depends on this abstraction, preserving hexagonal architecture.
  */
 interface ProductRepository {
+    /** Delete all products – used in tests to reset state */
+    fun deleteAll()
+
     /** Persist a [Product] (insert or update) and return the managed entity. */
     fun save(product: Product): Product
+
+    fun saveAll(products: List<Product>): List<Product>
 
     /** Find a product by its internal id. */
     fun findById(id: Long): Product?

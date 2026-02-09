@@ -11,7 +11,7 @@ import java.time.Instant
  * Mirrors the core domain model [com.github.havonte1.domain.model.Product].
  */
 @Entity
-@Table(name = "products")
+@Table(name = "products", schema = "watcher")
 data class ProductEntity(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -25,9 +25,6 @@ data class ProductEntity(
 
     @Column(name = "rarity")
     val rarity: String? = null,
-
-    @Column(name = "image_url")
-    val imageUrl: String? = null,
 
     @Column(name = "code_info")
     val codeInfo: String? = null,
@@ -43,9 +40,6 @@ data class ProductEntity(
 
     @Column(name = "cm_id")
     val cmId: String? = null,
-
-    @Column(name = "cm_link")
-    val cmLink: String? = null,
 
     @Column(name = "img_link")
     val imgLink: String? = null,
