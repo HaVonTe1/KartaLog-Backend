@@ -28,7 +28,7 @@ import org.springframework.test.context.junit.jupiter.DisabledIf
  * wired configuration works as expected.
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-//@Disabled("only for internal testing")
+@Disabled("only for internal testing")
 @Testcontainers
 class CardMarketScraperAdapterIT {
 

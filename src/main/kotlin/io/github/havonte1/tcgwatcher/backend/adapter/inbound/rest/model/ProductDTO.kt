@@ -16,19 +16,19 @@ data class ProductDTO (
 
     @JsonProperty("id")
     @field:Valid
-    val id: kotlin.Long? = null,
+    val id: Long? = null,
 
     @JsonProperty("externalId")
     @field:Valid
-    val externalId: kotlin.Long? = null,
+    val externalId: Long? = null,
 
     @JsonProperty("setName")
     @field:Valid
-    val setName: kotlin.String? = null,
+    val setName: String? = null,
 
     @JsonProperty("rarity")
     @field:Valid
-    val rarity: kotlin.String? = null,
+    val rarity: String? = null,
 
     @JsonProperty("imageUrl")
     @field:Valid

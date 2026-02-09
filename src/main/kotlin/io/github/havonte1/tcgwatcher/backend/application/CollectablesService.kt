@@ -1,8 +1,8 @@
 package io.github.havonte1.tcgwatcher.backend.application
 
 
-import io.github.havonte1.tcgwatcher.backend.domain.port.out.CardMarketScraperPort
 import io.github.havonte1.tcgwatcher.backend.domain.model.Product
+import io.github.havonte1.tcgwatcher.backend.domain.port.out.CardMarketScraperPort
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Service
 

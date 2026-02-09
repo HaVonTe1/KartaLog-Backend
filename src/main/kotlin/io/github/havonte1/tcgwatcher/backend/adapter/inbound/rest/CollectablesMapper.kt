@@ -6,6 +6,4 @@ package io.github.havonte1.tcgwatcher.backend.adapter.inbound.rest
  *
  * Implemented as a Kotlin `object` (singleton) because it holds no mutable state.
  */
-object CollectablesMapper {
-
-}
+object CollectablesMapper

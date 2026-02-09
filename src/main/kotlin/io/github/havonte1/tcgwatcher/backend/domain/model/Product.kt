@@ -36,9 +36,7 @@ data class Product(
     val price: String? = null,
     /** Price trend with validity flag */
     val priceTrendInfo: StringWithValidity? = null
-) {
-
-}
+)
 
 data class StringWithValidity(
     val value: String? = null,

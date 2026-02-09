@@ -33,7 +33,7 @@ class CardMarketContentParser {
             {
                 val imageLinkBySrc = imgTag.attr("src")
                 if(imageLinkBySrc.startsWith("https"))
-                    imageLink = imageLinkBySrc;
+                    imageLink = imageLinkBySrc
             }
             val titleTag = it.getElementsByTag("h2")
             val localName = titleTag.text()

@@ -1,7 +1,7 @@
 package io.github.havonte1.tcgwatcher.backend.adapter.inbound.rest.api
 
 import io.github.havonte1.tcgwatcher.backend.adapter.inbound.rest.model.ProductDTO
-import jakarta.validation.constraints.*
+import jakarta.validation.constraints.Min
 import jakarta.ws.rs.*
 
 @Path("/")
@@ -12,8 +12,8 @@ interface CollectablesApi {
     @Path("/collectables/")
     @Produces("application/json")
     fun listCollectables(
-        @QueryParam("page") @Min(0) @DefaultValue("0") page: kotlin.Int,
-        @QueryParam("size") @Min(1) @DefaultValue("20") size: kotlin.Int,
-        @QueryParam("query") query: kotlin.String?
-    ): kotlin.collections.List<ProductDTO>
+        @QueryParam("page") @Min(0) @DefaultValue("0") page: Int,
+        @QueryParam("size") @Min(1) @DefaultValue("20") size: Int,
+        @QueryParam("query") query: String?
+    ): List<ProductDTO>
 }

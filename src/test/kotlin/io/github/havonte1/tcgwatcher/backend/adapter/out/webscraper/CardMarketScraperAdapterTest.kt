@@ -28,7 +28,7 @@ class CardMarketScraperAdapterTest {
         val resourcePath = "src/test/resources/pikachu_gallery_50.html"
 
         val file = File(resourcePath)
-        Assumptions.assumeTrue(file.exists(), "Ressource fehlt, Test wird übersprungen");
+        Assumptions.assumeTrue(file.exists(), "Ressource fehlt, Test wird übersprungen")
         // Use a simple test implementation of CardMarketWebFetcherPort that reads the HTML file.
         class TestCardMarketWebFetcher(private val resourcePath: String) : CardMarketWebFetcherPort {
             override fun fetch(searchString: String): String = Files.readString(Paths.get(resourcePath))
