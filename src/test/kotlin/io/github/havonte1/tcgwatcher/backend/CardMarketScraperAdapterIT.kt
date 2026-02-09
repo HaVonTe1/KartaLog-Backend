@@ -13,11 +13,9 @@ import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection
-import org.testcontainers.containers.PostgreSQLContainer
+import org.testcontainers.postgresql.PostgreSQLContainer
 import org.testcontainers.junit.jupiter.Container
 import org.testcontainers.junit.jupiter.Testcontainers
-import org.springframework.test.context.TestPropertySource
-import org.springframework.test.context.junit.jupiter.DisabledIf
 
 /**
  * Integration test for {@link CardMarketScraperAdapter} that runs with a real Playwright
@@ -45,7 +43,7 @@ class CardMarketScraperAdapterIT {
                     .setHeadless(false)
                     .setArgs(listOf("--disable-blink-features=AutomationControlled"))
             ) }
-            } catch (e: Exception) {
+            } catch (_: Exception) {
                 Assumptions.assumeTrue(false, "Playwright cannot start: ${"$"}{e.message}")
             }
         }

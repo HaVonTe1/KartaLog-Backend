@@ -3,8 +3,9 @@ package io.github.havonte1.tcgwatcher.backend.adapter.inbound.rest
 import io.github.havonte1.tcgwatcher.backend.adapter.inbound.rest.api.CollectablesApi
 import io.github.havonte1.tcgwatcher.backend.adapter.inbound.rest.model.ProductDTO
 import org.slf4j.LoggerFactory
+import org.springframework.http.HttpStatus
+import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.RestController
-import java.util.*
 
 /**
  * REST controller for collectables.
@@ -21,9 +22,9 @@ class CollectablesAdapter : CollectablesApi {
         page: Int,
         size: Int,
         query: String?
-    ): List<ProductDTO> {
+    ): ResponseEntity<List<ProductDTO>> {
         logger.debug("listCollectables called with page={}, size={}, query={}", page, size, query)
         // Placeholder: return an empty list. Replace with real service call later.
-        return Collections.emptyList()
+        return ResponseEntity(emptyList(), HttpStatus.OK)
     }
 }

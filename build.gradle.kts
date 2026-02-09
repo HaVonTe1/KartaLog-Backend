@@ -6,20 +6,28 @@ plugins {
     id("io.spring.dependency-management") version "1.1.6"
 }
 
+
+
+
+
 openApiGenerate {
-    generatorName.set("kotlin-server")
+    generatorName.set("kotlin-spring")
     inputSpec.set("$rootDir/contract/openapi.yaml")
-    outputDir.set("$buildDir/generated")
-    apiPackage.set("com.github.havonte1.adapter.inbound.rest.api")
-    modelPackage.set("com.github.havonte1.adapter.inbound.rest.model")
+    outputDir.set(layout.buildDirectory.asFile.get().resolve("generated/").path)
+    apiPackage.set("io.github.havonte1.tcgwatcher.backend.adapter.inbound.rest.api")
+    modelPackage.set("io.github.havonte1.tcgwatcher.backend.adapter.inbound.rest.model")
     configOptions.set(mapOf(
-        "library" to "jaxrs-spec",
         "interfaceOnly" to "true",
-        "useJakartaEe" to "true"
+        "useSpringBoot3" to "true",
+        "packageVersion" to "0.1.0"
     ))
 }
 
-sourceSets["main"].java.srcDir("$buildDir/generated/src/main/kotlin")
+
+
+tasks.named("compileKotlin") {
+    dependsOn("openApiGenerate")
+}
 
 
 
@@ -38,6 +46,11 @@ tasks.withType<Test> {
 
 kotlin {
     jvmToolchain(17)
+    sourceSets {
+        main {
+            kotlin.srcDir(layout.buildDirectory.asFile.get().resolve("generated/src/main/kotlin"))
+        }
+    }
 }
 
 group = "havonte1.github.com"
@@ -85,6 +98,7 @@ dependencies {
     // -------------------------------------------------
     implementation("jakarta.validation:jakarta.validation-api")
     implementation("jakarta.ws.rs:jakarta.ws.rs-api:4.0.0")
+    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.7.0")
 
     // -------------------------------------------------
     // Database drivers
@@ -122,4 +136,5 @@ dependencies {
     testImplementation("io.mockk:mockk:1.13.12")
     testImplementation("org.junit.jupiter:junit-jupiter-api")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
+
 }
