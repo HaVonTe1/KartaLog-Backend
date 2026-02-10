@@ -10,4 +10,6 @@ import org.springframework.stereotype.Repository
 @Repository
 interface ProductJpaRepository : JpaRepository<ProductEntity, Long> {
     fun findByExternalId(externalId: Long): ProductEntity?
+    fun findAllByExternalIdIn(externalIds: Collection<Long>): List<ProductEntity>
+
 }

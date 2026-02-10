@@ -28,11 +28,17 @@ class SearchResultRepositoryAdapter(
     override fun save(searchResult: SearchResult): SearchResult {
         val entity = searchResultMapper.toEntityWithoutProducts(searchResult)
 
+        val externalIds = searchResult.products.map { it.externalId }
+
+        val existingProducts = productJpaRepository
+            .findAllByExternalIdIn(externalIds)
+            .associateBy { it.externalId }
+
         val managedProducts = searchResult.products.map { product ->
-            val productEntity = productJpaRepository
-                .findByExternalId(product.externalId)
-            if (productEntity != null) {
-                updateEntity(productEntity, product)
+            val existing = existingProducts[product.externalId]
+            if (existing != null) {
+                updateEntity(existing, product)
+                existing
             } else {
                 productJpaRepository.save(productMapper.toEntity(product))
             }
@@ -40,9 +46,11 @@ class SearchResultRepositoryAdapter(
 
         entity.products.clear()
         entity.products.addAll(managedProducts)
+
         val saved = jpaRepository.save(entity)
         return searchResultMapper.toDomain(saved)
     }
+
 
     private fun updateEntity(
         productEntity: ProductEntity,

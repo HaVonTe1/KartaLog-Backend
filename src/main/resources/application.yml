@@ -18,6 +18,12 @@ spring:
   jpa:
     show-sql: true
     open-in-view: false
+    properties:
+      hibernate:
+        jdbc:
+          batch_size: 50
+        order_updates: true
+        
 logging:
   level:
     com.github.havonte1: trace

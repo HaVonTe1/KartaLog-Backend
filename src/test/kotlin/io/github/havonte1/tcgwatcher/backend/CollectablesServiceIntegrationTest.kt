@@ -23,6 +23,7 @@ import org.testcontainers.postgresql.PostgreSQLContainer
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.Paths
+import kotlin.test.fail
 
 /**
  * Integration test for the cache‑aware CollectablesService.
@@ -36,7 +37,9 @@ class CollectablesServiceIntegrationTest {
 
     @TestConfiguration
     class ScraperTestConfig {
-        private val resourcePath = "src/test/resources/pikachu_gallery_50.html"
+
+        private val testFilePikachu30 = "src/test/resources/pikachu_gallery_30.html"
+        private val testFilePikachu40 = "src/test/resources/pikachu_gallery_40.html"
 
         @Bean
         @Primary // Override the real scraper bean with this test double
@@ -46,7 +49,12 @@ class CollectablesServiceIntegrationTest {
                 callCount++
                 // Simple in‑memory fetcher that reads the fixture
                 class TestFetcher : CardMarketWebFetcherPort {
-                    override fun fetch(searchString: String): String = Files.readString(Paths.get(resourcePath))
+                    override fun fetch(searchString: String): String {
+                        if (callCount == 1) {
+                            return Files.readString(Paths.get(testFilePikachu30))
+                        }
+                        return Files.readString(Paths.get(testFilePikachu40))
+                    }
                 }
                 val adapter = CardMarketScraperAdapter(TestFetcher())
                 return adapter.search(searchString)
@@ -82,12 +90,15 @@ class CollectablesServiceIntegrationTest {
 
     @Test
     fun `cache miss then hit`() {
-        val query = "Pikachu"
+        val testFilePikachu30 = "src/test/resources/pikachu_gallery_30.html"
+        val testFilePikachu40 = "src/test/resources/pikachu_gallery_40.html"
+
         // Ensure fixture exists – otherwise skip test
-        Assumptions.assumeTrue(File("src/test/resources/pikachu_gallery_50.html").exists())
+        Assumptions.assumeTrue(File(testFilePikachu30).exists())
+        Assumptions.assumeTrue(File(testFilePikachu40).exists())
 
         // First call – cache miss, scraper should be invoked once
-        val firstResult = service.search(query)
+        val firstResult = service.search("Pikachu30")
         assertEquals(30, firstResult.size)
         // Cast scraper to access callCount
         val testScraper = scraperPort as? Any
@@ -95,12 +106,27 @@ class CollectablesServiceIntegrationTest {
         assertEquals(1, callCountField.getInt(testScraper))
 
         // Verify that a SearchResult has been persisted
-        val cached = searchRepo.findByQuery(query)
+        val cached = searchRepo.findByQuery("Pikachu30")
         assertEquals(30, cached?.products?.size)
 
         // Second call – cache hit, scraper must NOT be invoked again
-        val secondResult = service.search(query)
+        val secondResult = service.search("Pikachu30")
         assertEquals(30, secondResult.size)
         assertEquals(1, callCountField.getInt(testScraper), "Scraper should not be called on cache hit")
+
+        secondResult.find { it.externalId == 576753L }?.let {
+            assertEquals("Surfing-Pikachu-V", it.cmId)
+            assertEquals("0,49 €", it.price)
+        } ?: fail("No element with externalId=576753 found")
+        // anothr query but the results are slightly different
+
+        val thirdResult = service.search("Pikachu40")
+        assertEquals(30, thirdResult.size)
+        assertEquals(2, callCountField.getInt(testScraper), "Scraper should  be called on another query")
+
+        thirdResult.find { it.externalId == 576753L }?.let {
+            assertEquals("Surfing-Pikachu-V", it.cmId)
+            assertEquals("2,34 €", it.price)
+        } ?: fail("No element with externalId=576753 found")
     }
 }
