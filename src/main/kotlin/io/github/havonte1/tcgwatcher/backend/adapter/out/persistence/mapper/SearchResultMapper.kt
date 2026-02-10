@@ -26,7 +26,8 @@ class SearchResultMapper(
         return SearchResult(
             id = entity.id,
             query = entity.query,
-            products = products
+            products = products,
+            cachedAt = entity.cachedAt
         )
     }
 
@@ -34,6 +35,7 @@ class SearchResultMapper(
         id = searchResult.id,
         query = searchResult.query,
         createdAt = java.time.Instant.now(),
+        cachedAt = searchResult.cachedAt,
         products = mutableSetOf()
     )
 }

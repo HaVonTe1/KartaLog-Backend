@@ -1,11 +1,9 @@
 package io.github.havonte1.tcgwatcher.backend.adapter.out.webscraper
 
-
 import io.github.havonte1.tcgwatcher.backend.adapter.out.webscraper.cardmarket.CardMarketScraperAdapter
 import io.github.havonte1.tcgwatcher.backend.adapter.out.webscraper.cardmarket.CardMarketWebFetcherPort
-import io.github.havonte1.tcgwatcher.backend.domain.port.out.CardMarketScraperPort
 import io.github.havonte1.tcgwatcher.backend.domain.model.Product
-import org.junit.jupiter.api.AfterEach
+import io.github.havonte1.tcgwatcher.backend.domain.port.out.CardMarketScraperPort
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Assumptions
@@ -39,7 +37,7 @@ class CardMarketScraperAdapterTest {
 
         // ----- Execute the adapter -----
 
-        val result: List<Product> = adapter.search("Pikachu")
+        val result: List<Product> = kotlinx.coroutines.runBlocking { adapter.search("Pikachu") }
 
         // ----- Verify -----
         assertEquals(30, result.size, "Exactly one product should be parsed")

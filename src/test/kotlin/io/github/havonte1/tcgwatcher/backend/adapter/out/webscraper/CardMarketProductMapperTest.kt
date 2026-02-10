@@ -1,6 +1,5 @@
 package io.github.havonte1.tcgwatcher.backend.adapter.out.webscraper
 
-
 import io.github.havonte1.tcgwatcher.backend.adapter.out.webscraper.cardmarket.CardMarketProductMapper
 import io.github.havonte1.tcgwatcher.backend.adapter.out.webscraper.cardmarket.CardmarketProductGallaryItemDto
 import io.github.havonte1.tcgwatcher.backend.adapter.out.webscraper.cardmarket.NameDto
@@ -15,7 +14,6 @@ class CardMarketProductMapperTest {
 
     @Test
     fun `toProducts maps SearchResultsPageDto correctly`() {
-
         val nameDto = NameDto(value = "Pikachu", languageCode = "en")
         val item = CardmarketProductGallaryItemDto(
             name = nameDto,

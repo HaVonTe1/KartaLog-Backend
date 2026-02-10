@@ -31,9 +31,12 @@ class SearchResultEntity(
     @Column(name = "created_at", nullable = false, updatable = false)
     val createdAt: Instant = Instant.now(),
 
+    @Column(name = "cached_at")
+    val cachedAt: Instant? = null,
+
     @ManyToMany(
         cascade = [CascadeType.PERSIST, CascadeType.MERGE],
-        fetch = FetchType.LAZY
+        fetch = FetchType.EAGER
     )
     @JoinTable(
         name = "search_result_products",
@@ -44,7 +47,7 @@ class SearchResultEntity(
     val products: MutableSet<ProductEntity> = mutableSetOf()
 ) : java.io.Serializable {
     // JPA requires a no‑arg constructor
-    constructor() : this(0, "", Instant.now(), mutableSetOf())
+    constructor() : this(0, "", Instant.now(), null)
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

@@ -43,7 +43,8 @@ class SearchResultRepositoryAdapter(
         val existingProducts = productJpaRepository
             .findAllByExternalIdIn(externalIds)
             .associateBy { it.externalId }
-        return products.map { product ->
+
+        val entitiesToPersist = products.map { product ->
             val existing = existingProducts[product.externalId]
             if (existing != null) {
                 updateEntity(existing, product)
@@ -52,23 +53,24 @@ class SearchResultRepositoryAdapter(
                 productMapper.toEntity(product)
             }
         }
+        return productJpaRepository.saveAll(entitiesToPersist)
     }
 
     private fun updateEntity(
         productEntity: ProductEntity,
         product: Product
     ): ProductEntity {
-        val updatedEntity = productEntity.copy(
+        val updated = productEntity.copy(
             price = product.price,
             priceTrend = product.priceTrendInfo?.value,
             priceTrendValid = product.priceTrendInfo?.valid ?: false,
             updatedAt = product.updatedAt
         )
 
-        if (productEntity.compareTo(updatedEntity) != 0) {
-            return productJpaRepository.save(updatedEntity)
+        if (productEntity.compareTo(updated) != 0) {
+            return productJpaRepository.save(updated)
         }
-        return updatedEntity
+        return updated
     }
 
     @Transactional

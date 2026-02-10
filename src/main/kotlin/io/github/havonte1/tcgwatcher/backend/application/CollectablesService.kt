@@ -5,6 +5,7 @@ import io.github.havonte1.tcgwatcher.backend.domain.model.SearchResult
 import io.github.havonte1.tcgwatcher.backend.domain.port.out.CardMarketScraperPort
 import io.github.havonte1.tcgwatcher.backend.domain.port.out.SearchResultRepository
 import io.github.oshai.kotlinlogging.KotlinLogging
+import kotlinx.coroutines.runBlocking
 import org.springframework.stereotype.Service
 
 /**
@@ -21,26 +22,32 @@ class CollectablesService(
 
     /** Returns cards for the given query, using cached results when available. */
     override fun search(searchString: String): List<Product> {
-        logger.info { "Searching for collectables with query='$searchString'" }
+        logger.debug { "Searching for collectables with query='$searchString'" }
 
         val cached = searchResultRepository.findByQuery(searchString)
         if (cached != null) {
-
-            logger.debug { "Cache hit for query='$searchString' – returning ${cached.products.size} products" }
-
-            //TODO: check the lastUpdated timestamp - if its older than X than do the webscraping and update the products
-            return cached.products
+            // TTL of 1 hour
+            val ttl = java.time.Duration.ofHours(1)
+            val now = java.time.Instant.now()
+            val cachedAt = cached.cachedAt
+            if (cachedAt != null && cachedAt.isAfter(now.minus(ttl))) {
+                logger.debug { "Cache hit (fresh) for query='$searchString' – returning ${cached.products.size} products" }
+                return cached.products
+            }
+            // otherwise treat as miss and refresh
+            logger.debug { "Cache stale for query='$searchString' – refreshing" }
         }
 
-        // 2️⃣ Cache miss – invoke the scraper
+        // Cache miss or stale – invoke the scraper
         logger.debug { "Cache miss for query='$searchString' – invoking scraper" }
-        val scraped: List<Product> = scraperPort.search(searchString)
+        // Run blocking call to suspend scraper
+        val scraped: List<Product> = kotlinx.coroutines.runBlocking { scraperPort.search(searchString) }
 
-        // Store the full search result for future calls
-        val searchResult = SearchResult(query = searchString, products = scraped)
+        // Store the full search result for future calls, with cache timestamp
+        val searchResult = SearchResult(query = searchString, products = scraped, cachedAt = java.time.Instant.now())
         searchResultRepository.save(searchResult)
 
-        logger.info { "Scrape completed and cached (${scraped.size} products) for query='$searchString'" }
+        logger.debug { "Scrape completed and cached (${scraped.size} products) for query='$searchString'" }
         return scraped
     }
 }

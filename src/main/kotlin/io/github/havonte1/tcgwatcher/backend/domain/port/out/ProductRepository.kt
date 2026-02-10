@@ -2,7 +2,6 @@ package io.github.havonte1.tcgwatcher.backend.domain.port.out
 
 import io.github.havonte1.tcgwatcher.backend.domain.model.Product
 
-
 /**
  * Outbound port (driven adapter) for persisting and retrieving [Product] aggregates.
  *

@@ -3,7 +3,6 @@ package io.github.havonte1.tcgwatcher.backend.adapter.out.webscraper.cardmarket
 import io.github.havonte1.tcgwatcher.backend.domain.model.Product
 import io.github.havonte1.tcgwatcher.backend.domain.port.out.CardMarketScraperPort
 import io.github.oshai.kotlinlogging.KotlinLogging
-
 import org.springframework.stereotype.Component
 
 /**
@@ -23,12 +22,11 @@ class CardMarketScraperAdapter(
      * Executes a search on CardMarket and returns a list of products.
      * Only externalId, setName, rarity and imageUrl are populated; other fields remain null.
      */
-    override fun search(searchString: String): List<Product> {
+    override suspend fun search(searchString: String): List<Product> {
         logger.info { "Scraping CardMarket for $searchString" }
 
         val content = webFetcher.fetch(searchString)
         val result = contentParser.extractProductsFromHtml(content)
         return mapper.toProducts(result)
     }
-
 }

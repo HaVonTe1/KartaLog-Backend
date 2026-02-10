@@ -1,7 +1,7 @@
 package io.github.havonte1.tcgwatcher.backend.adapter.out.webscraper.cardmarket
 
 data class SearchResultsPageDto(
-    val results: List<CardmarketProductGallaryItemDto>, //TODO: use a generic type
+    val results: List<CardmarketProductGallaryItemDto>, // TODO: use a generic type
     val page: Int,
     val totalPages: Int
 )
@@ -47,7 +47,6 @@ data class PriceTrendType(val value: String, val valid: Boolean)
 data class NameDto(val value: String, val languageCode: String, val i18n: String = "")
 data class SetDto(val name: String, val link: String)
 
-
 data class CardmarketProductDetailsDto(
     val name: NameDto,
     val type: String,
@@ -63,11 +62,10 @@ data class CardmarketProductDetailsDto(
     val sellOffers: List<CardmarketSellOfferDto> = emptyList()
 )
 
-
 data class CardmarketSellOfferDto(
     val sellerName: String,
-    val sellerLocation: String, //e.g. "Deutschland", "Germany"
-    val productLanguage: String,// e.g. "Japanisch", "japanese"
+    val sellerLocation: String, // e.g. "Deutschland", "Germany"
+    val productLanguage: String, // e.g. "Japanisch", "japanese"
     val special: String,
     val condition: String,
     val amount: String,

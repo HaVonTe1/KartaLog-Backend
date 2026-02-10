@@ -25,7 +25,7 @@ class CardMarketWebFetcher : CardMarketWebFetcherPort {
      */
 
     override fun fetch(searchString: String): String {
-        logger.info { "Fetching CardMarket page for \"$searchString\"" }
+        logger.debug { "Fetching CardMarket page for \"$searchString\"" }
         val playwright = Playwright.create()
         playwright.use { playwright ->
             val browser: Browser = playwright.chromium().launch(
@@ -36,13 +36,14 @@ class CardMarketWebFetcher : CardMarketWebFetcherPort {
             val contextOptions = Browser.NewContextOptions()
                 .setGeolocation(52.5200, 13.4050) // Berlin: Lat, Long
                 .setPermissions(listOf("geolocation")) // Berechtigung automatisch erteilen
-                .setUserAgent("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36")
+                .setUserAgent(
+                    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36"
+                )
 
             val storageFile = Paths.get("auth.json")
 
-            if(storageFile.exists()) {
+            if (storageFile.exists()) {
                 contextOptions.setStorageStatePath(storageFile)
-
             }
             val context = browser.newContext(contextOptions)
             val page: Page = context.newPage()
@@ -51,14 +52,14 @@ class CardMarketWebFetcher : CardMarketWebFetcherPort {
             logger.debug { "Navigated to ${page.url()}" }
             page.waitForLoadState(LoadState.DOMCONTENTLOADED)
 
-
             val content = page.content()
             logger.debug { "Fetched content length: ${content.length}" }
 
             // Zustand (Cookies & LocalStorage) in Datei speichern
             context.storageState(
                 BrowserContext.StorageStateOptions()
-                .setPath(Paths.get("auth.json")))
+                    .setPath(Paths.get("auth.json"))
+            )
             browser.close()
             return content
         }

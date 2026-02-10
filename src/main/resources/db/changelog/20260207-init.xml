@@ -96,4 +96,9 @@
                                   onDelete="CASCADE"/>
     </changeSet>
 
+    <changeSet id="20260207-04" author="dirk">
+        <addColumn tableName="search_results" schemaName="watcher">
+            <column name="cached_at" type="TIMESTAMP"/>
+        </addColumn>
+    </changeSet>
 </databaseChangeLog>

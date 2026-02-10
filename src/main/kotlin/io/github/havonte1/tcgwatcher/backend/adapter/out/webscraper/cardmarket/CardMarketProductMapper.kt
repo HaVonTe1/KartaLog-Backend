@@ -3,7 +3,6 @@ package io.github.havonte1.tcgwatcher.backend.adapter.out.webscraper.cardmarket
 import io.github.havonte1.tcgwatcher.backend.domain.model.Product
 import io.github.havonte1.tcgwatcher.backend.domain.model.StringWithValidity
 
-
 class CardMarketProductMapper {
     fun toProducts(result: SearchResultsPageDto): List<Product> {
         return result.results.map { item ->
@@ -35,5 +34,4 @@ class CardMarketProductMapper {
             )
         }
     }
-
 }

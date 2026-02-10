@@ -38,7 +38,7 @@ class SearchResultProductBehaviorTest {
         @Primary
         fun cardMarketScraperPort(): CardMarketScraperPort = object : CardMarketScraperPort {
             var callCount = 0
-            override fun search(searchString: String): List<Product> {
+            override suspend fun search(searchString: String): List<Product> {
                 callCount++
                 class TestFetcher : CardMarketWebFetcherPort {
                     override fun fetch(searchString: String): String {

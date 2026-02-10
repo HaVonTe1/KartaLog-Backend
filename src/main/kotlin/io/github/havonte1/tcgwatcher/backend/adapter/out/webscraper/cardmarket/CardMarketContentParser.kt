@@ -4,17 +4,15 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 
-
 class CardMarketContentParser {
     private val logger = KotlinLogging.logger {}
 
     private val paginationRegex = "\\b(?:von|of|de) (\\d+)\\b".toRegex()
 
-    //Knospi (PRE 004) --> Name: Knospi   code: (PRE-004)
+    // Knospi (PRE 004) --> Name: Knospi   code: (PRE-004)
     private val nameAndCodePattern = "^(.*?)\\s*\\((.*?)\\)$".toRegex()
 
-
-    fun extractProductsFromHtml(content: String, page : Int = 1): SearchResultsPageDto {
+    fun extractProductsFromHtml(content: String, page: Int = 1): SearchResultsPageDto {
         val document = Jsoup.parse(content)
 
         logger.debug { "Parsing a tags with class card and a href" }
@@ -29,11 +27,11 @@ class CardMarketContentParser {
             val parsedLink = parseLink(cmLink)
             val imgTag = it.getElementsByTag("img")
             var imageLink = imgTag.attr("data-echo")
-            if(imageLink.isEmpty())
-            {
+            if (imageLink.isEmpty()) {
                 val imageLinkBySrc = imgTag.attr("src")
-                if(imageLinkBySrc.startsWith("https"))
+                if (imageLinkBySrc.startsWith("https")) {
                     imageLink = imageLinkBySrc
+                }
             }
             val titleTag = it.getElementsByTag("h2")
             val localName = titleTag.text()
@@ -56,10 +54,8 @@ class CardMarketContentParser {
             logger.debug { "Item: $itemDto" }
 
             cardmarketProductGallaryItemDtos.add(itemDto)
-
         }
         val totalPages = parsePagination(document)
-
 
         return SearchResultsPageDto(cardmarketProductGallaryItemDtos, page, totalPages)
     }
@@ -71,7 +67,6 @@ class CardMarketContentParser {
         val id: String?
     )
 
-
     private val languageAndGenreAndTypePattern = "^\\s*/?([^/]+)/([^/]+)/[^/]+/([^/]+)".toRegex()
 
     private fun parseLink(typePath: String?): ParsedLink {
@@ -82,13 +77,12 @@ class CardMarketContentParser {
         val type = matchResult?.groupValues?.getOrNull(3)
 
         val cleanPath = typePath?.trim()?.trim('/')
-        val id = if(language !=null)  cleanPath?.substringAfter(language) else typePath
+        val id = if (language != null) cleanPath?.substringAfter(language) else typePath
 
         val parsedLink = ParsedLink(language, genre, type, id)
         logger.debug { "Parsed Link: $parsedLink" }
         return parsedLink
     }
-
 
     private fun parsePagination(document: Document): Int {
         logger.debug { "Looking for Pagination info" }
@@ -107,5 +101,4 @@ class CardMarketContentParser {
         logger.debug { "Found: $totalPages" }
         return totalPages
     }
-
 }

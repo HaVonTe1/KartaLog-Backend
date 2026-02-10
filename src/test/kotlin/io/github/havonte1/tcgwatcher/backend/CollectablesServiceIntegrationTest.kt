@@ -45,7 +45,7 @@ class CollectablesServiceIntegrationTest {
         @Primary // Override the real scraper bean with this test double
         fun cardMarketScraperPort(): CardMarketScraperPort = object : CardMarketScraperPort {
             var callCount = 0
-            override fun search(searchString: String): List<Product> {
+            override suspend fun search(searchString: String): List<Product> {
                 callCount++
                 // Simple in‑memory fetcher that reads the fixture
                 class TestFetcher : CardMarketWebFetcherPort {

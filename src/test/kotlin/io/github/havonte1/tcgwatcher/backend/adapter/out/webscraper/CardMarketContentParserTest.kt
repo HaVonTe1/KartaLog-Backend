@@ -23,7 +23,7 @@ class CardMarketContentParserTest {
         val products = parser.extractProductsFromHtml(content, 1)
         // Expect at least one product parsed
         assertTrue(products.results.isNotEmpty(), "No products were parsed")
-        assertEquals(30,products.results.size, "Should found 30 elements")
+        assertEquals(30, products.results.size, "Should found 30 elements")
         // Verify first product's externalId and imageUrl based on the sample HTML
         val first = products.results.first()
         assertEquals("/Pokemon/Products/Singles/Celebrations/Pikachu-V1-CEL005", first.cmId)

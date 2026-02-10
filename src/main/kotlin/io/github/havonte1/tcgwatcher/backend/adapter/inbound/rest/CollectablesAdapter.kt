@@ -2,7 +2,6 @@ package io.github.havonte1.tcgwatcher.backend.adapter.inbound.rest
 
 import io.github.havonte1.tcgwatcher.backend.adapter.inbound.rest.api.CollectablesApi
 import io.github.havonte1.tcgwatcher.backend.adapter.inbound.rest.model.ProductDTO
-import io.github.havonte1.tcgwatcher.backend.adapter.inbound.rest.CollectablesMapper
 import io.github.havonte1.tcgwatcher.backend.application.SearchUseCase
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.http.HttpStatus

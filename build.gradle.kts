@@ -119,6 +119,7 @@ dependencies {
 
     // -------------------------------------------------
     // TEST DEPENDENCIES – full list from original boot pom
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.1")
     // -------------------------------------------------
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.springframework.boot:spring-boot-starter-actuator-test")

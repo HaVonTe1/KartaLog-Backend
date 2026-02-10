@@ -64,9 +64,14 @@ class ProductMapper {
             cmId = entity.cmId,
             imgLink = entity.imgLink,
             price = entity.price,
-            priceTrendInfo = if (entity.priceTrend != null) StringWithValidity(entity.priceTrend, entity.priceTrendValid) else null
+            priceTrendInfo = if (entity.priceTrend != null) {
+                StringWithValidity(
+                    entity.priceTrend,
+                    entity.priceTrendValid
+                )
+            } else {
+                null
+            }
         )
     }
-
-
 }

@@ -1,8 +1,13 @@
 package io.github.havonte1.tcgwatcher.backend.adapter.inbound.rest
 
+import io.github.havonte1.tcgwatcher.backend.adapter.inbound.rest.model.ProductDTO
+import io.github.havonte1.tcgwatcher.backend.domain.model.Product
+
 object CollectablesMapper {
-    fun toDto(product: io.github.havonte1.tcgwatcher.backend.domain.model.Product): io.github.havonte1.tcgwatcher.backend.adapter.inbound.rest.model.ProductDTO {
-        return io.github.havonte1.tcgwatcher.backend.adapter.inbound.rest.model.ProductDTO(
+    fun toDto(
+        product: Product
+    ): ProductDTO {
+        return ProductDTO(
             id = product.id,
             externalId = product.externalId,
             setName = product.setName,

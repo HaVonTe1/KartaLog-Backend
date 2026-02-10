@@ -1,9 +1,8 @@
 package io.github.havonte1.tcgwatcher.backend
 
-
 import com.microsoft.playwright.Playwright
-import io.github.havonte1.tcgwatcher.backend.domain.port.out.CardMarketScraperPort
 import io.github.havonte1.tcgwatcher.backend.domain.model.Product
+import io.github.havonte1.tcgwatcher.backend.domain.port.out.CardMarketScraperPort
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assumptions
@@ -13,9 +12,9 @@ import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection
-import org.testcontainers.postgresql.PostgreSQLContainer
 import org.testcontainers.junit.jupiter.Container
 import org.testcontainers.junit.jupiter.Testcontainers
+import org.testcontainers.postgresql.PostgreSQLContainer
 
 /**
  * Integration test for {@link CardMarketScraperAdapter} that runs with a real Playwright
@@ -38,11 +37,13 @@ class CardMarketScraperAdapterIT {
         @JvmStatic
         fun checkPlaywrightAvailable() {
             try {
-                Playwright.create().use { it.chromium().launch(
-                com.microsoft.playwright.BrowserType.LaunchOptions()
-                    .setHeadless(false)
-                    .setArgs(listOf("--disable-blink-features=AutomationControlled"))
-            ) }
+                Playwright.create().use {
+                    it.chromium().launch(
+                        com.microsoft.playwright.BrowserType.LaunchOptions()
+                            .setHeadless(false)
+                            .setArgs(listOf("--disable-blink-features=AutomationControlled"))
+                    )
+                }
             } catch (_: Exception) {
                 Assumptions.assumeTrue(false, "Playwright cannot start: ${"$"}{e.message}")
             }
@@ -60,12 +61,9 @@ class CardMarketScraperAdapterIT {
         val postgres = PostgreSQLContainer("postgres:15-alpine")
     }
 
-
     @Test
     fun `search returns products with required fields`() {
-
-        val results: List<Product> = scraper.search("Pikachu")
+        val results: List<Product> = kotlinx.coroutines.runBlocking { scraper.search("Pikachu") }
         Assertions.assertTrue(results.isNotEmpty(), "Expected at least one product for search term 'Pikachu'")
-
     }
 }

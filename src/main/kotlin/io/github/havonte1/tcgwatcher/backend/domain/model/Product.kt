@@ -2,7 +2,6 @@ package io.github.havonte1.tcgwatcher.backend.domain.model
 
 import java.time.Instant
 
-
 data class Product(
     val id: Long? = null,
     /** Identifier from CardMarket (or other external source) */

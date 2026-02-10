@@ -3,7 +3,7 @@
 ## Table of Contents
 1. [Project Overview](#project-overview)
 2. [Build & Test Commands](#build--test-commands)
-3. [Running a Single Test](#running-a-single-test)
+3. [Running a Single Test / Test Patterns](#running-a-single-test)
 4. [Linting & Static Analysis](#linting--static-analysis)
 5. [Code Style Guidelines](#code-style-guidelines)
    - 5.1 Imports
@@ -22,7 +22,7 @@
 ## Project Overview
 - **Languages:** Kotlin (JVM 24) + Java (legacy)
 - **Build System:** Gradle Kotlin DSL, multi‑module (`domain`, `application`, `adapter`, `boot`).
-- **Testing:** JUnit 5 (Surefire) with method‑level filtering.
+- **Testing:** JUnit 5 (Surefire) with method‑level filtering; integration tests use Testcontainers.
 - **Static Analysis:** Detekt, Checkstyle, SpotBugs, Ktlint.
 ---
 ## Build & Test Commands
@@ -42,22 +42,26 @@ All commands are run from the repository root.
 | Ktlint format | `./gradlew ktlintFormat` | Auto‑format Kotlin code |
 | JaCoCo coverage | `./gradlew test jacocoTestReport` | Generate coverage report |
 ---
-## Running a Single Test
-Gradle's `--tests` filter selects specific classes or methods. Prefer the fully‑qualified class name.
+## Running a Single Test / Test Patterns
+Gradle's `--tests` filter selects classes or methods. Prefer the fully‑qualified class name to avoid ambiguous matches.
 ```bash
-# Run a whole test class
+# Run an entire test class
 ./gradlew test --tests "com.github.havonte1.adapter.out.webscraper.CardMarketScraperAdapterTest"
 
 # Run a single test method (Surefire ≥ 3.0.0‑M5)
 ./gradlew test --tests "CardMarketScraperAdapterTest.shouldReturnOneProduct"
+
+# Run only integration tests (tagged with @IntegrationTest)
+./gradlew test --tests "*IntegrationTest"
 ```
+Use `-i` for detailed output when debugging flaky tests.
 ---
 ## Linting & Static Analysis
-1. **Detekt** – configuration in `detekt.yml`; focuses on comments, complexity, naming, performance.
+1. **Detekt** – configuration lives in `detekt.yml`; focuses on comments, complexity, naming, performance.
 2. **Checkstyle** – XML config at `.idea/checkstyle.xml`.
 3. **SpotBugs** – run via `./gradlew spotbugsMain`.
-4. **Ktlint** – auto‑formatting via `ktlintFormat` and hooked into pre‑commit.
-5. **Pre‑commit hook** (if present) runs `./gradlew build` before a commit.
+4. **Ktlint** – auto‑formatting via `ktlintFormat`; also runs in the pre‑commit hook.
+5. **Pre‑commit hook** (if present) runs `./gradlew build` before a commit, preventing broken builds from entering the repo.
 ---
 ## Code Style Guidelines
 All agents must follow these conventions.

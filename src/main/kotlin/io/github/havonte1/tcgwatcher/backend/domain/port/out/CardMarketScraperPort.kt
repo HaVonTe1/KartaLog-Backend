@@ -2,7 +2,6 @@ package io.github.havonte1.tcgwatcher.backend.domain.port.out
 
 import io.github.havonte1.tcgwatcher.backend.domain.model.Product
 
-
 /**
  * Outbound port for scraping CardMarket product listings.
  *
@@ -16,5 +15,5 @@ interface CardMarketScraperPort {
      * @param searchString the query used to search for products.
      * @return a list of matching [Product] instances; may be empty if no matches.
      */
-    fun search(searchString: String): List<Product>
+    suspend fun search(searchString: String): List<Product>
 }
