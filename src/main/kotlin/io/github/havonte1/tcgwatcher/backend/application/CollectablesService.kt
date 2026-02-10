@@ -25,7 +25,10 @@ class CollectablesService(
 
         val cached = searchResultRepository.findByQuery(searchString)
         if (cached != null) {
+
             logger.debug { "Cache hit for query='$searchString' – returning ${cached.products.size} products" }
+
+            //TODO: check the lastUpdated timestamp - if its older than X than do the webscraping and update the products
             return cached.products
         }
 

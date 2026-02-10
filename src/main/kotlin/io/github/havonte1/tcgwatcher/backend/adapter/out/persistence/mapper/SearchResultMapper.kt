@@ -1,6 +1,5 @@
 package io.github.havonte1.tcgwatcher.backend.adapter.out.persistence.mapper
 
-import io.github.havonte1.tcgwatcher.backend.adapter.out.persistence.entity.ProductEntity
 import io.github.havonte1.tcgwatcher.backend.adapter.out.persistence.entity.SearchResultEntity
 import io.github.havonte1.tcgwatcher.backend.domain.model.Product
 import io.github.havonte1.tcgwatcher.backend.domain.model.SearchResult
@@ -15,12 +14,7 @@ class SearchResultMapper(
     private val productMapper: ProductMapper
 ) {
     fun toEntity(searchResult: SearchResult): SearchResultEntity {
-        val entity = SearchResultEntity(
-            id = searchResult.id,
-            query = searchResult.query,
-            createdAt = java.time.Instant.now(),
-            products = mutableSetOf()
-        )
+        val entity = toEntityWithoutProducts(searchResult)
         // Convert and add each product
         entity.products.addAll(searchResult.products.map { productMapper.toEntity(it) })
         return entity
@@ -34,4 +28,11 @@ class SearchResultMapper(
             products = products
         )
     }
+
+    fun toEntityWithoutProducts(searchResult: SearchResult) = SearchResultEntity(
+        id = searchResult.id,
+        query = searchResult.query,
+        createdAt = java.time.Instant.now(),
+        products = mutableSetOf()
+    )
 }

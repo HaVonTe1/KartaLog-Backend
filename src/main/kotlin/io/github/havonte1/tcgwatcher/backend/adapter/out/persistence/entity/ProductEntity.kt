@@ -65,10 +65,10 @@ data class ProductEntity(
         mappedBy = "product",
         cascade = [CascadeType.ALL],
         orphanRemoval = true,
-        fetch = FetchType.LAZY
+        fetch = FetchType.EAGER
     )
     val nameTranslations: MutableSet<NameTranslationEntity> = mutableSetOf()
 ) : Serializable {
     // JPA requires a no‑arg constructor
-    constructor(): this(0, 0)
+    constructor() : this(0, 0)
 }

@@ -1,21 +1,16 @@
 package io.github.havonte1.tcgwatcher.backend
 
-import com.microsoft.playwright.Playwright
-import io.github.havonte1.tcgwatcher.backend.adapter.out.persistence.repository.ProductRepositoryAdapter
-import io.github.havonte1.tcgwatcher.backend.adapter.out.persistence.repository.SearchResultRepositoryAdapter
 import io.github.havonte1.tcgwatcher.backend.adapter.out.webscraper.cardmarket.CardMarketScraperAdapter
 import io.github.havonte1.tcgwatcher.backend.adapter.out.webscraper.cardmarket.CardMarketWebFetcherPort
+import io.github.havonte1.tcgwatcher.backend.application.SearchUseCase
 import io.github.havonte1.tcgwatcher.backend.domain.model.Product
 import io.github.havonte1.tcgwatcher.backend.domain.port.out.CardMarketScraperPort
-import io.github.havonte1.tcgwatcher.backend.domain.port.out.SearchResultRepository
 import io.github.havonte1.tcgwatcher.backend.domain.port.out.ProductRepository
-import io.github.havonte1.tcgwatcher.backend.application.SearchUseCase
-import org.junit.jupiter.api.AfterAll
+import io.github.havonte1.tcgwatcher.backend.domain.port.out.SearchResultRepository
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assumptions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.Assumptions
-import org.junit.jupiter.api.BeforeAll
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.context.TestConfiguration
@@ -28,7 +23,6 @@ import org.testcontainers.postgresql.PostgreSQLContainer
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.Paths
-import kotlin.use
 
 /**
  * Integration test for the cache‑aware CollectablesService.
@@ -66,7 +60,6 @@ class CollectablesServiceIntegrationTest {
         @JvmStatic
         val postgres = PostgreSQLContainer("postgres:15-alpine")
     }
-
 
     @Autowired
     lateinit var service: SearchUseCase
