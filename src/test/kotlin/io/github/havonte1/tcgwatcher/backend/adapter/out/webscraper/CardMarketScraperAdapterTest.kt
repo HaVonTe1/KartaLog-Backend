@@ -25,7 +25,7 @@ class CardMarketScraperAdapterTest {
 
     @Test
     fun `search returns one product built from HTML`() {
-        val resourcePath = "src/test/resources/pikachu_gallery_50.html"
+        val resourcePath = "src/test/resources/pikachu_gallery_30.html"
 
         val file = File(resourcePath)
         Assumptions.assumeTrue(file.exists(), "Ressource fehlt, Test wird übersprungen")

@@ -1,6 +1,14 @@
 package io.github.havonte1.tcgwatcher.backend.adapter.out.persistence.entity
 
-import jakarta.persistence.*
+import jakarta.persistence.CascadeType
+import jakarta.persistence.Column
+import jakarta.persistence.Entity
+import jakarta.persistence.FetchType
+import jakarta.persistence.GeneratedValue
+import jakarta.persistence.GenerationType
+import jakarta.persistence.Id
+import jakarta.persistence.OneToMany
+import jakarta.persistence.Table
 import org.hibernate.annotations.CreationTimestamp
 import org.hibernate.annotations.UpdateTimestamp
 import java.io.Serializable
@@ -69,6 +77,24 @@ data class ProductEntity(
     )
     val nameTranslations: MutableSet<NameTranslationEntity> = mutableSetOf()
 ) : Serializable {
+    companion object {
+        private const val serialVersionUID: Long = 1L
+    }
+
     // JPA requires a no‑arg constructor
     constructor() : this(0, 0)
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is ProductEntity) return false
+        // If both have DB ids, compare by id; otherwise fall back to externalId
+        if (id != null && other.id != null) return id == other.id
+        return externalId == other.externalId
+    }
+
+    fun compareTo(other: ProductEntity): Int {
+        return compareValuesBy(this, other, { it.price }, { it.priceTrend }, { it.priceTrendValid })
+    }
+
+    override fun hashCode(): Int = id?.hashCode() ?: externalId.hashCode()
 }

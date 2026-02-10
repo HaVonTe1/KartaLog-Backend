@@ -1,6 +1,17 @@
 package io.github.havonte1.tcgwatcher.backend.adapter.out.persistence.entity
 
-import jakarta.persistence.*
+import jakarta.persistence.CascadeType
+import jakarta.persistence.Column
+import jakarta.persistence.Entity
+import jakarta.persistence.FetchType
+import jakarta.persistence.GeneratedValue
+import jakarta.persistence.GenerationType
+import jakarta.persistence.Id
+import jakarta.persistence.JoinColumn
+import jakarta.persistence.JoinTable
+import jakarta.persistence.ManyToMany
+import jakarta.persistence.Table
+import jakarta.persistence.UniqueConstraint
 import java.time.Instant
 
 /**
@@ -9,7 +20,7 @@ import java.time.Instant
  */
 @Entity
 @Table(name = "search_results", schema = "watcher", uniqueConstraints = [UniqueConstraint(columnNames = ["query"])])
-data class SearchResultEntity(
+class SearchResultEntity(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long? = null,
@@ -20,7 +31,10 @@ data class SearchResultEntity(
     @Column(name = "created_at", nullable = false, updatable = false)
     val createdAt: Instant = Instant.now(),
 
-    @ManyToMany
+    @ManyToMany(
+        cascade = [CascadeType.PERSIST, CascadeType.MERGE],
+        fetch = FetchType.LAZY
+    )
     @JoinTable(
         name = "search_result_products",
         schema = "watcher",
@@ -31,4 +45,13 @@ data class SearchResultEntity(
 ) : java.io.Serializable {
     // JPA requires a no‑arg constructor
     constructor() : this(0, "", Instant.now(), mutableSetOf())
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is SearchResultEntity) return false
+        if (id != null && other.id != null) return id == other.id
+        return query == other.query
+    }
+
+    override fun hashCode(): Int = id?.hashCode() ?: query.hashCode()
 }

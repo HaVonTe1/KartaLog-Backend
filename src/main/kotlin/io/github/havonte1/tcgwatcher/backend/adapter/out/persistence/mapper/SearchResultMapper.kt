@@ -16,7 +16,8 @@ class SearchResultMapper(
     fun toEntity(searchResult: SearchResult): SearchResultEntity {
         val entity = toEntityWithoutProducts(searchResult)
         // Convert and add each product
-        entity.products.addAll(searchResult.products.map { productMapper.toEntity(it) })
+        val productEntities = searchResult.products.map { productMapper.toEntity(it) }
+        entity.products.addAll(productEntities)
         return entity
     }
 

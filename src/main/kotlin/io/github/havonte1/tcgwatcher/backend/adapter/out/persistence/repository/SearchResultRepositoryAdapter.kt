@@ -27,30 +27,32 @@ class SearchResultRepositoryAdapter(
     @Transactional
     override fun save(searchResult: SearchResult): SearchResult {
         val entity = searchResultMapper.toEntityWithoutProducts(searchResult)
+        // Upsert related products and obtain managed entities
+        val managedProducts = upsertProducts(searchResult.products)
+        entity.products.clear()
+        entity.products.addAll(managedProducts)
+        val saved = jpaRepository.save(entity)
+        return searchResultMapper.toDomain(saved)
+    }
 
-        val externalIds = searchResult.products.map { it.externalId }
-
+    /**
+     * Inserts new product entities or updates existing ones based on external ID.
+     */
+    private fun upsertProducts(products: List<Product>): List<ProductEntity> {
+        val externalIds = products.map { it.externalId }
         val existingProducts = productJpaRepository
             .findAllByExternalIdIn(externalIds)
             .associateBy { it.externalId }
-
-        val managedProducts = searchResult.products.map { product ->
+        return products.map { product ->
             val existing = existingProducts[product.externalId]
             if (existing != null) {
                 updateEntity(existing, product)
                 existing
             } else {
-                productJpaRepository.save(productMapper.toEntity(product))
+                productMapper.toEntity(product)
             }
         }
-
-        entity.products.clear()
-        entity.products.addAll(managedProducts)
-
-        val saved = jpaRepository.save(entity)
-        return searchResultMapper.toDomain(saved)
     }
-
 
     private fun updateEntity(
         productEntity: ProductEntity,
@@ -62,7 +64,11 @@ class SearchResultRepositoryAdapter(
             priceTrendValid = product.priceTrendInfo?.valid ?: false,
             updatedAt = product.updatedAt
         )
-        return productJpaRepository.save(updatedEntity)
+
+        if (productEntity.compareTo(updatedEntity) != 0) {
+            return productJpaRepository.save(updatedEntity)
+        }
+        return updatedEntity
     }
 
     @Transactional
