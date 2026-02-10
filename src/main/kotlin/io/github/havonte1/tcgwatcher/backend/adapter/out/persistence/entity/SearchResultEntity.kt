@@ -12,7 +12,7 @@ import java.time.Instant
 data class SearchResultEntity(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    val id: Long = 0,
+    val id: Long? = null,
 
     @Column(nullable = false, unique = true)
     val query: String,
@@ -20,14 +20,15 @@ data class SearchResultEntity(
     @Column(name = "created_at", nullable = false, updatable = false)
     val createdAt: Instant = Instant.now(),
 
-    @ManyToMany(cascade = [CascadeType.MERGE])
+    @ManyToMany
     @JoinTable(
         name = "search_result_products",
+        schema = "watcher",
         joinColumns = [JoinColumn(name = "search_result_id")],
         inverseJoinColumns = [JoinColumn(name = "product_id")]
     )
     val products: MutableSet<ProductEntity> = mutableSetOf()
 ) : java.io.Serializable {
     // JPA requires a no‑arg constructor
-    constructor(): this(0, "", Instant.now(), mutableSetOf())
+    constructor() : this(0, "", Instant.now(), mutableSetOf())
 }

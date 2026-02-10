@@ -1,15 +1,11 @@
 package io.github.havonte1.tcgwatcher.backend.application
 
-
-import org.springframework.stereotype.Service
-import io.github.oshai.kotlinlogging.KotlinLogging
-
 import io.github.havonte1.tcgwatcher.backend.domain.model.Product
 import io.github.havonte1.tcgwatcher.backend.domain.model.SearchResult
 import io.github.havonte1.tcgwatcher.backend.domain.port.out.CardMarketScraperPort
-import io.github.havonte1.tcgwatcher.backend.domain.port.out.ProductRepository
 import io.github.havonte1.tcgwatcher.backend.domain.port.out.SearchResultRepository
-
+import io.github.oshai.kotlinlogging.KotlinLogging
+import org.springframework.stereotype.Service
 
 /**
  * Spring service implementing the [SearchUseCase].
@@ -18,7 +14,6 @@ import io.github.havonte1.tcgwatcher.backend.domain.port.out.SearchResultReposit
 @Service
 class CollectablesService(
     private val scraperPort: CardMarketScraperPort,
-    private val productRepository: ProductRepository,
     private val searchResultRepository: SearchResultRepository
 ) : SearchUseCase {
 
@@ -37,8 +32,6 @@ class CollectablesService(
         // 2️⃣ Cache miss – invoke the scraper
         logger.debug { "Cache miss for query='$searchString' – invoking scraper" }
         val scraped: List<Product> = scraperPort.search(searchString)
-
-       // val products = productRepository.saveAll(scraped)
 
         // Store the full search result for future calls
         val searchResult = SearchResult(query = searchString, products = scraped)

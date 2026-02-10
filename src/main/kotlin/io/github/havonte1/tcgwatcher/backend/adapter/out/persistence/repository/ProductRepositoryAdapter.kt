@@ -46,6 +46,8 @@ class ProductRepositoryAdapter(
 
     @Transactional
     override fun delete(product: Product) {
-        jpaRepository.findById(product.id).ifPresent { jpaRepository.delete(it) }
+        if (product.id != null) {
+            jpaRepository.findById(product.id).ifPresent { jpaRepository.delete(it) }
+        }
     }
 }

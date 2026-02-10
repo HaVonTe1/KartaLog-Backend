@@ -15,7 +15,7 @@ import java.time.Instant
 data class ProductEntity(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    val id: Long = 0,
+    val id: Long? = null,
 
     @Column(name = "external_id", nullable = false, unique = true)
     val externalId: Long,
@@ -68,7 +68,7 @@ data class ProductEntity(
         fetch = FetchType.LAZY
     )
     val nameTranslations: MutableSet<NameTranslationEntity> = mutableSetOf()
-): Serializable {
+) : Serializable {
     // JPA requires a no‑arg constructor
     constructor(): this(0, 0)
 }

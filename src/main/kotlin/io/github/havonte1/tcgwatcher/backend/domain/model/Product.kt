@@ -4,7 +4,7 @@ import java.time.Instant
 
 
 data class Product(
-    val id: Long = 0,
+    val id: Long? = null,
     /** Identifier from CardMarket (or other external source) */
     val externalId: Long,
     /** Optional set name (e.g., "Base Set", "Sword & Shield") */

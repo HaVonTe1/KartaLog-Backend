@@ -6,7 +6,7 @@ package io.github.havonte1.tcgwatcher.backend.domain.model
  * returned by the scraper for that query.
  */
 data class SearchResult(
-    val id: Long = 0,
+    val id: Long? = null,
     val query: String,
     val products: List<Product> = emptyList()
 )
