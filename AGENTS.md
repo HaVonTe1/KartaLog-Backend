@@ -20,9 +20,9 @@
 9. [Agentic Workflow Tips](#agentic-workflow-tips)
 ---
 ## Project Overview
-- **Languages:** Kotlin (JVM 24) + Java (legacy)
-- **Build System:** Gradle Kotlin DSL, multi‑module (`domain`, `application`, `adapter`, `boot`).
-- **Testing:** JUnit 5 (Surefire) with method‑level filtering; integration tests use Testcontainers.
+- **Languages:** Kotlin (JVM 17) + Java (legacy)
+- **Build System:** Gradle Kotlin DSL, single‑module (package structure: `domain`, `application`, `adapter/inbound`, `adapter/out`)
+- **Testing:** JUnit 5 with method‑level filtering; integration tests use Testcontainers (PostgreSQL).
 - **Static Analysis:** Detekt, Checkstyle, SpotBugs, Ktlint.
 ---
 ## Build & Test Commands
@@ -30,11 +30,11 @@ All commands are run from the repository root.
 | Action | Gradle Command | Description |
 |--------|----------------|-------------|
 | Clean | `./gradlew clean` | Delete `build/` directories |
-| Compile Kotlin | `./gradlew compileKotlin` | Compile main Kotlin sources |
+| Compile Kotlin | `./gradlew compileKotlin` | Compile main Kotlin sources (regenerates OpenAPI code first) |
 | Compile Java | `./gradlew compileJava` | Compile main Java sources |
 | Build (jar/war) | `./gradlew build` | Compile, run tests, assemble artefacts |
 | Publish locally | `./gradlew publishToMavenLocal` | Deploy to `~/.m2` |
-| Run all tests | `./gradlew test` | Execute unit + integration tests |
+| Run all tests | `./gradlew test` | Execute unit + integration tests |
 | Skip tests (fast build) | `./gradlew build -x test` | Build without running tests |
 | Detekt (Kotlin lint) | `./gradlew detekt` | Run Kotlin static analysis |
 | Checkstyle (Java lint) | `./gradlew checkstyleMain` | Run Java style checks |
