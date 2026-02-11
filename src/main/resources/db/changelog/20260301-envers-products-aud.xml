@@ -28,16 +28,9 @@
             <!-- created_at not audited -->
             <!-- updated_at not audited -->
             <column name="REV" type="BIGINT"/>
-            <column name="REVTYPE" type="INTEGER"/>
-            <constraints primaryKey="true" primaryKeyName="pk_products_aud" primaryKeyColumns="id,REV"/>
-        </createTable>
-        <addForeignKeyConstraint baseTableName="products_AUD"
-                                 baseColumnNames="REV"
-                                 constraintName="fk_products_aud_revinfo"
-                                 referencedTableName="revinfo"
-                                 referencedColumnNames="rev"
-                                 referencedTableSchemaName="watcher"
-                                 baseTableSchemaName="watcher"/>
-    </changeSet>
+<column name="REVTYPE" type="INTEGER"/>
+</createTable>
+         <addPrimaryKey columnNames="id, REV" tableName="products_AUD" schemaName="watcher" constraintName="pk_products_aud"/>
+     </changeSet>
 
 </databaseChangeLog>
