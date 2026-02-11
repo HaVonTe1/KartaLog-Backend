@@ -18,6 +18,7 @@ import java.time.Instant
  * JPA entity representing a product (collectible card).
  * Mirrors the core domain model [com.github.havonte1.domain.model.Product].
  */
+// TODO: use envers or something simliar to store history and auditing of products
 @Entity
 @Table(name = "products", schema = "watcher")
 data class ProductEntity(

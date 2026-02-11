@@ -67,7 +67,10 @@ class SearchResultRepositoryAdapter(
             updatedAt = product.updatedAt
         )
 
+        // important: we only expect changes in the prices of a product
+        // no .equals or == here !
         if (productEntity.compareTo(updated) != 0) {
+            // actualy the 'save' isnt realy necessary BUT without it hibernate doesnt do the UPDATE
             return productJpaRepository.save(updated)
         }
         return updated

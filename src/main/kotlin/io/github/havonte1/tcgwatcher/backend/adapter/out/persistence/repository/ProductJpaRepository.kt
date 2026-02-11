@@ -7,6 +7,9 @@ import org.springframework.stereotype.Repository
 /**
  * Spring Data JPA repository for ProductEntity.
  */
+
+// TODO: use envers or something simliar to store history and auditing of products
+
 @Repository
 interface ProductJpaRepository : JpaRepository<ProductEntity, Long> {
     fun findByExternalId(externalId: Long): ProductEntity?

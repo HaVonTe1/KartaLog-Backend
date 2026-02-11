@@ -26,6 +26,8 @@ class CollectablesService(
 
         val cached = searchResultRepository.findByQuery(searchString)
         if (cached != null) {
+
+            // TODO: make this configurable
             // TTL of 1 hour
             val ttl = java.time.Duration.ofHours(1)
             val now = java.time.Instant.now()
@@ -41,10 +43,12 @@ class CollectablesService(
         // Cache miss or stale – invoke the scraper
         logger.debug { "Cache miss for query='$searchString' – invoking scraper" }
         // Run blocking call to suspend scraper
-        val scraped: List<Product> = kotlinx.coroutines.runBlocking { scraperPort.search(searchString) }
+        val scraped: List<Product> = runBlocking { scraperPort.search(searchString) }
 
         // Store the full search result for future calls, with cache timestamp
         val searchResult = SearchResult(query = searchString, products = scraped, cachedAt = java.time.Instant.now())
+
+        // TODO: the persistence should be done in a seperated thread (coroutine)
         searchResultRepository.save(searchResult)
 
         logger.debug { "Scrape completed and cached (${scraped.size} products) for query='$searchString'" }
