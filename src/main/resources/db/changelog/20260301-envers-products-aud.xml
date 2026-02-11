@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.10.xsd">
+
+    <!-- Envers revinfo table -->
+    <changeSet id="4-create-revinfo-table" author="havonte">
+        <createTable tableName="revinfo" schemaName="watcher">
+            <column name="rev" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="revtstmp" type="BIGINT"/>
+        </createTable>
+    </changeSet>
+
+    <!-- Envers audit table for products -->
+    <changeSet id="5-create-products-aud-table" author="havonte">
+        <createTable tableName="products_AUD" schemaName="watcher">
+            <column name="id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="external_id" type="BIGINT"/>
+            <column name="set_name" type="VARCHAR(255)"/>
+            <column name="rarity" type="VARCHAR(255)"/>
+            <column name="image_url" type="VARCHAR(512)"/>
+            <!-- created_at not audited -->
+            <!-- updated_at not audited -->
+            <column name="REV" type="BIGINT"/>
+            <column name="REVTYPE" type="INTEGER"/>
+            <constraints primaryKey="true" primaryKeyName="pk_products_aud" primaryKeyColumns="id,REV"/>
+        </createTable>
+        <addForeignKeyConstraint baseTableName="products_AUD"
+                                 baseColumnNames="REV"
+                                 constraintName="fk_products_aud_revinfo"
+                                 referencedTableName="revinfo"
+                                 referencedColumnNames="rev"
+                                 referencedTableSchemaName="watcher"
+                                 baseTableSchemaName="watcher"/>
+    </changeSet>
+
+</databaseChangeLog>

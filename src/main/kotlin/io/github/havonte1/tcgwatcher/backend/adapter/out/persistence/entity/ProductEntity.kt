@@ -9,16 +9,17 @@ import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
 import jakarta.persistence.OneToMany
 import jakarta.persistence.Table
-import org.hibernate.annotations.CreationTimestamp
-import org.hibernate.annotations.UpdateTimestamp
+import jakarta.persistence.Transient
 import java.io.Serializable
+import org.hibernate.envers.Audited
+
 import java.time.Instant
 
 /**
  * JPA entity representing a product (collectible card).
  * Mirrors the core domain model [com.github.havonte1.domain.model.Product].
  */
-// TODO: use envers or something simliar to store history and auditing of products
+@Audited // Envers auditing for product history
 @Entity
 @Table(name = "products", schema = "watcher")
 data class ProductEntity(
@@ -62,12 +63,10 @@ data class ProductEntity(
     @Column(name = "price_trend_valid")
     val priceTrendValid: Boolean? = null,
 
-    @CreationTimestamp
-    @Column(name = "created_at", updatable = false)
+    @Transient
     val createdAt: Instant? = null,
 
-    @UpdateTimestamp
-    @Column(name = "updated_at")
+    @Transient
     val updatedAt: Instant? = null,
 
     @OneToMany(

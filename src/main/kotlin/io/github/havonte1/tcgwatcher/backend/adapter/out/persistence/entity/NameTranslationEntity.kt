@@ -9,12 +9,14 @@ import jakarta.persistence.Id
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.Table
+import org.hibernate.envers.Audited
 import java.io.Serializable
 
 /**
  * Entity representing a localized name translation for a product.
  * Stored as a separate table to allow many languages per product.
  */
+@Audited
 @Entity
 @Table(name = "product_name_translations", schema = "watcher")
 class NameTranslationEntity(

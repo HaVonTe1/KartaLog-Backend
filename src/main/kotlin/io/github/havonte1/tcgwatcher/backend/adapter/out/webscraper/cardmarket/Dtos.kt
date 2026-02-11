@@ -1,7 +1,7 @@
 package io.github.havonte1.tcgwatcher.backend.adapter.out.webscraper.cardmarket
 
-data class SearchResultsPageDto(
-    val results: List<CardmarketProductGallaryItemDto>, // TODO: use a generic type
+data class SearchResultsPageDto<T>(
+    val results: List<T>,
     val page: Int,
     val totalPages: Int
 )

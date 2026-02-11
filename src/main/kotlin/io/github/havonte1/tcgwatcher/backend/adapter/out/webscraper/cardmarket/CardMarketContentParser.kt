@@ -12,7 +12,7 @@ class CardMarketContentParser {
     // Knospi (PRE 004) --> Name: Knospi   code: (PRE-004)
     private val nameAndCodePattern = "^(.*?)\\s*\\((.*?)\\)$".toRegex()
 
-    fun extractProductsFromHtml(content: String, page: Int = 1): SearchResultsPageDto {
+    fun extractProductsFromHtml(content: String, page: Int = 1): SearchResultsPageDto<CardmarketProductGallaryItemDto> {
         val document = Jsoup.parse(content)
 
         logger.debug { "Parsing a tags with class card and a href" }

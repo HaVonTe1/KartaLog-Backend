@@ -6,6 +6,10 @@ import io.github.havonte1.tcgwatcher.backend.domain.port.out.CardMarketScraperPo
 import io.github.havonte1.tcgwatcher.backend.domain.port.out.SearchResultRepository
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import io.github.havonte1.tcgwatcher.backend.config.CacheConfig
 import org.springframework.stereotype.Service
 
 /**
@@ -15,7 +19,8 @@ import org.springframework.stereotype.Service
 @Service
 class CollectablesService(
     private val scraperPort: CardMarketScraperPort,
-    private val searchResultRepository: SearchResultRepository
+    private val searchResultRepository: SearchResultRepository,
+    private val cacheConfig: CacheConfig
 ) : SearchUseCase {
 
     private val logger = KotlinLogging.logger {}
@@ -27,9 +32,8 @@ class CollectablesService(
         val cached = searchResultRepository.findByQuery(searchString)
         if (cached != null) {
 
-            // TODO: make this configurable
-            // TTL of 1 hour
-            val ttl = java.time.Duration.ofHours(1)
+            // TTL configurable via CacheConfig (hours)
+            val ttl = java.time.Duration.ofHours(cacheConfig.ttlHours)
             val now = java.time.Instant.now()
             val cachedAt = cached.cachedAt
             if (cachedAt != null && cachedAt.isAfter(now.minus(ttl))) {
@@ -48,7 +52,7 @@ class CollectablesService(
         // Store the full search result for future calls, with cache timestamp
         val searchResult = SearchResult(query = searchString, products = scraped, cachedAt = java.time.Instant.now())
 
-        // TODO: the persistence should be done in a seperated thread (coroutine)
+        // Persist synchronously to ensure caching works reliably
         searchResultRepository.save(searchResult)
 
         logger.debug { "Scrape completed and cached (${scraped.size} products) for query='$searchString'" }

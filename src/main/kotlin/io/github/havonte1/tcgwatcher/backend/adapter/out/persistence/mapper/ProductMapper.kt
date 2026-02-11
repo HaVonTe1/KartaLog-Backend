@@ -30,9 +30,8 @@ class ProductMapper {
             price = product.price,
             priceTrend = product.priceTrendInfo?.value,
             priceTrendValid = product.priceTrendInfo?.valid,
-            createdAt = product.createdAt,
-            updatedAt = product.updatedAt,
-            nameTranslations = mutableSetOf()
+            createdAt = null,
+            updatedAt = null
         )
         // Map each name translation from the product's names map
         product.names.forEach { (locale, name) ->
@@ -55,6 +54,7 @@ class ProductMapper {
             externalId = entity.externalId,
             setName = entity.setName,
             rarity = entity.rarity,
+
             createdAt = entity.createdAt,
             updatedAt = entity.updatedAt,
             names = namesMap,
