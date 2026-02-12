@@ -17,6 +17,8 @@ import kotlin.io.path.exists
 
 class CardMarketWebFetcher : CardMarketWebFetcherPort {
     private val logger = KotlinLogging.logger {}
+    val baseUrl = System.getenv("CARDMARKET_BASE_URL") ?: "https://www.cardmarket.com"
+
 
     /**
      * Fetches the search page HTML for the given [searchString].
@@ -24,7 +26,7 @@ class CardMarketWebFetcher : CardMarketWebFetcherPort {
      * navigates to the search URL, waits for network idle, and returns the page content.
      */
 
-    override fun fetch(searchString: String): String {
+    override fun fetch(searchString: String, locale: String, game: String): String {
         logger.debug { "Fetching CardMarket page for \"$searchString\"" }
         val playwright = Playwright.create()
         playwright.use { playwright ->
@@ -47,7 +49,7 @@ class CardMarketWebFetcher : CardMarketWebFetcherPort {
             }
             val context = browser.newContext(contextOptions)
             val page: Page = context.newPage()
-            val url = "https://www.cardmarket.com/de/Pokemon/Products/Search?searchString=$searchString"
+            val url = "$baseUrl/$locale/$game/Products/Search?searchString=$searchString"
             page.navigate(url)
             logger.debug { "Navigated to ${page.url()}" }
             page.waitForLoadState(LoadState.DOMCONTENTLOADED)

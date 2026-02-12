@@ -18,14 +18,14 @@ class CardMarketScraperAdapter(
     CardMarketScraperPort {
     private val logger = KotlinLogging.logger {}
 
-    /**
-     * Executes a search on CardMarket and returns a list of products.
-     * Only externalId, setName, rarity and imageUrl are populated; other fields remain null.
-     */
-    override suspend fun search(searchString: String): List<Product> {
+    override suspend fun search(
+        searchString: String,
+        locale: String,
+        game: String
+    ): List<Product> {
         logger.info { "Scraping CardMarket for $searchString" }
 
-        val content = webFetcher.fetch(searchString)
+        val content = webFetcher.fetch(searchString, locale, game)
         val result = contentParser.extractProductsFromHtml(content)
         return mapper.toProducts(result)
     }

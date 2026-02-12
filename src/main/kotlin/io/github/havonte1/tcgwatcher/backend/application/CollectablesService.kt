@@ -1,15 +1,12 @@
 package io.github.havonte1.tcgwatcher.backend.application
 
+import io.github.havonte1.tcgwatcher.backend.config.CacheConfig
 import io.github.havonte1.tcgwatcher.backend.domain.model.Product
 import io.github.havonte1.tcgwatcher.backend.domain.model.SearchResult
 import io.github.havonte1.tcgwatcher.backend.domain.port.out.CardMarketScraperPort
 import io.github.havonte1.tcgwatcher.backend.domain.port.out.SearchResultRepository
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import io.github.havonte1.tcgwatcher.backend.config.CacheConfig
 import org.springframework.stereotype.Service
 
 /**
@@ -26,18 +23,19 @@ class CollectablesService(
     private val logger = KotlinLogging.logger {}
 
     /** Returns cards for the given query, using cached results when available. */
-    override fun search(searchString: String): List<Product> {
+    override fun search(searchString: String, locale: String, game: String): List<Product> {
         logger.debug { "Searching for collectables with query='$searchString'" }
 
         val cached = searchResultRepository.findByQuery(searchString)
         if (cached != null) {
-
             // TTL configurable via CacheConfig (hours)
             val ttl = java.time.Duration.ofHours(cacheConfig.ttlHours)
             val now = java.time.Instant.now()
             val cachedAt = cached.cachedAt
             if (cachedAt != null && cachedAt.isAfter(now.minus(ttl))) {
-                logger.debug { "Cache hit (fresh) for query='$searchString' – returning ${cached.products.size} products" }
+                logger.debug {
+                    "Cache hit (fresh) for query='$searchString' – returning ${cached.products.size} products"
+                }
                 return cached.products
             }
             // otherwise treat as miss and refresh
@@ -47,7 +45,9 @@ class CollectablesService(
         // Cache miss or stale – invoke the scraper
         logger.debug { "Cache miss for query='$searchString' – invoking scraper" }
         // Run blocking call to suspend scraper
-        val scraped: List<Product> = runBlocking { scraperPort.search(searchString) }
+        val scraped: List<Product> = runBlocking {
+            scraperPort.search(searchString, locale, game)
+        }
 
         // Store the full search result for future calls, with cache timestamp
         val searchResult = SearchResult(query = searchString, products = scraped, cachedAt = java.time.Instant.now())

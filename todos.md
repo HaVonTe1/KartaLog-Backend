@@ -9,17 +9,10 @@
 ---
 
 ### 2. Multi-Language Product Names Lost During Caching
-**Problem:** When caching search results, product name translations are cleared in `SearchResultRepositoryAdapter.upsertProducts()` because the `clear()` call removes all existing translations before adding new ones.
-**Location:** `src/main/kotlin/io/github/havonte1/tcgwatcher/backend/adapter/out/persistence/repository/SearchResultRepositoryAdapter.kt:32`
-**Solution:** Update translation mapping to preserve existing languages or implement proper merge logic that doesn't discard non-duplicate locales.
-
----
+- done
 
 ### 3. Race Condition in Product Upsert
-**Problem:** `upsertProducts()` reads existing products, then saves back without transaction isolation. Concurrent requests scraping same products can create duplicates or overwrite prices incorrectly.
-**Location:** `src/main/kotlin/io/github/havonte1/tcgwatcher/backend/adapter/out/persistence/repository/SearchResultRepositoryAdapter.kt:41-57`
-**Solution:** Use database-level upsert (INSERT ... ON CONFLICT) via JPA `merge()` or native query with proper locking.
-
+- done
 ---
 
 ### 4. Missing Database Constraints
@@ -35,8 +28,8 @@
 - `deployment/compose.yml:7`
 - `src/main/kotlin/io/github/havonte1/tcgwatcher/backend/adapter/out/webscraper/cardmarket/CardMarketWebFetcher.kt:50`
 **Solution:** 
-- Use environment variable substitution or Docker secrets
-- Make locale/game configurable via application properties
+- Use environment variable substitution (there is a .env in the root directory)
+- Make locale/game to path parameters in the CollectablesApi (generated from openapi.yml in ./contract ). Make sure these new parameters are passed through until used in the WebFetcher. The Search URI should be constructed from a configurable base path and the new parameters.
 
 ---
 

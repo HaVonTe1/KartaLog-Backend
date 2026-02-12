@@ -43,9 +43,24 @@ paths:
         - name: query
           in: query
           description: Search query for collectable products
+          required: true
+          schema:
+            type: string
+            example: "Pikachu"
+        - name: locale
+          in: query
+          description: Locale for CardMarket (e.g., de, en)
           required: false
           schema:
             type: string
+            default: de
+        - name: game
+          in: query
+          description: Game for CardMarket (e.g., Pokemon)
+          required: false
+          schema:
+            type: string
+            default: Pokemon
       responses:
         '200':
           description: Successful response – a list of collectables

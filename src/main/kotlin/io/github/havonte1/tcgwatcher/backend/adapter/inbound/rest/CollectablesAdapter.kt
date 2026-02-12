@@ -22,13 +22,17 @@ class CollectablesAdapter(
     private val logger = KotlinLogging.logger {}
 
     override fun listCollectables(
+        query: String,
         page: Int,
         size: Int,
-        query: String?
+        locale: String,
+        game: String
     ): ResponseEntity<List<ProductDTO>> {
-        logger.debug { "listCollectables called with page={$page}, size={$size}, query={$query}" }
+        logger.debug {
+            "listCollectables called with page={$page}, size={$size}, query={$query} locale={$locale} game=$game"
+        }
         // Use empty string when query is null
-        val results = collectablesService.search(query ?: "")
+        val results = collectablesService.search(query, locale, game)
         // Simple pagination logic
         val from = (page * size).coerceAtMost(results.size)
         val to = ((page + 1) * size).coerceAtMost(results.size)

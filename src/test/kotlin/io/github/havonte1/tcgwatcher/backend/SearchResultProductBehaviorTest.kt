@@ -38,10 +38,10 @@ class SearchResultProductBehaviorTest {
         @Primary
         fun cardMarketScraperPort(): CardMarketScraperPort = object : CardMarketScraperPort {
             var callCount = 0
-            override suspend fun search(searchString: String): List<Product> {
+            override suspend fun search(searchString: String, locale: String, game: String): List<Product> {
                 callCount++
                 class TestFetcher : CardMarketWebFetcherPort {
-                    override fun fetch(searchString: String): String {
+                    override fun fetch(searchString: String, locale: String, game: String): String {
                         // First two calls return pikachu30. Subsequent calls return pikachu40
                         // to simulate updated prices.
                         return when (callCount) {
@@ -51,7 +51,7 @@ class SearchResultProductBehaviorTest {
                     }
                 }
                 val adapter = CardMarketScraperAdapter(TestFetcher())
-                return adapter.search(searchString)
+                return adapter.search(searchString, locale, game)
             }
         }
     }
@@ -82,19 +82,19 @@ class SearchResultProductBehaviorTest {
         Assumptions.assumeTrue(Files.exists(Paths.get(f40)))
 
         // 1) Perform first search -> should persist 30 products
-        val resA = service.search("Pikachu30")
+        val resA = service.search("Pikachu30", "de", "Pokemon")
         assertEquals(30, resA.size)
         val allProductsAfterA = productRepo.findAll()
         assertEquals(30, allProductsAfterA.size, "All unique products should be persisted once")
 
         // 2) Different search with overlapping results should not create duplicates
-        val resB = service.search("Pikachu30-other")
+        val resB = service.search("Pikachu30-other", "de", "Pokemon")
         assertEquals(30, resB.size)
         val allProductsAfterB = productRepo.findAll()
         assertEquals(30, allProductsAfterB.size)
 
         // 3) Now simulate a scraper run that returns the same products but with changed prices.
-        val resC = service.search("Pikachu-Updated")
+        val resC = service.search("Pikachu-Updated", "de", "Pokemon")
         assertEquals(30, resC.size)
 
         // Verify at least one product had its price updated in the DB.
