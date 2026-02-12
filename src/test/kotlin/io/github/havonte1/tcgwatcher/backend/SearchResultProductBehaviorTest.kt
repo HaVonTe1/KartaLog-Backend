@@ -7,6 +7,7 @@ import io.github.havonte1.tcgwatcher.backend.domain.model.Product
 import io.github.havonte1.tcgwatcher.backend.domain.port.out.CardMarketScraperPort
 import io.github.havonte1.tcgwatcher.backend.domain.port.out.ProductRepository
 import io.github.havonte1.tcgwatcher.backend.domain.port.out.SearchResultRepository
+import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -82,19 +83,19 @@ class SearchResultProductBehaviorTest {
         Assumptions.assumeTrue(Files.exists(Paths.get(f40)))
 
         // 1) Perform first search -> should persist 30 products
-        val resA = service.search("Pikachu30", "de", "Pokemon")
+        val resA = runBlocking { service.search("Pikachu30", "de", "Pokemon")}
         assertEquals(30, resA.size)
         val allProductsAfterA = productRepo.findAll()
         assertEquals(30, allProductsAfterA.size, "All unique products should be persisted once")
 
         // 2) Different search with overlapping results should not create duplicates
-        val resB = service.search("Pikachu30-other", "de", "Pokemon")
+        val resB = runBlocking { service.search("Pikachu30-other", "de", "Pokemon") }
         assertEquals(30, resB.size)
         val allProductsAfterB = productRepo.findAll()
         assertEquals(30, allProductsAfterB.size)
 
         // 3) Now simulate a scraper run that returns the same products but with changed prices.
-        val resC = service.search("Pikachu-Updated", "de", "Pokemon")
+        val resC = runBlocking {service.search("Pikachu-Updated", "de", "Pokemon")}
         assertEquals(30, resC.size)
 
         // Verify at least one product had its price updated in the DB.

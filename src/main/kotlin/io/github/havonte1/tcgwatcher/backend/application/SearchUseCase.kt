@@ -9,5 +9,5 @@ import io.github.havonte1.tcgwatcher.backend.domain.model.Product
 interface SearchUseCase {
 
     /** Overloaded search allowing locale and game parameters. */
-    fun search(searchString: String, locale: String, game: String): List<Product>
+    suspend fun search(searchString: String, locale: String, game: String): List<Product>
 }

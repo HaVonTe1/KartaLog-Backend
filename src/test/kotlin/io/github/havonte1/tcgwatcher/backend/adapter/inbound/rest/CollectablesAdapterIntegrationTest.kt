@@ -2,6 +2,7 @@ package io.github.havonte1.tcgwatcher.backend.adapter.inbound.rest
 
 import io.github.havonte1.tcgwatcher.backend.application.SearchUseCase
 import io.github.havonte1.tcgwatcher.backend.adapter.inbound.rest.model.ProductDTO
+import kotlinx.coroutines.runBlocking
 import org.mockito.Mockito
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Test
@@ -40,7 +41,7 @@ class CollectablesAdapterIntegrationTest {
     @Test
     fun `GET collectables returns empty list on successful request`() {
         // Use Mockito stubbing for the @MockitoBean
-        Mockito.`when`(searchUseCase.search("test", "en", "Pokemon")).thenReturn(emptyList())
+        Mockito.`when`(runBlocking { searchUseCase.search("test", "en", "Pokemon") }).thenReturn(emptyList())
         mockMvc.get("/collectables/") {
             param("query", "test")
             param("locale", "en")

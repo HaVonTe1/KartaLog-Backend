@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.RestController
 
+
 /**
  * REST controller for collectables.
  *
@@ -21,14 +22,14 @@ class CollectablesAdapter(
 
     private val logger = KotlinLogging.logger {}
 
-    override fun listCollectables(
+    override suspend fun listCollectables(
         query: String,
         page: Int,
         size: Int,
         locale: String,
         game: String
     ): ResponseEntity<List<ProductDTO>> {
-        
+
         require(page >= 0) { "Page index must be non-negative" }
         require(size > 0) { "Page size must be positive" }
         require(query.isNotBlank()) { "Query must not be blank" }

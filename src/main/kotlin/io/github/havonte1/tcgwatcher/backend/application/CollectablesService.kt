@@ -6,7 +6,7 @@ import io.github.havonte1.tcgwatcher.backend.domain.model.SearchResult
 import io.github.havonte1.tcgwatcher.backend.domain.port.out.CardMarketScraperPort
 import io.github.havonte1.tcgwatcher.backend.domain.port.out.SearchResultRepository
 import io.github.oshai.kotlinlogging.KotlinLogging
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withTimeout
 import org.springframework.stereotype.Service
 
 /**
@@ -23,7 +23,7 @@ class CollectablesService(
     private val logger = KotlinLogging.logger {}
 
     /** Returns cards for the given query, using cached results when available. */
-    override fun search(searchString: String, locale: String, game: String): List<Product> {
+    override suspend fun search(searchString: String, locale: String, game: String): List<Product> {
         logger.debug { "Searching for collectables with query='$searchString'" }
 
         val cached = searchResultRepository.findByQuery(searchString)
@@ -45,7 +45,7 @@ class CollectablesService(
         // Cache miss or stale – invoke the scraper
         logger.debug { "Cache miss for query='$searchString' – invoking scraper" }
         // Run blocking call to suspend scraper
-        val scraped: List<Product> = runBlocking {
+        val scraped: List<Product> = withTimeout(30_000) {
             scraperPort.search(searchString, locale, game)
         }
 

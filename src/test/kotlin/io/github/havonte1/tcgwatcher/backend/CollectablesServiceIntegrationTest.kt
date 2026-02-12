@@ -7,6 +7,7 @@ import io.github.havonte1.tcgwatcher.backend.domain.model.Product
 import io.github.havonte1.tcgwatcher.backend.domain.port.out.CardMarketScraperPort
 import io.github.havonte1.tcgwatcher.backend.domain.port.out.ProductRepository
 import io.github.havonte1.tcgwatcher.backend.domain.port.out.SearchResultRepository
+import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assumptions
 import org.junit.jupiter.api.BeforeEach
@@ -102,7 +103,7 @@ class CollectablesServiceIntegrationTest {
         Assumptions.assumeTrue(File(testFilePikachu40).exists())
 
         // First call – cache miss, scraper should be invoked once
-        val firstResult = service.search("Pikachu30", "de", "Pokemon")
+        val firstResult = runBlocking { service.search("Pikachu30", "de", "Pokemon") }
         assertEquals(30, firstResult.size)
         // Cast scraper to access callCount
         val testScraper = scraperPort as? Any
@@ -114,7 +115,7 @@ class CollectablesServiceIntegrationTest {
         assertEquals(30, cached?.products?.size)
 
         // Second call – cache hit, scraper must NOT be invoked again
-        val secondResult = service.search("Pikachu30", "de", "Pokemon")
+        val secondResult = runBlocking { service.search("Pikachu30", "de", "Pokemon") }
         assertEquals(30, secondResult.size)
         assertEquals(1, callCountField.getInt(testScraper), "Scraper should not be called on cache hit")
 
@@ -124,7 +125,7 @@ class CollectablesServiceIntegrationTest {
         } ?: fail("No element with externalId=576753 found")
         // anothr query but the results are slightly different
 
-        val thirdResult = service.search("Pikachu40", "de", "Pokemon")
+        val thirdResult = runBlocking {service.search("Pikachu40", "de", "Pokemon")}
         assertEquals(30, thirdResult.size)
         assertEquals(2, callCountField.getInt(testScraper), "Scraper should  be called on another query")
 

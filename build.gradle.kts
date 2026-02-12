@@ -19,7 +19,10 @@ openApiGenerate {
     configOptions.set(mapOf(
         "interfaceOnly" to "true",
         "useSpringBoot3" to "true",
-        "packageVersion" to "0.1.0"
+        "packageVersion" to "0.1.0",
+        "reactive" to "true",
+        "declarativeInterfaceReactiveMode" to "coroutines",
+        "useFlowForArrayReturnType" to "false"
     ))
 }
 
@@ -84,6 +87,7 @@ dependencies {
     // Kotlin & logging
     // -------------------------------------------------
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor:1.8.1")
     implementation("io.github.oshai:kotlin-logging-jvm:7.0.14")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
