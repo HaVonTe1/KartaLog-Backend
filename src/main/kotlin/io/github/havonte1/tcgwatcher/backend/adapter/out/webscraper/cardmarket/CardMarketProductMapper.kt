@@ -17,13 +17,11 @@ class CardMarketProductMapper {
                 lastSegment.substringBeforeLast('.', lastSegment).toLongOrNull() ?: 0L
             }
 
-            Product(
-                externalId = externalIdFromImg,
-                setName = null,
-                rarity = null,
-                createdAt = null,
-                updatedAt = null,
-                names = mapOf(item.name.languageCode to item.name.value),
+Product(
+                 externalId = externalIdFromImg,
+                 setName = null,
+                 rarity = null,
+                 names = mapOf(item.name.languageCode to item.name.value),
                 codeInfo = StringWithValidity(item.code.value, item.code.valid),
                 genre = item.genre,
                 type = item.type,

@@ -7,9 +7,10 @@ import jakarta.persistence.FetchType
 import jakarta.persistence.GeneratedValue
 import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
+import jakarta.persistence.PrePersist
+import jakarta.persistence.PreUpdate
 import jakarta.persistence.OneToMany
 import jakarta.persistence.Table
-import jakarta.persistence.Transient
 import java.io.Serializable
 import org.hibernate.envers.Audited
 
@@ -63,11 +64,11 @@ data class ProductEntity(
     @Column(name = "price_trend_valid")
     val priceTrendValid: Boolean? = null,
 
-    @Transient
-    val createdAt: Instant? = null,
+    @Column(name = "created_at", nullable = false, updatable = false)
+    var createdAt: Instant = Instant.now(),
 
-    @Transient
-    val updatedAt: Instant? = null,
+    @Column(name = "updated_at", nullable = false)
+    var updatedAt: Instant = Instant.now(),
 
     @OneToMany(
         mappedBy = "product",
@@ -81,8 +82,19 @@ data class ProductEntity(
         private const val serialVersionUID: Long = 1L
     }
 
+    @PrePersist
+    fun onPrePersist() {
+        createdAt = Instant.now()
+        updatedAt = Instant.now()
+    }
+
+    @PreUpdate
+    fun onPreUpdate() {
+        updatedAt = Instant.now()
+    }
+
     // JPA requires a no‑arg constructor
-    constructor() : this(0, 0)
+    constructor() : this(0, 0, null, null)
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

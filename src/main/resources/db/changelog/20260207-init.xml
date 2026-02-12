@@ -27,9 +27,13 @@
             <column name="img_link" type="VARCHAR(255)" />
             <column name="price" type="VARCHAR(255)" />
             <column name="price_trend" type="VARCHAR(255)" />
-            <column name="price_trend_valid" type="BOOLEAN" />
-            <column name="created_at" type="TIMESTAMP" />
-            <column name="updated_at" type="TIMESTAMP" />
+<column name="price_trend_valid" type="BOOLEAN" />
+             <column name="created_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP">
+                 <constraints nullable="false" />
+             </column>
+             <column name="updated_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP">
+                 <constraints nullable="false" />
+             </column>
         </createTable>
     </changeSet>
 

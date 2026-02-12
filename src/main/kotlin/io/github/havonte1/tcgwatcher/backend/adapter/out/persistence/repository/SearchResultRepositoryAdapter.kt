@@ -9,6 +9,8 @@ import io.github.havonte1.tcgwatcher.backend.domain.port.out.SearchResultReposit
 import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional
 
+import java.time.Instant
+
 /**
  * JPA implementation of the [SearchResultRepository] outbound port.
  */
@@ -56,16 +58,16 @@ class SearchResultRepositoryAdapter(
         return productJpaRepository.saveAll(entitiesToPersist)
     }
 
-    private fun updateEntity(
-        productEntity: ProductEntity,
-        product: Product
-    ): ProductEntity {
-        val updated = productEntity.copy(
-            price = product.price,
-            priceTrend = product.priceTrendInfo?.value,
-            priceTrendValid = product.priceTrendInfo?.valid ?: false,
-            updatedAt = product.updatedAt
-        )
+private fun updateEntity(
+         productEntity: ProductEntity,
+         product: Product
+     ): ProductEntity {
+         val updated = productEntity.copy(
+             price = product.price,
+             priceTrend = product.priceTrendInfo?.value,
+             priceTrendValid = product.priceTrendInfo?.valid ?: false,
+             updatedAt = product.updatedAt ?: Instant.now()
+         )
 
         // important: we only expect changes in the prices of a product
         // no .equals or == here !

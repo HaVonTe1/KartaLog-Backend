@@ -29,11 +29,9 @@ class ProductMapper {
             imgLink = product.imgLink,
             price = product.price,
             priceTrend = product.priceTrendInfo?.value,
-            priceTrendValid = product.priceTrendInfo?.valid,
-            createdAt = null,
-            updatedAt = null
-        )
-        // Map each name translation from the product's names map
+priceTrendValid = product.priceTrendInfo?.valid
+         )
+         // Map each name translation from the product's names map
         product.names.forEach { (locale, name) ->
             val translation = NameTranslationEntity(
                 id = 0, // let JPA generate ID
