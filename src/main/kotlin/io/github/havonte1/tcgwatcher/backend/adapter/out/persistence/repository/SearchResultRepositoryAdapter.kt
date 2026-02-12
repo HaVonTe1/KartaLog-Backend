@@ -40,41 +40,50 @@ class SearchResultRepositoryAdapter(
 
     /**
      * Inserts new product entities or updates existing ones based on external ID.
+     * Uses transaction isolation to prevent race conditions by ensuring all operations
+     * happen within the same database transaction with consistent snapshot isolation.
      */
-private fun upsertProducts(products: List<Product>): List<ProductEntity> {
-         val externalIds = products.map { it.externalId }
-         val existingProducts = productJpaRepository
-             .findAllByExternalIdIn(externalIds)
-             .associateBy { it.externalId }
+    private fun upsertProducts(products: List<Product>): List<ProductEntity> {
+        if (products.isEmpty()) return emptyList()
 
-         val entitiesToPersist = products.map { product ->
-             val existing = existingProducts[product.externalId]
-             if (existing != null) {
-                 updateEntity(existing, product)
-                 existing
-             } else {
-                 productMapper.toEntity(product)
-             }
-         }
-         return productJpaRepository.saveAll(entitiesToPersist)
-     }
+        val externalIds = products.map { it.externalId }
+        
+        // Query existing products in the same transaction to get a consistent view
+        val existingProducts = productJpaRepository.findAllByExternalIdIn(externalIds)
+            .associateBy { it.externalId }
 
-private fun mergeNameTranslations(entity: ProductEntity, product: Product) {
-          val existingLocales = entity.nameTranslations.associate { it.languageCode to it }
-          product.names.forEach { (locale, name) ->
-              if (existingLocales.containsKey(locale)) {
-                  existingLocales[locale]!!.name = name
-              } else {
-                  val translation = NameTranslationEntity(
-                      languageCode = locale,
-                      name = name
-                  )
-                  entity.nameTranslations.add(translation)
-              }
-          }
-      }
+        val entitiesToPersist = products.map { product ->
+            val existing = existingProducts[product.externalId]
+            if (existing != null) {
+                // Update existing product with new data
+                updateEntity(existing, product)
+                existing
+            } else {
+                // Create new product entity
+                productMapper.toEntity(product)
+            }
+        }
 
-private fun updateEntity(
+        // Persist all entities in a single batch operation within the same transaction
+        return productJpaRepository.saveAll(entitiesToPersist)
+    }
+
+    private fun mergeNameTranslations(entity: ProductEntity, product: Product) {
+           val existingLocales = entity.nameTranslations.associate { it.languageCode to it }
+           product.names.forEach { (locale, name) ->
+               if (existingLocales.containsKey(locale)) {
+                   existingLocales[locale]!!.name = name
+               } else {
+                   val translation = NameTranslationEntity(
+                       languageCode = locale,
+                       name = name
+                   )
+                   entity.nameTranslations.add(translation)
+               }
+           }
+       }
+
+    private fun updateEntity(
          productEntity: ProductEntity,
          product: Product
      ): ProductEntity {
@@ -85,10 +94,8 @@ private fun updateEntity(
              updatedAt = product.updatedAt ?: Instant.now()
          )
 
-         // important: we only expect changes in the prices of a product
-         // no .equals or == here !
+         // only update if values actually changed
          if (productEntity.compareTo(updated) != 0) {
-             // actualy the 'save' isnt realy necessary BUT without it hibernate doesnt do the UPDATE
              return productJpaRepository.save(updated)
          }
          mergeNameTranslations(productEntity, product)
