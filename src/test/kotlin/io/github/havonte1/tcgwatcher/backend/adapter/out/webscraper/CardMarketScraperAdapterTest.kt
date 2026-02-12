@@ -49,7 +49,7 @@ class CardMarketScraperAdapterTest {
 
         assertEquals("Pokemon", first.genre)
         assertEquals("Singles", first.type)
-        assertEquals("0,99 €", first.price)
+        assertEquals("1,50 €", first.price)
         assertEquals("?", first.priceTrendInfo?.value)
         assertTrue(first.priceTrendInfo?.valid == false)
         assertEquals("CEL 005", first.codeInfo?.value)

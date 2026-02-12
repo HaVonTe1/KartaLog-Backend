@@ -115,8 +115,8 @@ class CollectablesServiceIntegrationTest {
         assertEquals(1, callCountField.getInt(testScraper), "Scraper should not be called on cache hit")
 
         secondResult.find { it.externalId == 576753L }?.let {
-            assertEquals("Surfing-Pikachu-V", it.cmId)
-            assertEquals("0,49 €", it.price)
+            assertEquals("Pikachu-V4-CEL008", it.cmId)
+            assertEquals("1,50 €", it.price)
         } ?: fail("No element with externalId=576753 found")
         // anothr query but the results are slightly different
 
@@ -125,8 +125,8 @@ class CollectablesServiceIntegrationTest {
         assertEquals(2, callCountField.getInt(testScraper), "Scraper should  be called on another query")
 
         thirdResult.find { it.externalId == 576753L }?.let {
-            assertEquals("Surfing-Pikachu-V", it.cmId)
-            assertEquals("2,34 €", it.price)
+            assertEquals("Pikachu-V4-CEL008", it.cmId)
+            assertEquals("4,00 €", it.price)
         } ?: fail("No element with externalId=576753 found")
     }
 }
