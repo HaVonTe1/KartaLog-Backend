@@ -4,7 +4,7 @@ import io.github.havonte1.tcgwatcher.backend.domain.model.Product
 import io.github.havonte1.tcgwatcher.backend.domain.model.StringWithValidity
 
 class CardMarketProductMapper {
-    fun toProducts(result: SearchResultsPageDto): List<Product> {
+    fun toProducts(result: SearchResultsPageDto<CardmarketProductGallaryItemDto>): List<Product> {
         return result.results.map { item ->
             // cmId in DTO may be a URI like "/Pokemon/Products/Singles/Evolving-Skies/Pikachu-V1-EVS049";
             // we only want the last segment (e.g. "Pikachu-V1-EVS049").

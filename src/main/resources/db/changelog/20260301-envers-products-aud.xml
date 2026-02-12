@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.8.xsd">
+
+
+  <!-- Envers revinfo table -->
+  <changeSet author="havonte" id="4-create-revinfo-table">
+    <createTable schemaName="watcher" tableName="revinfo">
+      <column autoIncrement="true" name="rev" type="BIGINT">
+        <constraints nullable="false" primaryKey="true"/>
+      </column>
+      <column name="revtstmp" type="BIGINT"/>
+    </createTable>
+  </changeSet>
+
+  <!-- Envers audit table for products -->
+  <changeSet author="havonte" id="5-create-products-aud-table">
+
+    <createTable schemaName="watcher" tableName="products_aud">
+      <column name="id" type="BIGINT">
+        <constraints nullable="false"/>
+      </column>
+      <column name="external_id" type="BIGINT"/>
+      <column name="set_name" type="VARCHAR(255)"/>
+      <column name="rarity" type="VARCHAR(255)"/>
+      <column name="image_url" type="VARCHAR(512)"/>
+      <column name="code_info" type="VARCHAR(255)"/>
+      <column name="code_info_valid" type="BOOLEAN"/>
+      <column name="genre" type="VARCHAR(255)"/>
+      <column name="type" type="VARCHAR(255)"/>
+      <column name="cm_id" type="VARCHAR(255)"/>
+      <column name="cm_link" type="VARCHAR(255)"/>
+      <column name="img_link" type="VARCHAR(255)"/>
+      <column name="price" type="VARCHAR(255)"/>
+      <column name="price_trend" type="VARCHAR(255)"/>
+      <column name="price_trend_valid" type="BOOLEAN"/>
+      <column name="rev" type="BIGINT"/>
+      <column name="REVTYPE" type="INTEGER"/>
+    </createTable>
+    <addPrimaryKey columnNames="id, rev" constraintName="pk_products_aud" schemaName="watcher"
+      tableName="products_aud"/>
+  </changeSet>
+
+    <changeSet author="havonte" id="6-create-product_name_translations-aud-table">
+
+        <createTable schemaName="watcher" tableName="product_name_translations_aud">
+            <column name="id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="product_id" type="BIGINT"/>
+            <column name="name" type="VARCHAR(255)"/>
+            <column name="rarity" type="VARCHAR(255)"/>
+            <column name="language_code" type="VARCHAR(512)"/>
+            <column name="rev" type="BIGINT"/>
+            <column name="REVTYPE" type="INTEGER"/>
+        </createTable>
+      <addPrimaryKey columnNames="id, rev" constraintName="pk_product_name_translations_aud" schemaName="watcher"
+        tableName="product_name_translations_aud"/>
+    </changeSet>
+
+
+</databaseChangeLog>
