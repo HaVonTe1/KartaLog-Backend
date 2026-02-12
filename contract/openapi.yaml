@@ -46,6 +46,8 @@ paths:
           required: true
           schema:
             type: string
+            minLength: 1
+            maxLength: 255
             example: "Pikachu"
         - name: locale
           in: query

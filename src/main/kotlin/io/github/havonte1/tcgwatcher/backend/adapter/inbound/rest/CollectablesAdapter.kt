@@ -28,12 +28,15 @@ class CollectablesAdapter(
         locale: String,
         game: String
     ): ResponseEntity<List<ProductDTO>> {
+        
+        require(page >= 0) { "Page index must be non-negative" }
+        require(size > 0) { "Page size must be positive" }
+        require(query.isNotBlank()) { "Query must not be blank" }
         logger.debug {
             "listCollectables called with page={$page}, size={$size}, query={$query} locale={$locale} game=$game"
         }
-        // Use empty string when query is null
         val results = collectablesService.search(query, locale, game)
-        // Simple pagination logic
+
         val from = (page * size).coerceAtMost(results.size)
         val to = ((page + 1) * size).coerceAtMost(results.size)
         val pageSlice = results.subList(from, to)
