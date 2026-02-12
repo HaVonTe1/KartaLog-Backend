@@ -14,35 +14,35 @@ import org.springframework.stereotype.Component
 @Component
 class ProductMapper {
     /** Convert a domain [Product] into a JPA [ProductEntity]. */
-    fun toEntity(product: Product): ProductEntity {
-        // Create the product entity with an empty set of name translations
-        val entity = ProductEntity(
-            id = product.id,
-            externalId = product.externalId,
-            setName = product.setName,
-            rarity = product.rarity,
-            codeInfo = product.codeInfo?.value,
-            codeInfoValid = product.codeInfo?.valid,
-            genre = product.genre,
-            type = product.type,
-            cmId = product.cmId,
-            imgLink = product.imgLink,
-            price = product.price,
-            priceTrend = product.priceTrendInfo?.value,
-priceTrendValid = product.priceTrendInfo?.valid
+fun toEntity(product: Product): ProductEntity {
+         // Create the product entity with an empty set of name translations
+         val entity = ProductEntity(
+             id = product.id,
+             externalId = product.externalId,
+             setName = product.setName,
+             rarity = product.rarity,
+             codeInfo = product.codeInfo?.value,
+             codeInfoValid = product.codeInfo?.valid,
+             genre = product.genre,
+             type = product.type,
+             cmId = product.cmId,
+             imgLink = product.imgLink,
+             price = product.price,
+             priceTrend = product.priceTrendInfo?.value,
+             priceTrendValid = product.priceTrendInfo?.valid
          )
          // Map each name translation from the product's names map
-        product.names.forEach { (locale, name) ->
-            val translation = NameTranslationEntity(
-                id = 0, // let JPA generate ID
-                product = entity,
-                languageCode = locale,
-                name = name
-            )
-            entity.nameTranslations.add(translation)
-        }
-        return entity
-    }
+         product.names.forEach { (locale, name) ->
+             val translation = NameTranslationEntity(
+                 id = 0, // let JPA generate ID
+                 product = entity,
+                 languageCode = locale,
+                 name = name
+             )
+             entity.nameTranslations.add(translation)
+         }
+         return entity
+     }
 
     /** Convert a JPA [ProductEntity] into a domain [Product]. */
     fun toDomain(entity: ProductEntity): Product {

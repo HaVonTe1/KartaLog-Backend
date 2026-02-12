@@ -31,8 +31,8 @@ class NameTranslationEntity(
     @Column(name = "language_code", nullable = false)
     val languageCode: String,
 
-    @Column(name = "name", nullable = false)
-    val name: String
+@Column(name = "name", nullable = false)
+     var name: String
 ) : Serializable {
     // JPA requires a no‑arg constructor
     constructor(): this(0, null, "", "")

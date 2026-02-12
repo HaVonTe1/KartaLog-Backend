@@ -1,5 +1,6 @@
 package io.github.havonte1.tcgwatcher.backend.adapter.out.persistence.repository
 
+import io.github.havonte1.tcgwatcher.backend.adapter.out.persistence.entity.NameTranslationEntity
 import io.github.havonte1.tcgwatcher.backend.adapter.out.persistence.entity.ProductEntity
 import io.github.havonte1.tcgwatcher.backend.adapter.out.persistence.mapper.ProductMapper
 import io.github.havonte1.tcgwatcher.backend.adapter.out.persistence.mapper.SearchResultMapper
@@ -40,23 +41,38 @@ class SearchResultRepositoryAdapter(
     /**
      * Inserts new product entities or updates existing ones based on external ID.
      */
-    private fun upsertProducts(products: List<Product>): List<ProductEntity> {
-        val externalIds = products.map { it.externalId }
-        val existingProducts = productJpaRepository
-            .findAllByExternalIdIn(externalIds)
-            .associateBy { it.externalId }
+private fun upsertProducts(products: List<Product>): List<ProductEntity> {
+         val externalIds = products.map { it.externalId }
+         val existingProducts = productJpaRepository
+             .findAllByExternalIdIn(externalIds)
+             .associateBy { it.externalId }
 
-        val entitiesToPersist = products.map { product ->
-            val existing = existingProducts[product.externalId]
-            if (existing != null) {
-                updateEntity(existing, product)
-                existing
-            } else {
-                productMapper.toEntity(product)
-            }
-        }
-        return productJpaRepository.saveAll(entitiesToPersist)
-    }
+         val entitiesToPersist = products.map { product ->
+             val existing = existingProducts[product.externalId]
+             if (existing != null) {
+                 updateEntity(existing, product)
+                 existing
+             } else {
+                 productMapper.toEntity(product)
+             }
+         }
+         return productJpaRepository.saveAll(entitiesToPersist)
+     }
+
+private fun mergeNameTranslations(entity: ProductEntity, product: Product) {
+          val existingLocales = entity.nameTranslations.associate { it.languageCode to it }
+          product.names.forEach { (locale, name) ->
+              if (existingLocales.containsKey(locale)) {
+                  existingLocales[locale]!!.name = name
+              } else {
+                  val translation = NameTranslationEntity(
+                      languageCode = locale,
+                      name = name
+                  )
+                  entity.nameTranslations.add(translation)
+              }
+          }
+      }
 
 private fun updateEntity(
          productEntity: ProductEntity,
@@ -69,14 +85,15 @@ private fun updateEntity(
              updatedAt = product.updatedAt ?: Instant.now()
          )
 
-        // important: we only expect changes in the prices of a product
-        // no .equals or == here !
-        if (productEntity.compareTo(updated) != 0) {
-            // actualy the 'save' isnt realy necessary BUT without it hibernate doesnt do the UPDATE
-            return productJpaRepository.save(updated)
-        }
-        return updated
-    }
+         // important: we only expect changes in the prices of a product
+         // no .equals or == here !
+         if (productEntity.compareTo(updated) != 0) {
+             // actualy the 'save' isnt realy necessary BUT without it hibernate doesnt do the UPDATE
+             return productJpaRepository.save(updated)
+         }
+         mergeNameTranslations(productEntity, product)
+         return updated
+     }
 
     @Transactional
     override fun deleteAll() {
