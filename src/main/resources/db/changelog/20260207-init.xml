@@ -1,108 +1,111 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.8.xsd">
+<databaseChangeLog xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.8.xsd">
 
 
-    <changeSet id="20260207-00" author="dirk">
-        <sql>CREATE SCHEMA IF NOT EXISTS watcher</sql>
-    </changeSet>
+  <changeSet author="dirk" id="20260207-00">
+    <sql>CREATE SCHEMA IF NOT EXISTS watcher</sql>
+  </changeSet>
 
 
-    <changeSet id="20260207-01" author="dirk">
-        <createTable tableName="products" schemaName="watcher">
-            <column name="id" type="BIGINT" autoIncrement="true">
-                <constraints primaryKey="true" nullable="false" />
-            </column>
-            <column name="external_id" type="BIGINT">
-                <constraints nullable="false" unique="true" />
-            </column>
-            <column name="set_name" type="VARCHAR(255)" />
-            <column name="rarity" type="VARCHAR(255)" />
-            <column name="image_url" type="VARCHAR(255)" />
-            <column name="code_info" type="VARCHAR(255)" />
-            <column name="code_info_valid" type="BOOLEAN" />
-            <column name="genre" type="VARCHAR(255)" />
-            <column name="type" type="VARCHAR(255)" />
-            <column name="cm_id" type="VARCHAR(255)" />
-            <column name="cm_link" type="VARCHAR(255)" />
-            <column name="img_link" type="VARCHAR(255)" />
-            <column name="price" type="VARCHAR(255)" />
-            <column name="price_trend" type="VARCHAR(255)" />
-<column name="price_trend_valid" type="BOOLEAN" />
-             <column name="created_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP">
-                 <constraints nullable="false" />
-             </column>
-             <column name="updated_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP">
-                 <constraints nullable="false" />
-             </column>
-        </createTable>
-    </changeSet>
+  <changeSet author="dirk" id="20260207-01">
+    <createTable schemaName="watcher" tableName="products">
+      <column autoIncrement="true" name="id" type="BIGINT">
+        <constraints nullable="false" primaryKey="true"/>
+      </column>
+      <column name="external_id" type="BIGINT">
+        <constraints nullable="false" unique="true"/>
+      </column>
+      <column name="set_name" type="VARCHAR(255)"/>
+      <column name="rarity" type="VARCHAR(255)"/>
+      <column name="image_url" type="VARCHAR(255)"/>
+      <column name="code_info" type="VARCHAR(255)"/>
+      <column name="code_info_valid" type="BOOLEAN"/>
+      <column name="genre" type="VARCHAR(255)"/>
+      <column name="type" type="VARCHAR(255)"/>
+      <column name="cm_id" type="VARCHAR(255)"/>
+      <column name="cm_link" type="VARCHAR(255)"/>
+      <column name="img_link" type="VARCHAR(255)"/>
+      <column name="price" type="VARCHAR(255)"/>
+      <column name="price_trend" type="VARCHAR(255)"/>
+      <column name="price_trend_valid" type="BOOLEAN"/>
+      <column defaultValueComputed="CURRENT_TIMESTAMP" name="created_at" type="TIMESTAMP">
+        <constraints nullable="false"/>
+      </column>
+      <column defaultValueComputed="CURRENT_TIMESTAMP" name="updated_at" type="TIMESTAMP">
+        <constraints nullable="false"/>
+      </column>
+    </createTable>
+  </changeSet>
 
-    <changeSet id="20260207-02" author="dirk">
-        <createTable tableName="product_name_translations" schemaName="watcher">
-            <column name="id" type="BIGINT" autoIncrement="true">
-                <constraints primaryKey="true" nullable="false" />
-            </column>
-            <column name="product_id" type="BIGINT">
-                <constraints nullable="false" />
-            </column>
-            <column name="language_code" type="VARCHAR(5)">
-                <constraints nullable="false" />
-            </column>
-            <column name="name" type="VARCHAR(255)">
-                <constraints nullable="false" />
-            </column>
-        </createTable>
-<addForeignKeyConstraint baseTableName="product_name_translations"
-                                  baseColumnNames="product_id"
-                                  baseTableSchemaName="watcher"
-                                  referencedTableName="products"
-                                  referencedColumnNames="id"
-                                  referencedTableSchemaName="watcher"
-                                  constraintName="fk_name_translation_product"
-                                  onDelete="CASCADE"/>
-    </changeSet>
+  <changeSet author="dirk" id="20260207-02">
 
-    <changeSet id="20260207-03" author="dirk">
-        <createTable tableName="search_results" schemaName="watcher">
-            <column name="id" type="BIGINT" autoIncrement="true">
-                <constraints primaryKey="true" nullable="false" />
-            </column>
-            <column name="query" type="VARCHAR(255)" >
-                <constraints nullable="false" unique="true" />
-            </column>
-            <column name="created_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP" />
-        </createTable>
+    <createTable schemaName="watcher" tableName="product_name_translations">
+      <column autoIncrement="true" name="id" type="BIGINT">
+        <constraints nullable="false" primaryKey="true"/>
+      </column>
+      <column name="product_id" type="BIGINT">
+        <constraints nullable="false"/>
+      </column>
+      <column name="language_code" type="VARCHAR(5)">
+        <constraints nullable="false"/>
+      </column>
+      <column name="name" type="VARCHAR(255)">
+        <constraints nullable="false"/>
+      </column>
+    </createTable>
+      <addForeignKeyConstraint baseColumnNames="product_id"
+        baseTableName="product_name_translations"
+        baseTableSchemaName="watcher"
+        constraintName="fk_name_translation_product"
+        onDelete="CASCADE"
+        referencedColumnNames="id"
+        referencedTableName="products"
+        referencedTableSchemaName="watcher"/>
+  </changeSet>
 
-        <createTable tableName="search_result_products" schemaName="watcher">
-            <column name="search_result_id" type="BIGINT">
-                <constraints nullable="false" />
-            </column>
-            <column name="product_id" type="BIGINT">
-                <constraints nullable="false" />
-            </column>
-        </createTable>
+  <changeSet author="dirk" id="20260207-03">
 
-        <addForeignKeyConstraint baseTableName="search_result_products"
-                                  baseColumnNames="search_result_id"
-                                  baseTableSchemaName="watcher"
-                                  referencedTableName="search_results"
-                                  referencedColumnNames="id"
-                                  referencedTableSchemaName="watcher"
-                                  constraintName="fk_search_result_product"
-                                  onDelete="CASCADE"/>
-        <addForeignKeyConstraint baseTableName="search_result_products"
-                                  baseColumnNames="product_id"
-                                  baseTableSchemaName="watcher"
-                                  referencedTableName="products"
-                                  referencedColumnNames="id"
-                                  referencedTableSchemaName="watcher"
-                                  constraintName="fk_search_result_product_product"
-                                  onDelete="CASCADE"/>
-    </changeSet>
 
-    <changeSet id="20260207-04" author="dirk">
-        <addColumn tableName="search_results" schemaName="watcher">
-            <column name="cached_at" type="TIMESTAMP"/>
-        </addColumn>
-    </changeSet>
+    <createTable schemaName="watcher" tableName="search_results">
+      <column autoIncrement="true" name="id" type="BIGINT">
+        <constraints nullable="false" primaryKey="true"/>
+      </column>
+      <column name="query" type="VARCHAR(255)">
+        <constraints nullable="false" unique="true"/>
+      </column>
+      <column name="cached_at" type="TIMESTAMP">
+        <constraints nullable="false"/>
+      </column>
+    </createTable>
+
+    <createTable schemaName="watcher" tableName="search_result_products">
+      <column name="search_result_id" type="BIGINT">
+        <constraints nullable="false"/>
+      </column>
+      <column name="product_id" type="BIGINT">
+        <constraints nullable="false"/>
+      </column>
+    </createTable>
+      <addForeignKeyConstraint baseColumnNames="search_result_id"
+        baseTableName="search_result_products"
+        baseTableSchemaName="watcher"
+        constraintName="fk_search_result_product"
+        onDelete="CASCADE"
+        referencedColumnNames="id"
+        referencedTableName="search_results"
+        referencedTableSchemaName="watcher"/>
+
+      <addForeignKeyConstraint baseColumnNames="product_id"
+        baseTableName="search_result_products"
+        baseTableSchemaName="watcher"
+        constraintName="fk_search_result_product_product"
+        onDelete="CASCADE"
+        referencedColumnNames="id"
+        referencedTableName="products"
+        referencedTableSchemaName="watcher"/>
+  </changeSet>
+
+
 </databaseChangeLog>

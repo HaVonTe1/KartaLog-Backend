@@ -28,8 +28,6 @@ class SearchResultEntity(
     @Column(nullable = false, unique = true)
     val query: String,
 
-    @Column(name = "created_at", nullable = false, updatable = false)
-    val createdAt: Instant = Instant.now(),
 
     @Column(name = "cached_at")
     val cachedAt: Instant? = null,
@@ -47,7 +45,7 @@ class SearchResultEntity(
     val products: MutableSet<ProductEntity> = mutableSetOf()
 ) : java.io.Serializable {
     // JPA requires a no‑arg constructor
-    constructor() : this(0, "", Instant.now(), null)
+    constructor() : this(0, "", Instant.now())
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

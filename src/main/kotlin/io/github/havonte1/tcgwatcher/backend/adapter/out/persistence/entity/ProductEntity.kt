@@ -7,19 +7,15 @@ import jakarta.persistence.FetchType
 import jakarta.persistence.GeneratedValue
 import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
+import jakarta.persistence.OneToMany
 import jakarta.persistence.PrePersist
 import jakarta.persistence.PreUpdate
-import jakarta.persistence.OneToMany
 import jakarta.persistence.Table
-import java.io.Serializable
 import org.hibernate.envers.Audited
-
+import org.hibernate.envers.NotAudited
+import java.io.Serializable
 import java.time.Instant
 
-/**
- * JPA entity representing a product (collectible card).
- * Mirrors the core domain model [com.github.havonte1.domain.model.Product].
- */
 @Audited // Envers auditing for product history
 @Entity
 @Table(name = "products", schema = "watcher")
@@ -64,9 +60,11 @@ data class ProductEntity(
     @Column(name = "price_trend_valid")
     val priceTrendValid: Boolean? = null,
 
+    @NotAudited
     @Column(name = "created_at", nullable = false, updatable = false)
     var createdAt: Instant = Instant.now(),
 
+    @NotAudited
     @Column(name = "updated_at", nullable = false)
     var updatedAt: Instant = Instant.now(),
 
