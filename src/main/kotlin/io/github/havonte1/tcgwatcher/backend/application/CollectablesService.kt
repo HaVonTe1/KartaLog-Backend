@@ -28,17 +28,15 @@ class CollectablesService(
 
         val cached = searchResultRepository.findByQuery(searchString)
         if (cached != null) {
-            // TTL configurable via CacheConfig (hours)
             val ttl = java.time.Duration.ofHours(cacheConfig.ttlHours)
             val now = java.time.Instant.now()
             val cachedAt = cached.cachedAt
-            if (cachedAt != null && cachedAt.isAfter(now.minus(ttl))) {
+            if (cachedAt != null && now.isBefore(cachedAt.plus(ttl))) {
                 logger.debug {
                     "Cache hit (fresh) for query='$searchString' – returning ${cached.products.size} products"
                 }
                 return cached.products
             }
-            // otherwise treat as miss and refresh
             logger.debug { "Cache stale for query='$searchString' – refreshing" }
         }
 
