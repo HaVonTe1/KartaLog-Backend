@@ -24,11 +24,6 @@ private const val BERLIN_LAT = 52.5200
 
 private const val BERLIN_LONG = 13.4050
 
-/**
- * Responsible for performing the HTTP fetch using Playwright.
- * Returns the raw HTML content of the CardMarket search page.
- */
-
 @Component
 class CardMarketWebFetcher(
     private val playwrightManager: PlaywrightManager = PlaywrightManager(),
@@ -36,70 +31,69 @@ class CardMarketWebFetcher(
 ) : CardMarketWebFetcherPort {
     private val logger = KotlinLogging.logger {}
 
-    /**
-     * Fetches the search page HTML for the given [searchString].
-     * The function creates a Playwright instance, launches a Chromium browser,
-     * navigates to the search URL, waits for network idle, and returns the page content.
-     */
+    internal val circuitBreaker: CircuitBreaker by lazy {
+        createCircuitBreaker()
+    }
 
-    override fun fetch(searchString: String, locale: String, game: String): Result<String> {
-        // Build Resilience4j Retry and CircuitBreaker based on config
-        val retryConfig = RetryConfig.custom<Any>()
-            .maxAttempts(config.retryAttempts)
-            .waitDuration(Duration.ofMillis(500))
-            .intervalFunction(io.github.resilience4j.core.IntervalFunction.ofExponentialBackoff(500, 2.0))
-            .build()
-        val retry = Retry.of("cardMarketFetcherRetry", retryConfig)
+    internal val retry: Retry by lazy {
+        createRetry()
+    }
 
+    private fun createCircuitBreaker(): CircuitBreaker {
         val circuitBreakerConfig = CircuitBreakerConfig.custom()
-            .failureRateThreshold(50.0F)
+            .failureRateThreshold(config.circuitBreaker.failureThreshold.toFloat())
             .slowCallRateThreshold(100.0F)
             .slowCallDurationThreshold(Duration.ofSeconds(10))
-            .minimumNumberOfCalls(config.circuitBreaker.failureThreshold)
+            .minimumNumberOfCalls(10)
             .slidingWindowSize(config.circuitBreaker.slidingWindowSec.toInt())
             .waitDurationInOpenState(Duration.ofSeconds(config.circuitBreaker.waitDurationSec))
             .build()
-        val circuitBreaker = CircuitBreaker.of("cardMarketFetcherCB", circuitBreakerConfig)
+        return CircuitBreaker.of("cardMarketFetcherCB", circuitBreakerConfig)
+    }
 
-        // Supplier that performs the actual Playwright fetch and returns the raw HTML string
-        val supplier = Supplier<String> {
-            val playwright = playwrightManager.playwright
-            playwright.use {
-                val browser: Browser = playwrightManager.browser
-                val contextOptions = Browser.NewContextOptions()
-                    .setGeolocation(BERLIN_LAT, BERLIN_LONG)
-                    .setPermissions(listOf("geolocation"))
-                    .setUserAgent(USERAGENT)
+    private fun createRetry(): Retry {
+        val retryConfig = RetryConfig.custom<String>()
+            .maxAttempts(config.retryAttempts)
+            .waitDuration(Duration.ofMillis(500))
+            
+            .build()
+        return Retry.of("cardMarketFetcherRetry", retryConfig)
+    }
 
-                val storageFile = Paths.get("auth.json")
-                if (storageFile.exists()) {
-                    contextOptions.setStorageStatePath(storageFile)
-                }
-                val context = browser.newContext(contextOptions)
-                val page: Page = context.newPage()
-                val url = "${config.basePath}/$locale/$game/Products/Search?searchString=$searchString"
-                // Apply timeout from config (milliseconds)
-                page.navigate(url, Page.NavigateOptions().setTimeout(config.timeoutMs.toDouble()))
-                logger.debug { "Navigated to ${page.url()}" }
-                page.waitForLoadState(LoadState.DOMCONTENTLOADED)
-                val content = page.content()
-                logger.debug { "Fetched content length: ${content.length}" }
-                // Save storage state
-                context.storageState(BrowserContext.StorageStateOptions().setPath(Paths.get("auth.json")))
-                browser.close()
-                content
-            }
-        }
+    override fun fetch(searchString: String, locale: String, game: String): Result<String> {
+        val supplier = Supplier<String> { performFetch(searchString, locale, game) }
 
-        // Apply retry then circuit breaker to the supplier
-        val retrySupplier = Retry.decorateSupplier(retry, supplier)
-        val cbSupplier = CircuitBreaker.decorateSupplier(circuitBreaker, retrySupplier)
+        val decoratedSupplier = CircuitBreaker.decorateSupplier(circuitBreaker, Retry.decorateSupplier(retry, supplier))
+
         return try {
-            Result.success(cbSupplier.get())
+            Result.success(decoratedSupplier.get())
         } catch (e: Exception) {
             logger.warn { "Failed to fetch CardMarket page: ${e.message}" }
             Result.failure(e)
         }
     }
-        // (Old implementation removed)
+
+    private fun performFetch(searchString: String, locale: String, game: String): String = playwrightManager.playwright.use {
+        val browser: Browser = playwrightManager.browser
+        val contextOptions = Browser.NewContextOptions()
+            .setGeolocation(BERLIN_LAT, BERLIN_LONG)
+            .setPermissions(listOf("geolocation"))
+            .setUserAgent(USERAGENT)
+
+        val storageFile = Paths.get("auth.json")
+        if (storageFile.exists()) {
+            contextOptions.setStorageStatePath(storageFile)
+        }
+        val context = browser.newContext(contextOptions)
+        val page: Page = context.newPage()
+        val url = "${config.basePath}/$locale/$game/Products/Search?searchString=$searchString"
+        page.navigate(url, Page.NavigateOptions().setTimeout(config.timeoutMs.toDouble()))
+        logger.debug { "Navigated to ${page.url()}" }
+        page.waitForLoadState(LoadState.DOMCONTENTLOADED)
+        val content = page.content()
+        logger.debug { "Fetched content length: ${content.length}" }
+        context.storageState(BrowserContext.StorageStateOptions().setPath(Paths.get("auth.json")))
+        browser.close()
+        content
+    }
 }
