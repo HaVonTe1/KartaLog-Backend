@@ -6,30 +6,28 @@ plugins {
     id("io.spring.dependency-management") version "1.1.6"
 }
 
-
-
-
-
 openApiGenerate {
     generatorName.set("kotlin-spring")
     inputSpec.set("$rootDir/contract/openapi.yaml")
     outputDir.set(layout.buildDirectory.asFile.get().resolve("generated/").path)
     apiPackage.set("io.github.havonte1.tcgwatcher.backend.adapter.inbound.rest.api")
     modelPackage.set("io.github.havonte1.tcgwatcher.backend.adapter.inbound.rest.model")
-    configOptions.set(mapOf(
-        "interfaceOnly" to "true",
-        "useSpringBoot3" to "true",
-        "packageVersion" to "0.1.0"
-    ))
+    configOptions.set(
+        mapOf(
+            "interfaceOnly" to "true",
+            "useSpringBoot3" to "true",
+            "packageVersion" to "0.1.0",
+            "reactive" to "true",
+            "declarativeInterfaceReactiveMode" to "coroutines",
+            "useFlowForArrayReturnType" to "false",
+            "skipDefaultInterface" to "true"
+        )
+    )
 }
-
-
 
 tasks.named("compileKotlin") {
     dependsOn("openApiGenerate")
 }
-
-
 
 tasks.withType<Test> {
     useJUnitPlatform()
@@ -84,6 +82,7 @@ dependencies {
     // Kotlin & logging
     // -------------------------------------------------
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor:1.8.1")
     implementation("io.github.oshai:kotlin-logging-jvm:7.0.14")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
@@ -105,7 +104,6 @@ dependencies {
     // Database drivers
     // -------------------------------------------------
     runtimeOnly("org.postgresql:postgresql")
-
 
     // -------------------------------------------------
     // Optional dev tools (runtime)
@@ -138,5 +136,4 @@ dependencies {
     testImplementation("io.mockk:mockk:1.13.12")
     testImplementation("org.junit.jupiter:junit-jupiter-api")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
-
 }

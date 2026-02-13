@@ -4,6 +4,7 @@ import io.github.havonte1.tcgwatcher.backend.adapter.out.webscraper.cardmarket.C
 import io.github.havonte1.tcgwatcher.backend.adapter.out.webscraper.cardmarket.CardMarketWebFetcherPort
 import io.github.havonte1.tcgwatcher.backend.domain.model.Product
 import io.github.havonte1.tcgwatcher.backend.domain.port.out.CardMarketScraperPort
+import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Assumptions
@@ -28,16 +29,26 @@ class CardMarketScraperAdapterTest {
         val file = File(resourcePath)
         Assumptions.assumeTrue(file.exists(), "Ressource fehlt, Test wird übersprungen")
         // Use a simple test implementation of CardMarketWebFetcherPort that reads the HTML file.
-        class TestCardMarketWebFetcher(private val resourcePath: String) : CardMarketWebFetcherPort {
-            override fun fetch(searchString: String): String = Files.readString(Paths.get(resourcePath))
+        class TestCardMarketWebFetcher : CardMarketWebFetcherPort {
+            override fun fetch(
+                searchString: String,
+                locale: String,
+                game: String
+            ): String = Files.readString(Paths.get(resourcePath))
         }
 
-        val testFetcher = TestCardMarketWebFetcher(resourcePath)
+        val testFetcher = TestCardMarketWebFetcher()
         val adapter: CardMarketScraperPort = CardMarketScraperAdapter(testFetcher)
 
         // ----- Execute the adapter -----
 
-        val result: List<Product> = kotlinx.coroutines.runBlocking { adapter.search("Pikachu") }
+        val result: List<Product> = runBlocking {
+            adapter.search(
+                "Pikachu",
+                locale = "de",
+                game = "Pokemon"
+            )
+        }
 
         // ----- Verify -----
         assertEquals(30, result.size, "Exactly one product should be parsed")

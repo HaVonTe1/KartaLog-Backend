@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.RestController
 
+
 /**
  * REST controller for collectables.
  *
@@ -21,15 +22,22 @@ class CollectablesAdapter(
 
     private val logger = KotlinLogging.logger {}
 
-    override fun listCollectables(
+    override suspend fun listCollectables(
+        query: String,
         page: Int,
         size: Int,
-        query: String?
+        locale: String,
+        game: String
     ): ResponseEntity<List<ProductDTO>> {
-        logger.debug { "listCollectables called with page={$page}, size={$size}, query={$query}" }
-        // Use empty string when query is null
-        val results = collectablesService.search(query ?: "")
-        // Simple pagination logic
+
+        require(page >= 0) { "Page index must be non-negative" }
+        require(size > 0) { "Page size must be positive" }
+        require(query.isNotBlank()) { "Query must not be blank" }
+        logger.debug {
+            "listCollectables called with page={$page}, size={$size}, query={$query} locale={$locale} game=$game"
+        }
+        val results = collectablesService.search(query, locale, game)
+
         val from = (page * size).coerceAtMost(results.size)
         val to = ((page + 1) * size).coerceAtMost(results.size)
         val pageSlice = results.subList(from, to)

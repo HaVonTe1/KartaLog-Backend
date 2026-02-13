@@ -39,6 +39,21 @@
     </createTable>
   </changeSet>
 
+  <changeSet author="dirk" id="20260207-04">
+    <createIndex schemaName="watcher" tableName="products" indexName="idx_products_set_name">
+      <column name="set_name"/>
+    </createIndex>
+    <createIndex schemaName="watcher" tableName="products" indexName="idx_products_rarity">
+      <column name="rarity"/>
+    </createIndex>
+    <createIndex schemaName="watcher" tableName="products" indexName="idx_products_genre">
+      <column name="genre"/>
+    </createIndex>
+    <createIndex schemaName="watcher" tableName="products" indexName="idx_products_type">
+      <column name="type"/>
+    </createIndex>
+  </changeSet>
+
   <changeSet author="dirk" id="20260207-02">
 
     <createTable schemaName="watcher" tableName="product_name_translations">

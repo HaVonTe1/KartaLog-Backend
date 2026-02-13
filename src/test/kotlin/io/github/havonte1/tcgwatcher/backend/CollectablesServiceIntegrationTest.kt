@@ -7,6 +7,7 @@ import io.github.havonte1.tcgwatcher.backend.domain.model.Product
 import io.github.havonte1.tcgwatcher.backend.domain.port.out.CardMarketScraperPort
 import io.github.havonte1.tcgwatcher.backend.domain.port.out.ProductRepository
 import io.github.havonte1.tcgwatcher.backend.domain.port.out.SearchResultRepository
+import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assumptions
 import org.junit.jupiter.api.BeforeEach
@@ -45,11 +46,11 @@ class CollectablesServiceIntegrationTest {
         @Primary // Override the real scraper bean with this test double
         fun cardMarketScraperPort(): CardMarketScraperPort = object : CardMarketScraperPort {
             var callCount = 0
-            override suspend fun search(searchString: String): List<Product> {
+            override suspend fun search(searchString: String, locale: String, game: String): List<Product> {
                 callCount++
                 // Simple in‑memory fetcher that reads the fixture
                 class TestFetcher : CardMarketWebFetcherPort {
-                    override fun fetch(searchString: String): String {
+                    override fun fetch(searchString: String, locale: String, game: String): String {
                         if (callCount == 1) {
                             return Files.readString(Paths.get(testFilePikachu30))
                         }
@@ -57,7 +58,11 @@ class CollectablesServiceIntegrationTest {
                     }
                 }
                 val adapter = CardMarketScraperAdapter(TestFetcher())
-                return adapter.search(searchString)
+                return adapter.search(
+                    searchString,
+                    locale = locale,
+                    game = game
+                )
             }
         }
     }
@@ -98,7 +103,7 @@ class CollectablesServiceIntegrationTest {
         Assumptions.assumeTrue(File(testFilePikachu40).exists())
 
         // First call – cache miss, scraper should be invoked once
-        val firstResult = service.search("Pikachu30")
+        val firstResult = runBlocking { service.search("Pikachu30", "de", "Pokemon") }
         assertEquals(30, firstResult.size)
         // Cast scraper to access callCount
         val testScraper = scraperPort as? Any
@@ -110,7 +115,7 @@ class CollectablesServiceIntegrationTest {
         assertEquals(30, cached?.products?.size)
 
         // Second call – cache hit, scraper must NOT be invoked again
-        val secondResult = service.search("Pikachu30")
+        val secondResult = runBlocking { service.search("Pikachu30", "de", "Pokemon") }
         assertEquals(30, secondResult.size)
         assertEquals(1, callCountField.getInt(testScraper), "Scraper should not be called on cache hit")
 
@@ -120,7 +125,7 @@ class CollectablesServiceIntegrationTest {
         } ?: fail("No element with externalId=576753 found")
         // anothr query but the results are slightly different
 
-        val thirdResult = service.search("Pikachu40")
+        val thirdResult = runBlocking {service.search("Pikachu40", "de", "Pokemon")}
         assertEquals(30, thirdResult.size)
         assertEquals(2, callCountField.getInt(testScraper), "Scraper should  be called on another query")
 

@@ -16,14 +16,16 @@ spring:
       watcher_app.password: ${WATCHER_APP_PWD}
       application.password: ${APPLICATION_PWD}
   jpa:
-    show-sql: true
+    show-sql: false
     open-in-view: false
     properties:
       hibernate:
         jdbc:
           batch_size: 50
         order_updates: true
-        
+
 logging:
   level:
     com.github.havonte1: trace
+    org.springframework.web: trace
+    web: trace

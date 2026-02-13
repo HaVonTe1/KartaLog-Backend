@@ -63,7 +63,10 @@ class CardMarketScraperAdapterIT {
 
     @Test
     fun `search returns products with required fields`() {
-        val results: List<Product> = kotlinx.coroutines.runBlocking { scraper.search("Pikachu") }
+        val results: List<Product> =
+            kotlinx.coroutines.runBlocking {
+                scraper.search("Pikachu", "de", "Pokemon")
+            }
         Assertions.assertTrue(results.isNotEmpty(), "Expected at least one product for search term 'Pikachu'")
     }
 }
