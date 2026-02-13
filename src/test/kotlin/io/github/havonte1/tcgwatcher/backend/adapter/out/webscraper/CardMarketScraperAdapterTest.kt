@@ -34,7 +34,7 @@ class CardMarketScraperAdapterTest {
                 searchString: String,
                 locale: String,
                 game: String
-            ): String = Files.readString(Paths.get(resourcePath))
+            ): Result<String> = Result.success(Files.readString(Paths.get(resourcePath)))
         }
 
         val testFetcher = TestCardMarketWebFetcher()

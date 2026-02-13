@@ -50,11 +50,13 @@ class CollectablesServiceIntegrationTest {
                 callCount++
                 // Simple in‑memory fetcher that reads the fixture
                 class TestFetcher : CardMarketWebFetcherPort {
-                    override fun fetch(searchString: String, locale: String, game: String): String {
-                        if (callCount == 1) {
-                            return Files.readString(Paths.get(testFilePikachu30))
+                    override fun fetch(searchString: String, locale: String, game: String): Result<String> {
+                        val content = if (callCount == 1) {
+                            Files.readString(Paths.get(testFilePikachu30))
+                        } else {
+                            Files.readString(Paths.get(testFilePikachu40))
                         }
-                        return Files.readString(Paths.get(testFilePikachu40))
+                        return Result.success(content)
                     }
                 }
                 val adapter = CardMarketScraperAdapter(TestFetcher())

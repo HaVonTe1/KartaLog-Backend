@@ -8,9 +8,7 @@ import io.github.havonte1.tcgwatcher.backend.domain.port.out.CardMarketScraperPo
 import io.github.havonte1.tcgwatcher.backend.domain.port.out.ProductRepository
 import io.github.havonte1.tcgwatcher.backend.domain.port.out.SearchResultRepository
 import kotlinx.coroutines.runBlocking
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertNotNull
-import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Assumptions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -42,21 +40,22 @@ class SearchResultProductBehaviorTest {
             override suspend fun search(searchString: String, locale: String, game: String): List<Product> {
                 callCount++
                 class TestFetcher : CardMarketWebFetcherPort {
-                    override fun fetch(searchString: String, locale: String, game: String): String {
+                    override fun fetch(searchString: String, locale: String, game: String): Result<String> {
                         // First two calls return pikachu30. Subsequent calls return pikachu40
                         // to simulate updated prices.
-                        return when (callCount) {
+                        val content = when (callCount) {
                             1, 2 -> Files.readString(Paths.get(testFilePikachu30))
                             else -> Files.readString(Paths.get(testFilePikachu40))
                         }
+                        return Result.success(content)
                     }
                 }
+
                 val adapter = CardMarketScraperAdapter(TestFetcher())
                 return adapter.search(searchString, locale, game)
             }
         }
     }
-
     @Autowired
     lateinit var service: SearchUseCase
 
@@ -83,7 +82,7 @@ class SearchResultProductBehaviorTest {
         Assumptions.assumeTrue(Files.exists(Paths.get(f40)))
 
         // 1) Perform first search -> should persist 30 products
-        val resA = runBlocking { service.search("Pikachu30", "de", "Pokemon")}
+        val resA = runBlocking { service.search("Pikachu30", "de", "Pokemon") }
         assertEquals(30, resA.size)
         val allProductsAfterA = productRepo.findAll()
         assertEquals(30, allProductsAfterA.size, "All unique products should be persisted once")
@@ -95,7 +94,7 @@ class SearchResultProductBehaviorTest {
         assertEquals(30, allProductsAfterB.size)
 
         // 3) Now simulate a scraper run that returns the same products but with changed prices.
-        val resC = runBlocking {service.search("Pikachu-Updated", "de", "Pokemon")}
+        val resC = runBlocking { service.search("Pikachu-Updated", "de", "Pokemon") }
         assertEquals(30, resC.size)
 
         // Verify at least one product had its price updated in the DB.

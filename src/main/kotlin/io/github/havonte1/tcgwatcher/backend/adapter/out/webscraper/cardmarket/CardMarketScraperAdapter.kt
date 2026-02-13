@@ -25,7 +25,11 @@ class CardMarketScraperAdapter(
     ): List<Product> {
         logger.info { "Scraping CardMarket for $searchString" }
 
-        val content = webFetcher.fetch(searchString, locale, game)
+        val fetchResult = webFetcher.fetch(searchString, locale, game)
+        val content = fetchResult.getOrElse {
+            logger.warn { "Failed to fetch CardMarket page: ${it.message}" }
+            return emptyList()
+        }
         val result = contentParser.extractProductsFromHtml(content)
         return mapper.toProducts(result)
     }

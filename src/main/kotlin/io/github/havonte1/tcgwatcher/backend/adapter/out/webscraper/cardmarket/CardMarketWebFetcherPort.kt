@@ -8,5 +8,5 @@ interface CardMarketWebFetcherPort {
     /**
      * Returns the raw HTML content for the given search string.
      */
-    fun fetch(searchString: String, locale: String, game: String): String
+    fun fetch(searchString: String, locale: String, game: String): Result<String>
 }
