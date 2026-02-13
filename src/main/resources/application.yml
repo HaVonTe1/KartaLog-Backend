@@ -27,3 +27,5 @@ spring:
 logging:
   level:
     com.github.havonte1: trace
+    org.springframework.web: trace
+    web: trace
