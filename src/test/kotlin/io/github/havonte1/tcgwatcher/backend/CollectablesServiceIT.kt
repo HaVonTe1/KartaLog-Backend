@@ -34,7 +34,7 @@ import kotlin.test.fail
  */
 @SpringBootTest
 @Testcontainers
-class CollectablesServiceIntegrationTest {
+class CollectablesServiceIT {
 
     @TestConfiguration
     class ScraperTestConfig {

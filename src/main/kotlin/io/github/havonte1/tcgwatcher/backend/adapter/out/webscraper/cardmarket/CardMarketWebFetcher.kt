@@ -61,45 +61,45 @@ class CardMarketWebFetcher(
             .build()
         val circuitBreaker = CircuitBreaker.of("cardMarketFetcherCB", circuitBreakerConfig)
 
-        // Supplier that performs the actual Playwright fetch and returns Result
-        val supplier = Supplier<Result<String>> {
-            try {
-                val playwright = playwrightManager.playwright
-                playwright.use {
-                    val browser: Browser = playwrightManager.browser
-                    val contextOptions = Browser.NewContextOptions()
-                        .setGeolocation(BERLIN_LAT, BERLIN_LONG)
-                        .setPermissions(listOf("geolocation"))
-                        .setUserAgent(USERAGENT)
+        // Supplier that performs the actual Playwright fetch and returns the raw HTML string
+        val supplier = Supplier<String> {
+            val playwright = playwrightManager.playwright
+            playwright.use {
+                val browser: Browser = playwrightManager.browser
+                val contextOptions = Browser.NewContextOptions()
+                    .setGeolocation(BERLIN_LAT, BERLIN_LONG)
+                    .setPermissions(listOf("geolocation"))
+                    .setUserAgent(USERAGENT)
 
-                    val storageFile = Paths.get("auth.json")
-                    if (storageFile.exists()) {
-                        contextOptions.setStorageStatePath(storageFile)
-                    }
-                    val context = browser.newContext(contextOptions)
-                    val page: Page = context.newPage()
-                    val url = "${config.basePath}/$locale/$game/Products/Search?searchString=$searchString"
-                    // Apply timeout from config (milliseconds)
-                    page.navigate(url, Page.NavigateOptions().setTimeout(config.timeoutMs.toDouble()))
-                    logger.debug { "Navigated to ${page.url()}" }
-                    page.waitForLoadState(LoadState.DOMCONTENTLOADED)
-                    val content = page.content()
-                    logger.debug { "Fetched content length: ${content.length}" }
-                    // Save storage state
-                    context.storageState(BrowserContext.StorageStateOptions().setPath(Paths.get("auth.json")))
-                    browser.close()
-                    Result.success(content)
+                val storageFile = Paths.get("auth.json")
+                if (storageFile.exists()) {
+                    contextOptions.setStorageStatePath(storageFile)
                 }
-            } catch (e: Exception) {
-                logger.warn { "Failed to fetch CardMarket page: ${e.message}" }
-                Result.failure(e)
+                val context = browser.newContext(contextOptions)
+                val page: Page = context.newPage()
+                val url = "${config.basePath}/$locale/$game/Products/Search?searchString=$searchString"
+                // Apply timeout from config (milliseconds)
+                page.navigate(url, Page.NavigateOptions().setTimeout(config.timeoutMs.toDouble()))
+                logger.debug { "Navigated to ${page.url()}" }
+                page.waitForLoadState(LoadState.DOMCONTENTLOADED)
+                val content = page.content()
+                logger.debug { "Fetched content length: ${content.length}" }
+                // Save storage state
+                context.storageState(BrowserContext.StorageStateOptions().setPath(Paths.get("auth.json")))
+                browser.close()
+                content
             }
         }
 
         // Apply retry then circuit breaker to the supplier
         val retrySupplier = Retry.decorateSupplier(retry, supplier)
         val cbSupplier = CircuitBreaker.decorateSupplier(circuitBreaker, retrySupplier)
-        return cbSupplier.get()
+        return try {
+            Result.success(cbSupplier.get())
+        } catch (e: Exception) {
+            logger.warn { "Failed to fetch CardMarket page: ${e.message}" }
+            Result.failure(e)
+        }
     }
         // (Old implementation removed)
 }

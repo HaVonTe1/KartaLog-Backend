@@ -21,7 +21,7 @@ import kotlin.test.assertTrue
 @SpringBootTest
 @AutoConfigureMockMvc
 @Testcontainers
-class CollectablesAdapterIntegrationTest {
+class CollectablesAdapterIT {
 
     @Autowired
     lateinit var mockMvc: MockMvc
