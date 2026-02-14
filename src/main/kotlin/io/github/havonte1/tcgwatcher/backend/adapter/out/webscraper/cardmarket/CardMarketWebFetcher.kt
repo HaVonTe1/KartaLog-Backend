@@ -5,12 +5,14 @@ import com.microsoft.playwright.BrowserContext
 import com.microsoft.playwright.Page
 import com.microsoft.playwright.options.LoadState
 import io.github.havonte1.tcgwatcher.backend.config.CardMarketConfig
+import io.github.havonte1.tcgwatcher.backend.config.CardMarketConstants
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.github.resilience4j.circuitbreaker.CircuitBreaker
 import io.github.resilience4j.circuitbreaker.CircuitBreakerConfig
 import io.github.resilience4j.retry.Retry
 import io.github.resilience4j.retry.RetryConfig
 import org.springframework.stereotype.Component
+import java.net.URLEncoder
 import java.nio.file.Paths
 import kotlin.io.path.exists
 
@@ -86,7 +88,8 @@ class CardMarketWebFetcher(
         }
         val context = browser.newContext(contextOptions)
         val page: Page = context.newPage()
-        val url = "${config.basePath}/$locale/$game/Products/Search?searchString=$searchString"
+        val encodedSearchString = URLEncoder.encode(searchString, Charsets.UTF_8)
+        val url = buildUrl(locale, game, encodedSearchString)
         page.navigate(url, Page.NavigateOptions().setTimeout(config.timeoutMs.toDouble()))
         logger.debug { "Navigated to ${page.url()}" }
         page.waitForLoadState(LoadState.DOMCONTENTLOADED)
@@ -95,5 +98,11 @@ class CardMarketWebFetcher(
         context.storageState(BrowserContext.StorageStateOptions().setPath(Paths.get("auth.json")))
         browser.close()
         content
+    }
+
+    private fun buildUrl(locale: String, game: String, encodedSearchString: String): String {
+        val finalLocale = if (locale.isEmpty()) CardMarketConstants.DEFAULT_LOCALE else locale
+        val finalGame = if (game.isEmpty()) CardMarketConstants.DEFAULT_GAME else game
+        return "${config.basePath}${CardMarketConstants.PATH_SEPARATOR}$finalLocale${CardMarketConstants.PATH_SEPARATOR}$finalGame/Products/Search?searchString=$encodedSearchString"
     }
 }

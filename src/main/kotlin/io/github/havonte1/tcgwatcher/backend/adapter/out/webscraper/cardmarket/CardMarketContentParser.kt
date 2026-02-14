@@ -26,20 +26,20 @@ class CardMarketContentParser {
             val cmLink = it.attr("href")
             val parsedLink = parseLink(cmLink)
             val imgTag = it.getElementsByTag("img")
-            var imageLink = imgTag.attr("data-echo")
-            if (imageLink.isEmpty()) {
-                val imageLinkBySrc = imgTag.attr("src")
+            var imageLink = if (imgTag.size > 0) imgTag[0].attr("data-echo") else ""
+            if (imageLink.isEmpty() && imgTag.size > 0) {
+                val imageLinkBySrc = imgTag[0].attr("src")
                 if (imageLinkBySrc.startsWith("https")) {
                     imageLink = imageLinkBySrc
                 }
             }
             val titleTag = it.getElementsByTag("h2")
-            val localName = titleTag.text()
+            val localName = if (titleTag.size > 0) titleTag[0].text() else ""
             val matchResult = nameAndCodePattern.find(localName)
             val name = matchResult?.groupValues?.getOrNull(1)
             val code = matchResult?.groupValues?.getOrNull(2)
             val intPriceTag = it.getElementsByTag("b")
-            val intPrice = intPriceTag.text()
+            val intPrice = if (intPriceTag.size > 0) intPriceTag[0].text() else ""
             val itemDto = CardmarketProductGallaryItemDto(
                 name = NameDto(name ?: localName, parsedLink.language ?: "", localName),
                 code = CodeType(code ?: "", code != null),
@@ -67,18 +67,44 @@ class CardMarketContentParser {
         val id: String?
     )
 
-    private val languageAndGenreAndTypePattern = "^\\s*/?([^/]+)/([^/]+)/[^/]+/([^/]+)".toRegex()
-
     private fun parseLink(typePath: String?): ParsedLink {
         logger.debug { "Parsing Link: $typePath" }
-        val matchResult = typePath?.let { languageAndGenreAndTypePattern.find(it) }
-        val language = matchResult?.groupValues?.getOrNull(1)
-        val genre = matchResult?.groupValues?.getOrNull(2)
-        val type = matchResult?.groupValues?.getOrNull(3)
+        
+        if (typePath == null || typePath.trim().isEmpty()) {
+            return ParsedLink(null, null, null, null)
+        }
 
-        val cleanPath = typePath?.trim()?.trim('/')
-        val id = if (language != null) cleanPath?.substringAfter(language) else typePath
+        val parts = typePath.split('/')
+        
+        // Find index of first non-empty part after leading slash
+        var startIdx = 0
+        for (i in parts.indices) {
+            if (parts[i].isNotEmpty()) {
+                startIdx = i
+                break
+            }
+        }
 
+        if (parts.size - startIdx < 4) {
+            logger.debug { "Path does not have enough segments: $typePath" }
+            return ParsedLink(
+                parts.getOrNull(startIdx),
+                parts.getOrNull(startIdx + 1),
+                parts.getOrNull(startIdx + 2),
+                typePath
+            )
+        }
+
+        val language = parts[startIdx]
+        val genre = parts.getOrNull(startIdx + 1)
+        val type = if (parts.size > startIdx + 3 && parts[startIdx + 2] == "Products") {
+            parts.getOrNull(startIdx + 3)
+        } else {
+            parts.getOrNull(startIdx + 2)
+        }
+        
+        // ID is everything after the language segment, including the leading slash
+        val id = typePath.substringAfter("$language")
         val parsedLink = ParsedLink(language, genre, type, id)
         logger.debug { "Parsed Link: $parsedLink" }
         return parsedLink
@@ -87,8 +113,8 @@ class CardMarketContentParser {
     private fun parsePagination(document: Document): Int {
         logger.debug { "Looking for Pagination info" }
         val paginationDiv = document.getElementById("pagination")
-        val paginationSpans = paginationDiv?.getElementsByTag("span")
-        val paginationSpan = paginationSpans?.first { s -> s.hasClass("mx-1") }
+        val paginationSpans = paginationDiv?.getElementsByTag("span") ?: emptyList()
+        val paginationSpan = paginationSpans.firstOrNull { s -> s.hasClass("mx-1") }
 
         var groupValue: String? = null
         if (paginationSpan != null) {
