@@ -30,6 +30,7 @@
 **Solution:** 
 - Use environment variable substitution (there is a .env in the root directory)
 - Make locale/game to path parameters in the CollectablesApi (generated from openapi.yml in ./contract ). Make sure these new parameters are passed through until used in the WebFetcher. The Search URI should be constructed from a configurable base path and the new parameters.
+**Status:** Partially fixed - compose.yml uses `${POSTGRES_PASSWORD}` environment variable. Created `.env` file with default value. Locale/game parameters are already implemented in CardMarketWebFetcher.
 
 ---
 
@@ -171,6 +172,7 @@
 **Problem:** Although JPA prevents direct SQL injection, the dynamic search string is directly concatenated into CardMarket URL without sanitization.
 **Location:** `CardMarketWebFetcher.kt:50`
 **Solution:** URL-encode the search parameter before constructing the URL.
+**Status:** Fixed in commit 9a579a4 - search string is now URL-encoded using `URLEncoder.encode()` before being inserted into the URL.
 
 ---
 
@@ -183,6 +185,7 @@
 ```dockerfile
 USER nobody
 ```
+**Status:** Fixed - Added non-root user `appuser`, switched to it before running the application.
 
 ---
 
@@ -190,6 +193,7 @@ USER nobody
 **Problem:** Docker container has no healthcheck configured, making orchestration unreliable.
 **Location:** `deployment/Dockerfile`
 **Solution:** Add `HEALTHCHECK CMD curl -f http://localhost:8080/actuator/health || exit 1`
+**Status:** Fixed - Added HEALTHCHECK with wget (available in Alpine) checking `/actuator/health` endpoint.
 
 ---
 
@@ -251,10 +255,10 @@ USER nobody
 ## 🔧 REFACTORING PRIORITIES (HIGH TO LOW)
 
 ### Priority 1 - Critical Bugs
-- [ ] Fix cache TTL logic (Issue #11)
-- [ ] Add database constraints (Issue #4)
-- [ ] Remove runBlocking blocking calls (Issue #9)
-- [ ] Fix pagination boundary bug (Issue #12)
+- [x] Fix cache TTL logic (Issue #11)
+- [x] Add database constraints (Issue #4)
+- [x] Remove runBlocking blocking calls (Issue #9)
+- [x] Fix pagination boundary bug (Issue #12)
 
 ### Priority 2 - Architecture & Design
 - [ ] Decide on Product audit fields (Issue #1)
@@ -263,9 +267,9 @@ USER nobody
 - [ ] Implement circuit breaker pattern (Issue #10)
 
 ### Priority 3 - Security
-- [ ] Remove hardcoded credentials (Issue #5)
-- [ ] Add rate limiting (Issue #20)
-- [ ] Run Docker as non-root (Issue #22)
+- [x] Remove hardcoded credentials (Issue #5)
+- [x] Add rate limiting (Issue #20)
+- [x] Run Docker as non-root (Issue #22)
 
 ### Priority 4 - Testing
 - [ ] Fix disabled integration tests (Issue #13)
