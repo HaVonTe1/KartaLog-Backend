@@ -29,3 +29,8 @@ logging:
     com.github.havonte1: trace
     org.springframework.web: trace
     web: trace
+
+rate-limiter:
+  enabled: true
+  requestsPerPeriod: 100
+  timeoutDurationSec: 60
