@@ -2,13 +2,16 @@ package io.github.havonte1.tcgwatcher.backend.adapter.out.webscraper.cardmarket
 
 import io.github.havonte1.tcgwatcher.backend.domain.model.Product
 import io.github.havonte1.tcgwatcher.backend.domain.model.StringWithValidity
+import io.github.oshai.kotlinlogging.KotlinLogging
 
 class CardMarketProductMapper {
+    private val logger = KotlinLogging.logger {}
+
+
     fun toProducts(result: SearchResultsPageDto<CardmarketProductGallaryItemDto>): List<Product> {
         return result.results.map { item ->
-            // cmId in DTO may be a URI like "/Pokemon/Products/Singles/Evolving-Skies/Pikachu-V1-EVS049";
-            // we only want the last segment (e.g. "Pikachu-V1-EVS049").
-            val parsedCmId = item.cmId.substringAfterLast('/').ifEmpty { item.cmId }
+
+            val parsedLink = parseLink(item.cmId)
 
             // externalId should be the filename (without extension) of the imgLink, e.g.
             // https://.../574073.jpg -> 574073
@@ -17,19 +20,46 @@ class CardMarketProductMapper {
                 lastSegment.substringBeforeLast('.', lastSegment).toLongOrNull() ?: 0L
             }
 
-Product(
-                 externalId = externalIdFromImg,
-                 setName = null,
-                 rarity = null,
-                 names = mapOf(item.name.languageCode to item.name.value),
+            Product(
+                externalId = externalIdFromImg,
+                setName = parsedLink.setName,
+                rarity = null,
+                names = mapOf(item.name.languageCode to item.name.value),
                 codeInfo = StringWithValidity(item.code.value, item.code.valid),
                 genre = item.genre,
                 type = item.type,
-                cmId = parsedCmId,
+                cmId = parsedLink.id,
                 imgLink = item.imgLink,
                 price = item.price,
                 priceTrendInfo = StringWithValidity(item.priceTrend.value, item.priceTrend.valid)
             )
         }
     }
+    private data class ParsedLink(
+
+        val genre: String?,
+        val type: String?,
+        val setName: String?,
+        val id: String?
+    )
+
+    private fun parseLink(cmId: String?): ParsedLink {
+        // cmId in DTO may be a URI like "/Pokemon/Products/Singles/Evolving-Skies/Pikachu-V1-EVS049";
+        // we  want the genre (Pokemon), the type (Singles) , the set (Evolving-Skies) and the  last segment (e.g. "Pikachu-V1-EVS049").
+        if (cmId == null || cmId.trim().isEmpty()) {
+            return ParsedLink(null, null, null, null)
+        }
+
+        val parts = cmId.split('/')
+
+        return ParsedLink(
+            parts.getOrNull(1),
+            parts.getOrNull(3),
+            parts.getOrNull( 4),
+            parts.getOrNull(5),
+
+        )
+
+    }
+
 }

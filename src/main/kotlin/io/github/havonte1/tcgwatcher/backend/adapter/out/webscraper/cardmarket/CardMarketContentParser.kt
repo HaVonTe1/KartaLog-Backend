@@ -26,20 +26,20 @@ class CardMarketContentParser {
             val cmLink = it.attr("href")
             val parsedLink = parseLink(cmLink)
             val imgTag = it.getElementsByTag("img")
-            var imageLink = if (imgTag.size > 0) imgTag[0].attr("data-echo") else ""
-            if (imageLink.isEmpty() && imgTag.size > 0) {
+            var imageLink = if (imgTag.isNotEmpty()) imgTag[0].attr("data-echo") else ""
+            if (imageLink.isEmpty() && imgTag.isNotEmpty()) {
                 val imageLinkBySrc = imgTag[0].attr("src")
                 if (imageLinkBySrc.startsWith("https")) {
                     imageLink = imageLinkBySrc
                 }
             }
             val titleTag = it.getElementsByTag("h2")
-            val localName = if (titleTag.size > 0) titleTag[0].text() else ""
+            val localName = if (titleTag.isNotEmpty()) titleTag[0].text() else ""
             val matchResult = nameAndCodePattern.find(localName)
             val name = matchResult?.groupValues?.getOrNull(1)
             val code = matchResult?.groupValues?.getOrNull(2)
             val intPriceTag = it.getElementsByTag("b")
-            val intPrice = if (intPriceTag.size > 0) intPriceTag[0].text() else ""
+            val intPrice = if (intPriceTag.isNotEmpty()) intPriceTag[0].text() else ""
             val itemDto = CardmarketProductGallaryItemDto(
                 name = NameDto(name ?: localName, parsedLink.language ?: "", localName),
                 code = CodeType(code ?: "", code != null),
@@ -104,7 +104,7 @@ class CardMarketContentParser {
         }
         
         // ID is everything after the language segment, including the leading slash
-        val id = typePath.substringAfter("$language")
+        val id = typePath.substringAfter(language)
         val parsedLink = ParsedLink(language, genre, type, id)
         logger.debug { "Parsed Link: $parsedLink" }
         return parsedLink

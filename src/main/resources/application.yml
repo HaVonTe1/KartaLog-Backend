@@ -1,4 +1,8 @@
+
+server.port: 8091
+
 spring:
+
   application:
     name: TCGWatcher-Backend
   docker:
@@ -26,7 +30,7 @@ spring:
 
 logging:
   level:
-    com.github.havonte1: trace
+    io.github.havonte1: trace
     org.springframework.web: trace
     web: trace
 

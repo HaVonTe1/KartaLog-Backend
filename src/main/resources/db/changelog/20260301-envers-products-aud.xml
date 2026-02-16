@@ -24,13 +24,11 @@
       <column name="external_id" type="BIGINT"/>
       <column name="set_name" type="VARCHAR(255)"/>
       <column name="rarity" type="VARCHAR(255)"/>
-      <column name="image_url" type="VARCHAR(512)"/>
       <column name="code_info" type="VARCHAR(255)"/>
       <column name="code_info_valid" type="BOOLEAN"/>
       <column name="genre" type="VARCHAR(255)"/>
-      <column name="type" type="VARCHAR(255)"/>
+        <column name="type" type="VARCHAR(255)"/>
       <column name="cm_id" type="VARCHAR(255)"/>
-      <column name="cm_link" type="VARCHAR(255)"/>
       <column name="img_link" type="VARCHAR(255)"/>
       <column name="price" type="VARCHAR(255)"/>
       <column name="price_trend" type="VARCHAR(255)"/>
