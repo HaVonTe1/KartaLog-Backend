@@ -9,10 +9,17 @@
 ---
 
 ### 2. Multi-Language Product Names Lost During Caching
-- done
+**Problem:** When caching search results, product name translations are cleared in `SearchResultRepositoryAdapter.upsertProducts()` because the `clear()` call removes all existing translations before adding new ones.
+**Location:** `src/main/kotlin/io/github/havonte1/tcgwatcher/backend/adapter/out/persistence/repository/SearchResultRepositoryAdapter.kt:32`
+**Solution:** Update translation mapping to preserve existing languages or implement proper merge logic that doesn't discard non-duplicate locales.
+
+---
 
 ### 3. Race Condition in Product Upsert
-- done
+**Problem:** `upsertProducts()` reads existing products, then saves back without transaction isolation. Concurrent requests scraping same products can create duplicates or overwrite prices incorrectly.
+**Location:** `src/main/kotlin/io/github/havonte1/tcgwatcher/backend/adapter/out/persistence/repository/SearchResultRepositoryAdapter.kt:41-57`
+**Solution:** Use database-level upsert (INSERT ... ON CONFLICT) via JPA `merge()` or native query with proper locking.
+
 ---
 
 ### 4. Missing Database Constraints
@@ -210,6 +217,7 @@ USER nobody
 **Problem:** Loading `SearchResult` with eagerly fetched products may cause N+1 queries if not optimized.
 **Location:** `SearchResultEntity.kt:37-46`
 **Solution:** Use `@Query` with JOIN FETCH in repository or batch fetch strategy.
+**Status:** Not applicable - Current usage fetches single search result at a time with batch product operations via `saveAll()`. EAGER fetching is acceptable for this pattern. If querying multiple search results, add `@Query` with JOIN FETCH to `SearchResultJpaRepository`.
 
 ---
 
@@ -217,6 +225,7 @@ USER nobody
 **Problem:** Each scraping request creates new Playwright browser context, no reuse of connections.
 **Location:** `CardMarketWebFetcher.kt:29-35`
 **Solution:** Implement singleton Playwright manager that reuses browser instances.
+**Status:** Fixed - PlaywrightManager singleton reuses browser instance. Removed `browser.close()` from performFetch() to prevent closing shared browser after each request.
 
 ---
 

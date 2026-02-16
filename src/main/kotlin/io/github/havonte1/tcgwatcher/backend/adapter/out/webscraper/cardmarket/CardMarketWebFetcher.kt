@@ -96,7 +96,7 @@ class CardMarketWebFetcher(
         val content = page.content()
         logger.debug { "Fetched content length: ${content.length}" }
         context.storageState(BrowserContext.StorageStateOptions().setPath(Paths.get("auth.json")))
-        browser.close()
+        context.close()
         content
     }
 
