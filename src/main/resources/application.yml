@@ -1,8 +1,4 @@
-
-server.port: 8091
-
 spring:
-
   application:
     name: TCGWatcher-Backend
   docker:
@@ -28,13 +24,28 @@ spring:
           batch_size: 50
         order_updates: true
 
+resilience4j:
+  circuitbreaker:
+    instances:
+      cardMarketCircuitBreaker:
+        failure-rate-threshold: 50
+        slow-call-rate-threshold: 50
+        slow-call-duration-threshold: 10s
+        minimum-number-of-calls: 10
+        sliding-window-size: 60
+        wait-duration-in-open-state: 30s
+        permitted-number-of-calls-in-half-open-state: 3
+        automatic-transition-from-open-to-half-open-enabled: true
+        register-health-indicator: true
+  retry:
+    instances:
+      cardMarketRetry:
+        max-attempts: 3
+        wait-duration: 1s
+        wait-duration-multiplier: 2.0
+
 logging:
   level:
     io.github.havonte1: trace
     org.springframework.web: trace
     web: trace
-
-rate-limiter:
-  enabled: true
-  requestsPerPeriod: 100
-  timeoutDurationSec: 60
