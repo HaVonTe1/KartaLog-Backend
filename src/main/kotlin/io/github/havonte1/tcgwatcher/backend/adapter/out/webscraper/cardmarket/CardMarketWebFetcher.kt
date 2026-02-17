@@ -9,6 +9,7 @@ import io.github.havonte1.tcgwatcher.backend.config.CardMarketConstants
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker
 import io.github.resilience4j.retry.annotation.Retry
+import io.github.resilience4j.ratelimiter.annotation.RateLimiter
 import org.springframework.stereotype.Component
 import java.net.URLEncoder
 import java.nio.file.Files
@@ -28,12 +29,14 @@ open class CardMarketWebFetcher(
 
     @Retry(name = "cardMarketRetry", fallbackMethod = "retryFallback")
     @CircuitBreaker(name = "cardMarketCircuitBreaker", fallbackMethod = "circuitBreakerFallback")
+    @RateLimiter(name = "cardMarketRateLimiter", fallbackMethod = "rateLimiterFallback")
     override fun fetch(searchString: String, locale: String, game: String): Result<String> {
         return Result.success(performFetch(searchString, locale, game))
     }
 
     @Retry(name = "cardMarketRetry", fallbackMethod = "retryFallback")
     @CircuitBreaker(name = "cardMarketCircuitBreaker", fallbackMethod = "circuitBreakerFallback")
+    @RateLimiter(name = "cardMarketRateLimiter", fallbackMethod = "rateLimiterFallback")
     override fun fetchDetails(
         cmId: String,
         genre: String,
@@ -143,6 +146,28 @@ open class CardMarketWebFetcher(
     ): Result<String> {
         logger.error { "Circuit breaker is OPEN for fetchDetails, returning fallback: ${e.message}" }
         return Result.failure(CircuitBreakerException("Service unavailable due to circuit breaker state", e))
+    }
+
+    open fun rateLimiterFallback(
+        searchString: String,
+        locale: String,
+        game: String,
+        e: Exception
+    ): Result<String> {
+        logger.error { "Rate limit triggered for fetch(searchString=$searchString, locale=$locale, game=$game): ${e.message}" }
+        return Result.failure(CircuitBreakerException("Rate limit exceeded for fetch", e))
+    }
+
+    open fun rateLimiterFallback(
+        cmId: String,
+        genre: String,
+        type: String,
+        lang: String,
+        setname: String,
+        e: Exception
+    ): Result<String> {
+        logger.error { "Rate limit triggered for fetchDetails(cmId=$cmId): ${e.message}" }
+        return Result.failure(CircuitBreakerException("Rate limit exceeded for fetchDetails", e))
     }
 
     private fun buildUrl(locale: String, game: String, encodedSearchString: String): String {
