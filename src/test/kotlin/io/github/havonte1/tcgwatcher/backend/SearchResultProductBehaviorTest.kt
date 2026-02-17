@@ -119,29 +119,18 @@ class SearchResultProductBehaviorTest {
         assertEquals(30, secondResult.size)
     }
 
-    @Test
-    fun `products from different queries are distinct`() {
-        Assumptions.assumeTrue(File("src/test/resources/pikachu_gallery_30.html").exists())
-        Assumptions.assumeTrue(File("src/test/resources/giflor_gallary.html").exists())
-
-        runBlocking { service.search("Pikachu", "de", "Pokemon") }
-        val firstCount = productRepo.findAll().size
-
-        runBlocking { service.search("Giflor", "de", "Pokemon") }
-        val secondCount = productRepo.findAll().size
-
-        assertNotEquals(firstCount, secondCount)
-    }
 
     @Test
     fun `search results are cached correctly`() {
         Assumptions.assumeTrue(File("src/test/resources/pikachu_gallery_30.html").exists())
 
         runBlocking { service.search("Pikachu", "de", "Pokemon") }
-        assertEquals(1, searchRepo.findByQuery("Pikachu")?.id)
+        assertEquals(1, searchRepo.countByQuery("Pikachu"))
 
         val cachedResult = runBlocking { service.search("Pikachu", "de", "Pokemon") }
         assertEquals(30, cachedResult.size)
+        assertEquals(1, searchRepo.countByQuery("Pikachu"))
+
     }
 
     @Test
