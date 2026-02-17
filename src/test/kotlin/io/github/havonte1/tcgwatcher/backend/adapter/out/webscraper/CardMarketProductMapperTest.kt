@@ -20,8 +20,8 @@ class CardMarketProductMapperTest {
             code = "12345",
             genre = "Pokemon",
             type = "Single",
-            cmId = "12345",
-            cmLink = "https://cardmarket.com/product/12345",
+            cmId = "/pokemon/product/singles/setx/12345",
+            cmLink = "https://www.cardmarket.com/en/pokemon/product/singles/setx/12345",
             imgLink = "https://images.cardmarket.com/12345.jpg",
             price = "10,00 €",
             priceTrend = "up"
@@ -35,6 +35,7 @@ class CardMarketProductMapperTest {
         // externalId should come from the imgLink filename
         assertEquals(12345L, product.externalId, "externalId should be parsed from imgLink filename")
         assertEquals("12345", product.cmId)
+        assertEquals("setx", product.setName)
         assertEquals("https://images.cardmarket.com/12345.jpg", product.imgLink)
         assertEquals("10,00 €", product.price)
         assertEquals("up", product.priceTrendInfo?.value)
