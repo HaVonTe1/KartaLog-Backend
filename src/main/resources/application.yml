@@ -49,3 +49,5 @@ logging:
     io.github.havonte1: trace
     org.springframework.web: trace
     web: trace
+    com.github.tomakehurst: trace
+    eu.rekawek: trace

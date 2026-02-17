@@ -133,6 +133,8 @@ dependencies {
     testImplementation("org.springframework.integration:spring-integration-test")
     testImplementation("org.testcontainers:testcontainers-junit-jupiter")
     testImplementation("org.testcontainers:testcontainers-postgresql")
+    testImplementation("org.testcontainers:testcontainers-toxiproxy")
+    testImplementation("org.wiremock:wiremock-standalone:3.13.2")
     testImplementation("org.springframework.boot:spring-boot-starter-webmvc-test")
     testImplementation("org.springframework.boot:spring-boot-starter-integration-test")
     testImplementation("io.mockk:mockk:1.13.12")

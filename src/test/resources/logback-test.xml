@@ -8,8 +8,12 @@
     </appender>
 
     <!-- Set root logger level to INFO and attach the console appender -->
-    <logger name="com.github.havonte1" level="TRACE"/>
-    <root level="INFO">
+    <logger name="io.github.havonte1" level="TRACE">
+        <appender-ref ref="STDOUT" />
+
+    </logger>
+
+    <root level="info">
         <appender-ref ref="STDOUT" />
     </root>
 
