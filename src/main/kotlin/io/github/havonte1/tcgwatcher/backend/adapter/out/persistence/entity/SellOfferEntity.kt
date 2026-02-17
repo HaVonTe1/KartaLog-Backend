@@ -12,6 +12,7 @@ import jakarta.persistence.PrePersist
 import jakarta.persistence.PreUpdate
 import jakarta.persistence.Table
 import org.hibernate.envers.Audited
+import org.hibernate.envers.NotAudited
 import java.io.Serializable
 import java.time.Instant
 
@@ -50,7 +51,7 @@ data class SellOfferEntity(
     @Column(name = "price", nullable = false)
     val price: String
 ) : Serializable {
-    
+
     @PrePersist
     fun onPrePersist() {
         createdAt = Instant.now()
@@ -62,9 +63,11 @@ data class SellOfferEntity(
         updatedAt = Instant.now()
     }
 
+    @NotAudited
     @Column(name = "created_at", nullable = false, updatable = false)
     var createdAt: Instant = Instant.now()
 
+    @NotAudited
     @Column(name = "updated_at", nullable = false)
     var updatedAt: Instant = Instant.now()
 
@@ -74,7 +77,7 @@ data class SellOfferEntity(
 
     constructor() : this(
         id = null,
-        product = throw IllegalArgumentException("Product is required"),
+        product = ProductEntity(),
         sellerName = "",
         sellerLocation = "",
         productLanguage = "",

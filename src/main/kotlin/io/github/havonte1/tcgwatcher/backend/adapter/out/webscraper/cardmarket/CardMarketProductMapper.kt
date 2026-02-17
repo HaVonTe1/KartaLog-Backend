@@ -56,7 +56,6 @@ class CardMarketProductMapper {
             imgLink = detailsDto.imageUrl,
             price = detailsDto.price,
             priceTrendInfo = StringWithValidity(detailsDto.priceTrend.value, detailsDto.priceTrend.valid),
-            detailsUrl = detailsDto.detailsUrl,
             sellOffers = detailsDto.sellOffers.map { sellOffer ->
                 io.github.havonte1.tcgwatcher.backend.domain.model.SellOffer(
                     sellerName = sellOffer.sellerName,

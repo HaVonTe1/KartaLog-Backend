@@ -15,9 +15,12 @@ import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.context.TestConfiguration
+import org.springframework.boot.testcontainers.service.connection.ServiceConnection
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Primary
+import org.testcontainers.junit.jupiter.Container
 import org.testcontainers.junit.jupiter.Testcontainers
+import org.testcontainers.postgresql.PostgreSQLContainer
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.Paths
@@ -46,9 +49,16 @@ class SearchResultProductBehaviorTest {
                         return Result.success(content)
                     }
 
-                    override fun fetchDetails(detailsUrl: String): Result<String> {
+                    override fun fetchDetails(
+                        cmId: String,
+                        genre: String,
+                        type: String,
+                        lang: String,
+                        setname: String
+                    ): Result<String> {
                         return Result.failure(UnsupportedOperationException("Not implemented"))
                     }
+
                 }
 
                 val adapter = CardMarketScraperAdapter(TestFetcher())
@@ -60,6 +70,14 @@ class SearchResultProductBehaviorTest {
             }
         }
     }
+
+    companion object {
+        @Container
+        @ServiceConnection
+        @JvmStatic
+        val postgres = PostgreSQLContainer("postgres:15-alpine")
+    }
+
     @Autowired
     lateinit var service: SearchUseCase
 
@@ -68,9 +86,6 @@ class SearchResultProductBehaviorTest {
 
     @Autowired
     lateinit var productRepo: ProductRepository
-
-    @Autowired
-    lateinit var scraperPort: CardMarketScraperPort
 
     @BeforeEach
     fun cleanDb() {
@@ -89,7 +104,7 @@ class SearchResultProductBehaviorTest {
 
         val secondResult = runBlocking { service.search("Pikachu", "de", "Pokemon") }
         assertEquals(30, secondResult.size)
-        assertEquals(1, searchRepo.findByQuery("Pikachu")?.products?.size)
+        assertEquals(1, searchRepo.countByQuery("Pikachu"))
     }
 
     @Test
@@ -134,10 +149,10 @@ class SearchResultProductBehaviorTest {
         Assumptions.assumeTrue(File("src/test/resources/pikachu_gallery_30.html").exists())
 
         val firstSearch = runBlocking { service.search("Pikachu", "de", "Pokemon") }
-        val productId = firstSearch.first().id
+        val productId = firstSearch.first().externalId
 
         val cachedSearch = runBlocking { service.search("Pikachu", "de", "Pokemon") }
-        val cachedProduct = cachedSearch.find { it.id == productId }
+        val cachedProduct = cachedSearch.find { it.externalId == productId }
 
         assertNotNull(cachedProduct)
         assertEquals(firstSearch.first().cmId, cachedProduct?.cmId)

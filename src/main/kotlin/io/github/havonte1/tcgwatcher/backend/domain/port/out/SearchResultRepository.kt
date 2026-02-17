@@ -14,4 +14,6 @@ interface SearchResultRepository {
 
     /** Persist a [SearchResult] (insert or update) and return the managed instance. */
     fun save(searchResult: SearchResult): SearchResult
+
+    fun countByQuery(query: String): Int
 }

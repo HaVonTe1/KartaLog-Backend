@@ -31,8 +31,6 @@ data class Product(
     val price: String? = null,
     /** Price trend with validity flag */
     val priceTrendInfo: StringWithValidity? = null,
-    /** Product details URL on CardMarket */
-    val detailsUrl: String? = null,
     /** List of sell offers for this product */
     val sellOffers: List<SellOffer>? = null
 )

@@ -28,4 +28,10 @@ interface ProductRepository {
 
     /** Delete a product. */
     fun delete(product: Product)
+
+    fun findByCmId(
+        cmId: String,
+    ): Product?
+
+
 }

@@ -10,4 +10,5 @@ import org.springframework.stereotype.Repository
 @Repository
 interface SearchResultJpaRepository : JpaRepository<SearchResultEntity, Long> {
     fun findByQuery(query: String): SearchResultEntity?
+    fun countByQuery(query: String): Int
 }

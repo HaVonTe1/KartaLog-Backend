@@ -12,16 +12,19 @@ import org.springframework.transaction.annotation.Transactional
 @Component
 class ProductRepositoryAdapter(
     private val jpaRepository: ProductJpaRepository,
+    private val sellOfferJpaRepository: SellOfferJpaRepository,
     private val mapper: ProductMapper
 ) : ProductRepository {
     override fun deleteAll() {
         jpaRepository.deleteAll()
     }
 
+
     @Transactional
     override fun save(product: Product): Product {
         val entity = mapper.toEntity(product)
         val saved = jpaRepository.save(entity)
+        sellOfferJpaRepository.saveAll(entity.sellOffers)
         return mapper.toDomain(saved)
     }
 
@@ -29,6 +32,8 @@ class ProductRepositoryAdapter(
     override fun saveAll(products: List<Product>): List<Product> {
         val entities = products.map { mapper.toEntity(it) }
         val productEntities = jpaRepository.saveAll(entities)
+        val allSellOffers = entities.flatMap { it.sellOffers }
+        sellOfferJpaRepository.saveAll(allSellOffers)
         return productEntities.map { mapper.toDomain(it) }
     }
 
@@ -50,4 +55,12 @@ class ProductRepositoryAdapter(
             jpaRepository.findById(product.id).ifPresent { jpaRepository.delete(it) }
         }
     }
+
+    override fun findByCmId(
+        cmId: String,
+    ): Product? {
+        val entity = jpaRepository.findByCmId(cmId)
+        return entity?.let { mapper.toDomain(it) }
+    }
+
 }

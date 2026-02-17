@@ -60,9 +60,6 @@ data class ProductEntity(
     @Column(name = "price_trend_valid")
     val priceTrendValid: Boolean? = null,
 
-    @Column(name = "details_url")
-    val detailsUrl: String? = null,
-
     @NotAudited
     @Column(name = "created_at", nullable = false, updatable = false)
     var createdAt: Instant = Instant.now(),

@@ -47,7 +47,7 @@ class SearchResultRepositoryAdapter(
         if (products.isEmpty()) return emptyList()
 
         val externalIds = products.map { it.externalId }
-        
+
         // Query existing products in the same transaction to get a consistent view
         val existingProducts = productJpaRepository.findAllByExternalIdIn(externalIds)
             .associateBy { it.externalId }
@@ -69,41 +69,44 @@ class SearchResultRepositoryAdapter(
     }
 
     private fun mergeNameTranslations(entity: ProductEntity, product: Product) {
-           val existingLocales = entity.nameTranslations.associate { it.languageCode to it }
-           product.names.forEach { (locale, name) ->
-               if (existingLocales.containsKey(locale)) {
-                   existingLocales[locale]!!.name = name
-               } else {
-                   val translation = NameTranslationEntity(
-                       languageCode = locale,
-                       name = name
-                   )
-                   entity.nameTranslations.add(translation)
-               }
-           }
-       }
+        val existingLocales = entity.nameTranslations.associate { it.languageCode to it }
+        product.names.forEach { (locale, name) ->
+            if (existingLocales.containsKey(locale)) {
+                existingLocales[locale]!!.name = name
+            } else {
+                val translation = NameTranslationEntity(
+                    languageCode = locale,
+                    name = name
+                )
+                entity.nameTranslations.add(translation)
+            }
+        }
+    }
 
     private fun updateEntity(
-         productEntity: ProductEntity,
-         product: Product
-     ): ProductEntity {
-         val updated = productEntity.copy(
-             price = product.price,
-             priceTrend = product.priceTrendInfo?.value,
-             priceTrendValid = product.priceTrendInfo?.valid ?: false,
-             updatedAt = product.updatedAt ?: Instant.now()
-         )
+        productEntity: ProductEntity,
+        product: Product
+    ): ProductEntity {
+        val updated = productEntity.copy(
+            price = product.price,
+            priceTrend = product.priceTrendInfo?.value,
+            priceTrendValid = product.priceTrendInfo?.valid ?: false,
+            updatedAt = product.updatedAt ?: Instant.now()
+        )
 
-         // only update if values actually changed
-         if (productEntity.compareTo(updated) != 0) {
-             return productJpaRepository.save(updated)
-         }
-         mergeNameTranslations(productEntity, product)
-         return updated
-     }
+        // only update if values actually changed
+        if (productEntity.compareTo(updated) != 0) {
+            return productJpaRepository.save(updated)
+        }
+        mergeNameTranslations(productEntity, product)
+        return updated
+    }
 
     @Transactional
     override fun deleteAll() {
         jpaRepository.deleteAll()
     }
+
+    override fun countByQuery(query: String): Int = jpaRepository.countByQuery(query)
+
 }

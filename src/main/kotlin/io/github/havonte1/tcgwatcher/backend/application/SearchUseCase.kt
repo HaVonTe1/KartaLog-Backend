@@ -10,4 +10,7 @@ interface SearchUseCase {
 
     /** Overloaded search allowing locale and game parameters. */
     suspend fun search(searchString: String, locale: String, game: String): List<Product>
+
+    suspend fun fetchProductDetails(cmId: String, genre: String, type: String, lang: String, setname: String): Product?
+
 }

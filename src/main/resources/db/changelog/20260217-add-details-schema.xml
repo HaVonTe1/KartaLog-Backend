@@ -3,11 +3,6 @@
   xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.8.xsd">
 
-  <changeSet author="opencode" id="20260217-01">
-    <addColumn schemaName="watcher" tableName="products">
-      <column name="details_url" type="VARCHAR(512)"/>
-    </addColumn>
-  </changeSet>
 
   <changeSet author="opencode" id="20260217-02">
     <createTable schemaName="watcher" tableName="sell_offers">
@@ -27,7 +22,7 @@
         <constraints nullable="false"/>
       </column>
       <column name="special" type="VARCHAR(255)">
-        <constraints nullable="false" defaultValue=""/>
+        <constraints nullable="false"/>
       </column>
       <column name="condition" type="VARCHAR(255)">
         <constraints nullable="false"/>
@@ -36,6 +31,12 @@
         <constraints nullable="false"/>
       </column>
       <column name="price" type="VARCHAR(255)">
+        <constraints nullable="false"/>
+      </column>
+      <column defaultValueComputed="CURRENT_TIMESTAMP" name="created_at" type="TIMESTAMP">
+        <constraints nullable="false"/>
+      </column>
+      <column defaultValueComputed="CURRENT_TIMESTAMP" name="updated_at" type="TIMESTAMP">
         <constraints nullable="false"/>
       </column>
     </createTable>

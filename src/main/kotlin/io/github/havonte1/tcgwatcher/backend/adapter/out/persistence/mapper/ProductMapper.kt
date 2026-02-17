@@ -25,7 +25,6 @@ class ProductMapper {
             price = product.price,
             priceTrend = product.priceTrendInfo?.value,
             priceTrendValid = product.priceTrendInfo?.valid,
-            detailsUrl = product.detailsUrl
         )
         product.names.forEach { (locale, name) ->
             val translation = NameTranslationEntity(
@@ -71,7 +70,6 @@ class ProductMapper {
             externalId = entity.externalId,
             setName = entity.setName,
             rarity = entity.rarity,
-
             createdAt = entity.createdAt,
             updatedAt = entity.updatedAt,
             names = namesMap,
@@ -89,7 +87,6 @@ class ProductMapper {
             } else {
                 null
             },
-            detailsUrl = entity.detailsUrl,
             sellOffers = sellOffers
         )
     }

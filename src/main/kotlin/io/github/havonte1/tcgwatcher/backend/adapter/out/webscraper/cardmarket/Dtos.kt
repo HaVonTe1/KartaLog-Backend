@@ -54,7 +54,6 @@ data class CardmarketProductDetailsDto(
     val code: CodeType,
     val cmId: String,
     val imageUrl: String,
-    val detailsUrl: String,
     val rarity: String = "",
     val set: SetDto = SetDto("", ""),
     val price: String = "0,00 €",

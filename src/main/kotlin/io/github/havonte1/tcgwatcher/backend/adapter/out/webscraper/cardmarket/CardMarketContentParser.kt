@@ -128,7 +128,13 @@ class CardMarketContentParser {
         return totalPages
     }
 
-    fun parseProductDetails(document: Document, link: String): CardmarketProductDetailsDto {
+    fun parseProductDetails(
+        document: Document, cmId: String,
+        genre: String,
+        type: String,
+        lang: String,
+        setname: String
+    ): CardmarketProductDetailsDto {
         val imageTags = document.getElementsByTag("img")
         val frontImageTag =
             imageTags.first { img -> img.classNames().size == 1 } //filter out "lazy" img tags
@@ -140,9 +146,6 @@ class CardMarketContentParser {
         val matchResult = nameAndCodePattern.find(displayName)
         val name = matchResult?.groupValues?.getOrNull(1)
         val code = matchResult?.groupValues?.getOrNull(2)
-        val orgName = link.split("/").last()
-
-        val parsedLink = parseLink(link)
 
         val infoDivs = document.getElementsByClass("info-list-container")
         val infoDiv = infoDivs.first()
@@ -222,14 +225,13 @@ class CardMarketContentParser {
             }
         }
         val cardmarketProductDetailsDto = CardmarketProductDetailsDto(
-            name = NameDto(value = name ?: orgName, languageCode = parsedLink.language ?: "", i18n = orgName),
+            name = NameDto(value = name ?: cmId, languageCode = lang, i18n = cmId),
             code = CodeType(code ?: "", code != null),
-            type = parsedLink.type ?: "",
-            genre = parsedLink.genre ?: "",
-            cmId = parsedLink.id ?: "",
+            type = type,
+            genre = genre,
+            cmId = cmId,
             rarity = rarityText ?: "",
             set = SetDto(setName ?: "", setLink ?: ""),
-            detailsUrl = link,
             imageUrl = imageUrl,
             price = localPrice,
             priceTrend = PriceTrendType(localPriceTrend, true),

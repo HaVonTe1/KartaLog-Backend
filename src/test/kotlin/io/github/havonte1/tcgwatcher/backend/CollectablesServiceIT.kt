@@ -52,9 +52,16 @@ class CollectablesServiceIT {
                         return Result.success(content)
                     }
 
-                    override fun fetchDetails(detailsUrl: String): Result<String> {
+                    override fun fetchDetails(
+                        cmId: String,
+                        genre: String,
+                        type: String,
+                        lang: String,
+                        setname: String
+                    ): Result<String> {
                         return Result.failure(UnsupportedOperationException("Not implemented"))
                     }
+
                 }
                 val adapter = CardMarketScraperAdapter(TestFetcher())
                 return adapter.search(
