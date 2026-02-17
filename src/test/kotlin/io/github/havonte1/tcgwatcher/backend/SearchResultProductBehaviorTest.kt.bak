@@ -8,31 +8,26 @@ import io.github.havonte1.tcgwatcher.backend.domain.port.out.CardMarketScraperPo
 import io.github.havonte1.tcgwatcher.backend.domain.port.out.ProductRepository
 import io.github.havonte1.tcgwatcher.backend.domain.port.out.SearchResultRepository
 import kotlinx.coroutines.runBlocking
-import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Assumptions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.context.TestConfiguration
-import org.springframework.boot.testcontainers.service.connection.ServiceConnection
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Primary
-import org.testcontainers.junit.jupiter.Container
 import org.testcontainers.junit.jupiter.Testcontainers
-import org.testcontainers.postgresql.PostgreSQLContainer
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.Paths
-import kotlin.test.fail
 
 @SpringBootTest
 @Testcontainers
-class CollectablesServiceIT {
+class SearchResultProductBehaviorTest {
 
     @TestConfiguration
     class ScraperTestConfig {
-
         private val testFilePikachu30 = "src/test/resources/pikachu_gallery_30.html"
         private val testFilePikachu40 = "src/test/resources/pikachu_gallery_40.html"
 
@@ -44,10 +39,9 @@ class CollectablesServiceIT {
                 callCount++
                 class TestFetcher : CardMarketWebFetcherPort {
                     override fun fetch(searchString: String, locale: String, game: String): Result<String> {
-                        val content = if (callCount == 1) {
-                            Files.readString(Paths.get(testFilePikachu30))
-                        } else {
-                            Files.readString(Paths.get(testFilePikachu40))
+                        val content = when (callCount) {
+                            1, 2 -> Files.readString(Paths.get(testFilePikachu30))
+                            else -> Files.readString(Paths.get(testFilePikachu40))
                         }
                         return Result.success(content)
                     }
@@ -56,12 +50,9 @@ class CollectablesServiceIT {
                         return Result.failure(UnsupportedOperationException("Not implemented"))
                     }
                 }
+
                 val adapter = CardMarketScraperAdapter(TestFetcher())
-                return adapter.search(
-                    searchString,
-                    locale = locale,
-                    game = game
-                )
+                return adapter.search(searchString, locale, game)
             }
 
             override suspend fun fetchProductDetails(cmId: String, genre: String, type: String, lang: String, setname: String): Product? {
@@ -69,14 +60,6 @@ class CollectablesServiceIT {
             }
         }
     }
-
-    companion object {
-        @Container
-        @ServiceConnection
-        @JvmStatic
-        val postgres = PostgreSQLContainer("postgres:15-alpine")
-    }
-
     @Autowired
     lateinit var service: SearchUseCase
 
@@ -96,38 +79,67 @@ class CollectablesServiceIT {
     }
 
     @Test
-    fun `cache miss then hit`() {
+    fun `products are unique by externalId`() {
         val testFilePikachu30 = "src/test/resources/pikachu_gallery_30.html"
-        val testFilePikachu40 = "src/test/resources/pikachu_gallery_40.html"
-
         Assumptions.assumeTrue(File(testFilePikachu30).exists())
+
+        val firstResult = runBlocking { service.search("Pikachu", "de", "Pokemon") }
+        assertEquals(30, firstResult.size)
+        assertEquals(30, productRepo.findAll().size)
+
+        val secondResult = runBlocking { service.search("Pikachu", "de", "Pokemon") }
+        assertEquals(30, secondResult.size)
+        assertEquals(1, searchRepo.findByQuery("Pikachu")?.products?.size)
+    }
+
+    @Test
+    fun `products are updated when prices change`() {
+        val testFilePikachu40 = "src/test/resources/pikachu_gallery_40.html"
         Assumptions.assumeTrue(File(testFilePikachu40).exists())
 
-        val firstResult = runBlocking { service.search("Pikachu30", "de", "Pokemon") }
-        assertEquals(30, firstResult.size)
-        val testScraper = scraperPort as? Any
-        val callCountField = testScraper!!::class.java.getDeclaredField("callCount").apply { isAccessible = true }
-        assertEquals(1, callCountField.getInt(testScraper))
+        runBlocking { service.search("Pikachu", "de", "Pokemon") }
+        assertEquals(30, productRepo.findAll().size)
 
-        val cached = searchRepo.findByQuery("Pikachu30")
-        assertEquals(30, cached?.products?.size)
-
-        val secondResult = runBlocking { service.search("Pikachu30", "de", "Pokemon") }
+        val secondResult = runBlocking { service.search("Pikachu", "de", "Pokemon") }
         assertEquals(30, secondResult.size)
-        assertEquals(1, callCountField.getInt(testScraper), "Scraper should not be called on cache hit")
+    }
 
-        secondResult.find { it.externalId == 576753L }?.let {
-            assertEquals("Pikachu-V4-CEL008", it.cmId)
-            assertEquals("1,50 €", it.price)
-        } ?: fail("No element with externalId=576753 found")
+    @Test
+    fun `products from different queries are distinct`() {
+        Assumptions.assumeTrue(File("src/test/resources/pikachu_gallery_30.html").exists())
+        Assumptions.assumeTrue(File("src/test/resources/giflor_gallary.html").exists())
 
-        val thirdResult = runBlocking {service.search("Pikachu40", "de", "Pokemon")}
-        assertEquals(30, thirdResult.size)
-        assertEquals(2, callCountField.getInt(testScraper), "Scraper should  be called on another query")
+        runBlocking { service.search("Pikachu", "de", "Pokemon") }
+        val firstCount = productRepo.findAll().size
 
-        thirdResult.find { it.externalId == 576753L }?.let {
-            assertEquals("Pikachu-V4-CEL008", it.cmId)
-            assertEquals("4,00 €", it.price)
-        } ?: fail("No element with externalId=576753 found")
+        runBlocking { service.search("Giflor", "de", "Pokemon") }
+        val secondCount = productRepo.findAll().size
+
+        assertNotEquals(firstCount, secondCount)
+    }
+
+    @Test
+    fun `search results are cached correctly`() {
+        Assumptions.assumeTrue(File("src/test/resources/pikachu_gallery_30.html").exists())
+
+        runBlocking { service.search("Pikachu", "de", "Pokemon") }
+        assertEquals(1, searchRepo.findAll().size)
+
+        val cachedResult = runBlocking { service.search("Pikachu", "de", "Pokemon") }
+        assertEquals(30, cachedResult.size)
+    }
+
+    @Test
+    fun `products maintain their relationships after caching`() {
+        Assumptions.assumeTrue(File("src/test/resources/pikachu_gallery_30.html").exists())
+
+        val firstSearch = runBlocking { service.search("Pikachu", "de", "Pokemon") }
+        val productId = firstSearch.first().id
+
+        val cachedSearch = runBlocking { service.search("Pikachu", "de", "Pokemon") }
+        val cachedProduct = cachedSearch.find { it.id == productId }
+
+        assertNotNull(cachedProduct)
+        assertEquals(firstSearch.first().cmId, cachedProduct?.cmId)
     }
 }

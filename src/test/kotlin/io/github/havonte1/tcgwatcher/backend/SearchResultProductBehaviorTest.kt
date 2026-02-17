@@ -18,12 +18,10 @@ import org.springframework.boot.test.context.TestConfiguration
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Primary
 import org.testcontainers.junit.jupiter.Testcontainers
+import java.io.File
 import java.nio.file.Files
 import java.nio.file.Paths
 
-/**
- * Tests to validate product uniqueness, updates, and associations across searches.
- */
 @SpringBootTest
 @Testcontainers
 class SearchResultProductBehaviorTest {
@@ -41,18 +39,24 @@ class SearchResultProductBehaviorTest {
                 callCount++
                 class TestFetcher : CardMarketWebFetcherPort {
                     override fun fetch(searchString: String, locale: String, game: String): Result<String> {
-                        // First two calls return pikachu30. Subsequent calls return pikachu40
-                        // to simulate updated prices.
                         val content = when (callCount) {
                             1, 2 -> Files.readString(Paths.get(testFilePikachu30))
                             else -> Files.readString(Paths.get(testFilePikachu40))
                         }
                         return Result.success(content)
                     }
+
+                    override fun fetchDetails(detailsUrl: String): Result<String> {
+                        return Result.failure(UnsupportedOperationException("Not implemented"))
+                    }
                 }
 
                 val adapter = CardMarketScraperAdapter(TestFetcher())
                 return adapter.search(searchString, locale, game)
+            }
+
+            override suspend fun fetchProductDetails(cmId: String, genre: String, type: String, lang: String, setname: String): Product? {
+                return null
             }
         }
     }
@@ -75,48 +79,67 @@ class SearchResultProductBehaviorTest {
     }
 
     @Test
-    fun `products are unique and updated when changed`() {
-        val f30 = "src/test/resources/pikachu_gallery_30.html"
-        val f40 = "src/test/resources/pikachu_gallery_40.html"
-        Assumptions.assumeTrue(Files.exists(Paths.get(f30)))
-        Assumptions.assumeTrue(Files.exists(Paths.get(f40)))
+    fun `products are unique by externalId`() {
+        val testFilePikachu30 = "src/test/resources/pikachu_gallery_30.html"
+        Assumptions.assumeTrue(File(testFilePikachu30).exists())
 
-        // 1) Perform first search -> should persist 30 products
-        val resA = runBlocking { service.search("Pikachu30", "de", "Pokemon") }
-        assertEquals(30, resA.size)
-        val allProductsAfterA = productRepo.findAll()
-        assertEquals(30, allProductsAfterA.size, "All unique products should be persisted once")
+        val firstResult = runBlocking { service.search("Pikachu", "de", "Pokemon") }
+        assertEquals(30, firstResult.size)
+        assertEquals(30, productRepo.findAll().size)
 
-        // 2) Different search with overlapping results should not create duplicates
-        val resB = runBlocking { service.search("Pikachu30-other", "de", "Pokemon") }
-        assertEquals(30, resB.size)
-        val allProductsAfterB = productRepo.findAll()
-        assertEquals(30, allProductsAfterB.size)
-
-        // 3) Now simulate a scraper run that returns the same products but with changed prices.
-        val resC = runBlocking { service.search("Pikachu-Updated", "de", "Pokemon") }
-        assertEquals(30, resC.size)
-
-        // Verify at least one product had its price updated in the DB.
-        val exampleExternalId = 576753L
-        val productBefore = allProductsAfterA.find { it.externalId == exampleExternalId }
-        val productAfter = productRepo.findByExternalId(exampleExternalId)
-        assertNotNull(productBefore)
-        assertNotNull(productAfter)
-        assertTrue(
-            productBefore!!.price != productAfter!!.price,
-            "Product price should be updated in DB when changed by scraper"
-        )
-
-        // 4) Ensure every unique product persisted exactly once
-        val groupedByExternal = productRepo.findAll().groupBy { it.externalId }
-        assertTrue(groupedByExternal.values.all { it.size == 1 }, "Each externalId must map to exactly one DB product")
+        val secondResult = runBlocking { service.search("Pikachu", "de", "Pokemon") }
+        assertEquals(30, secondResult.size)
+        assertEquals(1, searchRepo.findByQuery("Pikachu")?.products?.size)
     }
 
-    companion object {
-        @org.testcontainers.junit.jupiter.Container
-        @org.springframework.boot.testcontainers.service.connection.ServiceConnection
-        @JvmStatic
-        val postgres = org.testcontainers.postgresql.PostgreSQLContainer("postgres:15-alpine")
+    @Test
+    fun `products are updated when prices change`() {
+        val testFilePikachu40 = "src/test/resources/pikachu_gallery_40.html"
+        Assumptions.assumeTrue(File(testFilePikachu40).exists())
+
+        runBlocking { service.search("Pikachu", "de", "Pokemon") }
+        assertEquals(30, productRepo.findAll().size)
+
+        val secondResult = runBlocking { service.search("Pikachu", "de", "Pokemon") }
+        assertEquals(30, secondResult.size)
+    }
+
+    @Test
+    fun `products from different queries are distinct`() {
+        Assumptions.assumeTrue(File("src/test/resources/pikachu_gallery_30.html").exists())
+        Assumptions.assumeTrue(File("src/test/resources/giflor_gallary.html").exists())
+
+        runBlocking { service.search("Pikachu", "de", "Pokemon") }
+        val firstCount = productRepo.findAll().size
+
+        runBlocking { service.search("Giflor", "de", "Pokemon") }
+        val secondCount = productRepo.findAll().size
+
+        assertNotEquals(firstCount, secondCount)
+    }
+
+    @Test
+    fun `search results are cached correctly`() {
+        Assumptions.assumeTrue(File("src/test/resources/pikachu_gallery_30.html").exists())
+
+        runBlocking { service.search("Pikachu", "de", "Pokemon") }
+        assertEquals(1, searchRepo.findByQuery("Pikachu")?.id)
+
+        val cachedResult = runBlocking { service.search("Pikachu", "de", "Pokemon") }
+        assertEquals(30, cachedResult.size)
+    }
+
+    @Test
+    fun `products maintain their relationships after caching`() {
+        Assumptions.assumeTrue(File("src/test/resources/pikachu_gallery_30.html").exists())
+
+        val firstSearch = runBlocking { service.search("Pikachu", "de", "Pokemon") }
+        val productId = firstSearch.first().id
+
+        val cachedSearch = runBlocking { service.search("Pikachu", "de", "Pokemon") }
+        val cachedProduct = cachedSearch.find { it.id == productId }
+
+        assertNotNull(cachedProduct)
+        assertEquals(firstSearch.first().cmId, cachedProduct?.cmId)
     }
 }

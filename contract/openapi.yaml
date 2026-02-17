@@ -72,6 +72,55 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/ProductDTO'
+  /collectables/{cmId}:
+    get:
+      summary: Get product details by ID
+      tags:
+        - collectables
+      description: |
+        Fetch detailed information for a specific product including sell offers.
+        The product data is updated from CardMarket on each request and persisted if changes are detected.
+      operationId: getProductDetails
+      parameters:
+        - name: cmId
+          in: path
+          required: true
+          schema:
+            type: string
+            example: "CM001"
+        - name: genre
+          in: query
+          required: false
+          schema:
+            type: string
+            default: pokemon
+        - name: type
+          in: query
+          required: false
+          schema:
+            type: string
+            default: singles
+        - name: lang
+          in: query
+          required: false
+          schema:
+            type: string
+            default: de
+        - name: setname
+          in: query
+          required: true
+          schema:
+            type: string
+            example: "setx"
+      responses:
+        '200':
+          description: Successful response – product details with all available information
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductDetailsDTO'
+        '404':
+          description: Product not found on CardMarket
 components:
   schemas:
     ProductDTO:
@@ -97,4 +146,58 @@ components:
           type: string
           format: uri
           nullable: true
+
+    ProductDetailsDTO:
+      type: object
+      description: Detailed product information including sell offers
+      properties:
+        id:
+          type: string
+        externalId:
+          type: integer
+          format: int64
+        setName:
+          type: string
+          nullable: true
+        genre:
+          type: string
+        type:
+          type: string
+        rarity:
+          type: string
+          nullable: true
+        imageUrl:
+          type: string
+          format: uri
+          nullable: true
+        detailsUrl:
+          type: string
+          format: uri
+        price:
+          type: string
+        priceTrend:
+          type: string
+        sellOffers:
+          type: array
+          items:
+            $ref: '#/components/schemas/SellOfferDTO'
+
+    SellOfferDTO:
+      type: object
+      description: Individual sell offer for a product
+      properties:
+        sellerName:
+          type: string
+        sellerLocation:
+          type: string
+        productLanguage:
+          type: string
+        special:
+          type: string
+        condition:
+          type: string
+        amount:
+          type: string
+        price:
+          type: string
 

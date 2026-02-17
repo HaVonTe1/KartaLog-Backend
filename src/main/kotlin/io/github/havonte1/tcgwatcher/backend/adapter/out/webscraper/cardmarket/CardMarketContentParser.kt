@@ -12,7 +12,7 @@ class CardMarketContentParser {
     // Knospi (PRE 004) --> Name: Knospi   code: (PRE-004)
     private val nameAndCodePattern = "^(.*?)\\s*\\((.*?)\\)$".toRegex()
 
-    fun extractProductsFromHtml(content: String, page: Int = 1): SearchResultsPageDto<CardmarketProductGallaryItemDto> {
+    fun parseGalaryPage(content: String, page: Int = 1): SearchResultsPageDto<CardmarketProductGallaryItemDto> {
         val document = Jsoup.parse(content)
 
         logger.debug { "Parsing a tags with class card and a href" }
@@ -69,13 +69,13 @@ class CardMarketContentParser {
 
     private fun parseLink(typePath: String?): ParsedLink {
         logger.debug { "Parsing Link: $typePath" }
-        
+
         if (typePath == null || typePath.trim().isEmpty()) {
             return ParsedLink(null, null, null, null)
         }
 
         val parts = typePath.split('/')
-        
+
         // Find index of first non-empty part after leading slash
         var startIdx = 0
         for (i in parts.indices) {
@@ -102,7 +102,7 @@ class CardMarketContentParser {
         } else {
             parts.getOrNull(startIdx + 2)
         }
-        
+
         // ID is everything after the language segment, including the leading slash
         val id = typePath.substringAfter(language)
         val parsedLink = ParsedLink(language, genre, type, id)
@@ -127,4 +127,116 @@ class CardMarketContentParser {
         logger.debug { "Found: $totalPages" }
         return totalPages
     }
+
+    fun parseProductDetails(document: Document, link: String): CardmarketProductDetailsDto {
+        val imageTags = document.getElementsByTag("img")
+        val frontImageTag =
+            imageTags.first { img -> img.classNames().size == 1 } //filter out "lazy" img tags
+        val imageUrl = frontImageTag.attr("src")
+        val h1Tags = document.getElementsByTag("h1")
+        val h1Tag = h1Tags.first()
+        val displayName = h1Tag?.ownText() ?: ""
+
+        val matchResult = nameAndCodePattern.find(displayName)
+        val name = matchResult?.groupValues?.getOrNull(1)
+        val code = matchResult?.groupValues?.getOrNull(2)
+        val orgName = link.split("/").last()
+
+        val parsedLink = parseLink(link)
+
+        val infoDivs = document.getElementsByClass("info-list-container")
+        val infoDiv = infoDivs.first()
+
+        val dts = infoDiv?.getElementsByTag("dt")
+
+        val rarityDt = dts?.first { dt -> dt.text() == "Rarität" }
+        val rarityText = rarityDt?.nextElementSibling()?.getElementsByTag("svg")?.attr("title")
+
+        val setDt = dts?.first { dt -> dt.text().startsWith("Erschienen") }
+        val setHref = setDt?.nextElementSibling()?.getElementsByTag("a")
+        val setLink = setHref?.first()?.attr("href")
+        val setName = setHref?.first()?.attr("title")
+
+        val abDt = dts?.first { dt -> dt.text() == "ab" }
+        val localPrice = abDt?.nextElementSibling()?.text() ?: "0,00 €"
+
+        val priceTrendDt = dts?.first { dt -> dt.text() == "Preis-Trend" }
+        val localPriceTrend = priceTrendDt?.nextElementSibling()?.getElementsByTag("span")?.text() ?: "0,00 €"
+
+        val cardmarketSellOfferDtos = ArrayList<CardmarketSellOfferDto>()
+
+        val sellOfferRows = document.getElementsByClass("article-row")
+        sellOfferRows.forEach { sellOfferRow ->
+            val sellerCol = sellOfferRow.getElementsByClass("col-seller").first()
+            val sellerHrefTag = sellerCol?.getElementsByTag("a")
+            val sellerName = sellerHrefTag?.text()
+
+            val sellerLocationTag = sellerCol?.getElementsByClass("icon")
+            val sellerLocation = sellerLocationTag?.first()?.attr("title")
+            val parts = sellerLocation?.split(": ")
+            val sellerLocationSanatized = parts?.size?.let {
+                if (it < 2) {
+                    // Handle cases where the format is unexpected
+                    logger.debug { "Warning: sellerLocationString '$sellerLocation' does not match expected format 'Prefix: CountryName'" }
+                    sellerLocation
+                } else {
+                    parts.last().lowercase()
+                }
+            }
+
+            val sellerAttributDiv = sellOfferRow.getElementsByClass("product-attributes")
+
+            val productCondition = sellerAttributDiv.first()?.getElementsByClass("article-condition")?.first()
+                ?.attr("title")
+
+            val productAttributIcons = sellerAttributDiv.first()?.getElementsByClass("icon")
+            val productLanguage = productAttributIcons?.first()
+                ?.attr("title")
+            var productSpeciality = ""
+            productAttributIcons?.size?.let {
+                if (it > 1) {
+                    productSpeciality = productAttributIcons[1]
+                        .attr("title")
+                }
+            }
+
+            val priceContainer = sellOfferRow.getElementsByClass("price-container").first()
+            val price = priceContainer?.getElementsByTag("span")?.text()
+
+            val productAmount =
+                sellOfferRow.getElementsByClass("amount-container")?.first()?.getElementsByTag("span")?.first()?.text()
+
+            if (sellerName != null && sellerLocation != null && productLanguage != null && price != null && productAmount != null && productCondition != null) {
+                val cardmarketSellOfferDto = CardmarketSellOfferDto(
+                    sellerName = sellerName,
+                    sellerLocation = sellerLocationSanatized ?: "",
+                    productLanguage = productLanguage,
+                    special = productSpeciality,
+                    condition = productCondition,
+                    amount = productAmount,
+                    price = price
+                )
+                logger.debug { "Sell Offer: $cardmarketSellOfferDto" }
+                cardmarketSellOfferDtos.add(cardmarketSellOfferDto)
+
+            }
+        }
+        val cardmarketProductDetailsDto = CardmarketProductDetailsDto(
+            name = NameDto(value = name ?: orgName, languageCode = parsedLink.language ?: "", i18n = orgName),
+            code = CodeType(code ?: "", code != null),
+            type = parsedLink.type ?: "",
+            genre = parsedLink.genre ?: "",
+            cmId = parsedLink.id ?: "",
+            rarity = rarityText ?: "",
+            set = SetDto(setName ?: "", setLink ?: ""),
+            detailsUrl = link,
+            imageUrl = imageUrl,
+            price = localPrice,
+            priceTrend = PriceTrendType(localPriceTrend, true),
+            sellOffers = cardmarketSellOfferDtos
+        )
+        logger.debug { "Product Details: $cardmarketProductDetailsDto" }
+        return cardmarketProductDetailsDto
+    }
+
 }

@@ -60,6 +60,9 @@ data class ProductEntity(
     @Column(name = "price_trend_valid")
     val priceTrendValid: Boolean? = null,
 
+    @Column(name = "details_url")
+    val detailsUrl: String? = null,
+
     @NotAudited
     @Column(name = "created_at", nullable = false, updatable = false)
     var createdAt: Instant = Instant.now(),
@@ -74,7 +77,15 @@ data class ProductEntity(
         orphanRemoval = true,
         fetch = FetchType.EAGER
     )
-    val nameTranslations: MutableSet<NameTranslationEntity> = mutableSetOf()
+    val nameTranslations: MutableSet<NameTranslationEntity> = mutableSetOf(),
+
+    @OneToMany(
+        mappedBy = "product",
+        cascade = [CascadeType.ALL],
+        orphanRemoval = true,
+        fetch = FetchType.EAGER
+    )
+    val sellOffers: MutableSet<SellOfferEntity> = mutableSetOf()
 ) : Serializable {
     companion object {
         private const val serialVersionUID: Long = 1L

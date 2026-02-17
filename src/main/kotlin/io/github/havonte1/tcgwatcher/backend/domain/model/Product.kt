@@ -30,10 +30,24 @@ data class Product(
     /** Price string from CardMarket */
     val price: String? = null,
     /** Price trend with validity flag */
-    val priceTrendInfo: StringWithValidity? = null
+    val priceTrendInfo: StringWithValidity? = null,
+    /** Product details URL on CardMarket */
+    val detailsUrl: String? = null,
+    /** List of sell offers for this product */
+    val sellOffers: List<SellOffer>? = null
 )
 
 data class StringWithValidity(
     val value: String? = null,
     val valid: Boolean? = null
+)
+
+data class SellOffer(
+    val sellerName: String,
+    val sellerLocation: String,
+    val productLanguage: String,
+    val special: String,
+    val condition: String,
+    val amount: String,
+    val price: String
 )

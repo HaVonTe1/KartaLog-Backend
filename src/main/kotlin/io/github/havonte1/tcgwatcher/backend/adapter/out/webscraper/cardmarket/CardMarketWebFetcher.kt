@@ -75,6 +75,19 @@ class CardMarketWebFetcher(
         }
     }
 
+    override fun fetchDetails(detailsUrl: String): Result<String> {
+        val supplier = Supplier<String> { performFetchDetails(detailsUrl) }
+
+        val decoratedSupplier = CircuitBreaker.decorateSupplier(circuitBreaker, Retry.decorateSupplier(retry, supplier))
+
+        return try {
+            Result.success(decoratedSupplier.get())
+        } catch (e: Exception) {
+            logger.warn { "Failed to fetch CardMarket detail page: ${e.message}" }
+            Result.failure(e)
+        }
+    }
+
     private fun performFetch(searchString: String, locale: String, game: String): String = playwrightManager.playwright.use {
         val browser: Browser = playwrightManager.browser
         val contextOptions = Browser.NewContextOptions()
@@ -91,6 +104,29 @@ class CardMarketWebFetcher(
         val encodedSearchString = URLEncoder.encode(searchString, Charsets.UTF_8)
         val url = buildUrl(locale, game, encodedSearchString)
         page.navigate(url, Page.NavigateOptions().setTimeout(config.timeoutMs.toDouble()))
+        logger.debug { "Navigated to ${page.url()}" }
+        page.waitForLoadState(LoadState.DOMCONTENTLOADED)
+        val content = page.content()
+        logger.debug { "Fetched content length: ${content.length}" }
+        context.storageState(BrowserContext.StorageStateOptions().setPath(Paths.get("auth.json")))
+        context.close()
+        content
+    }
+
+    private fun performFetchDetails(detailsUrl: String): String = playwrightManager.playwright.use {
+        val browser: Browser = playwrightManager.browser
+        val contextOptions = Browser.NewContextOptions()
+            .setGeolocation(BERLIN_LAT, BERLIN_LONG)
+            .setPermissions(listOf("geolocation"))
+            .setUserAgent(USERAGENT)
+
+        val storageFile = Paths.get("auth.json")
+        if (storageFile.exists()) {
+            contextOptions.setStorageStatePath(storageFile)
+        }
+        val context = browser.newContext(contextOptions)
+        val page: Page = context.newPage()
+        page.navigate(detailsUrl, Page.NavigateOptions().setTimeout(config.timeoutMs.toDouble()))
         logger.debug { "Navigated to ${page.url()}" }
         page.waitForLoadState(LoadState.DOMCONTENTLOADED)
         val content = page.content()

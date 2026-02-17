@@ -35,6 +35,41 @@ class CardMarketProductMapper {
             )
         }
     }
+
+    fun toProductDetails(detailsDto: CardmarketProductDetailsDto): Product {
+        val parsedLink = parseLink(detailsDto.cmId)
+
+        val externalIdFromImg = run {
+            val lastSegment = detailsDto.imageUrl.substringAfterLast('/')
+            lastSegment.substringBeforeLast('.', lastSegment).toLongOrNull() ?: 0L
+        }
+
+        return Product(
+            externalId = externalIdFromImg,
+            setName = detailsDto.set.name,
+            rarity = detailsDto.rarity,
+            names = mapOf(detailsDto.name.languageCode to detailsDto.name.value),
+            codeInfo = StringWithValidity(detailsDto.code.value, detailsDto.code.valid),
+            genre = detailsDto.genre,
+            type = detailsDto.type,
+            cmId = parsedLink.id,
+            imgLink = detailsDto.imageUrl,
+            price = detailsDto.price,
+            priceTrendInfo = StringWithValidity(detailsDto.priceTrend.value, detailsDto.priceTrend.valid),
+            detailsUrl = detailsDto.detailsUrl,
+            sellOffers = detailsDto.sellOffers.map { sellOffer ->
+                io.github.havonte1.tcgwatcher.backend.domain.model.SellOffer(
+                    sellerName = sellOffer.sellerName,
+                    sellerLocation = sellOffer.sellerLocation,
+                    productLanguage = sellOffer.productLanguage,
+                    special = sellOffer.special,
+                    condition = sellOffer.condition,
+                    amount = sellOffer.amount,
+                    price = sellOffer.price
+                )
+            }
+        )
+    }
     private data class ParsedLink(
 
         val genre: String?,

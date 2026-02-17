@@ -30,7 +30,31 @@ class CardMarketScraperAdapter(
             logger.warn { "Failed to fetch CardMarket page: ${it.message}" }
             return emptyList()
         }
-        val result = contentParser.extractProductsFromHtml(content)
+        val result = contentParser.parseGalaryPage(content)
         return mapper.toProducts(result)
+    }
+
+    override suspend fun fetchProductDetails(
+        cmId: String,
+        genre: String,
+        type: String,
+        lang: String,
+        setname: String
+    ): Product? {
+        logger.info { "Fetching product details for $cmId" }
+
+        val detailsUrl = buildDetailUrl(lang, genre, type, setname, cmId)
+        val fetchResult = webFetcher.fetchDetails(detailsUrl)
+        val content = fetchResult.getOrElse {
+            logger.warn { "Failed to fetch CardMarket detail page: ${it.message}" }
+            return null
+        }
+        val document = org.jsoup.Jsoup.parse(content)
+        val detailsDto = contentParser.parseProductDetails(document, detailsUrl)
+        return mapper.toProductDetails(detailsDto)
+    }
+
+    private fun buildDetailUrl(lang: String, genre: String, type: String, setname: String, cmId: String): String {
+        return "https://www.cardmarket.com/$lang/$genre/products/$type/$setname/$cmId"
     }
 }

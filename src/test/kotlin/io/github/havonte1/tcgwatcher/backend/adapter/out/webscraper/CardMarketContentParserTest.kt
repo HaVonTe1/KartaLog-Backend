@@ -20,7 +20,7 @@ class CardMarketContentParserTest {
         val file = File(resourcePath)
         Assumptions.assumeTrue(file.exists(), "Ressource fehlt, Test wird übersprungen")
         val content = Files.readString(Paths.get(resourcePath))
-        val products = parser.extractProductsFromHtml(content, 1)
+        val products = parser.parseGalaryPage(content, 1)
         // Expect at least one product parsed
         assertTrue(products.results.isNotEmpty(), "No products were parsed")
         assertEquals(30, products.results.size, "Should found 30 elements")

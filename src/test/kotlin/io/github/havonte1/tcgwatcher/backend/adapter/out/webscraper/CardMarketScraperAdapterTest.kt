@@ -35,6 +35,10 @@ class CardMarketScraperAdapterTest {
                 locale: String,
                 game: String
             ): Result<String> = Result.success(Files.readString(Paths.get(resourcePath)))
+
+            override fun fetchDetails(detailsUrl: String): Result<String> {
+                return Result.failure(UnsupportedOperationException("Not implemented"))
+            }
         }
 
         val testFetcher = TestCardMarketWebFetcher()
