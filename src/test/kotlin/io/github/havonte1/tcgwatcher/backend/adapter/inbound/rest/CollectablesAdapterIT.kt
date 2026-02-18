@@ -4,6 +4,7 @@ import io.github.havonte1.tcgwatcher.backend.application.SearchUseCase
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito
 import org.springframework.beans.factory.annotation.Autowired
@@ -21,6 +22,7 @@ import org.testcontainers.postgresql.PostgreSQLContainer
 @SpringBootTest
 @AutoConfigureMockMvc
 @Testcontainers
+@Tag("integration")
 class CollectablesAdapterIT {
 
     @Autowired

@@ -1,3 +1,4 @@
+
 plugins {
     id("org.openapi.generator") version "7.19.0"
     kotlin("jvm") version "2.2.21"
@@ -29,8 +30,10 @@ tasks.named("compileKotlin") {
     dependsOn("openApiGenerate")
 }
 
-tasks.withType<Test> {
-    useJUnitPlatform()
+tasks.named<Test>("test") {
+    useJUnitPlatform {
+        excludeTags = setOf("integration")
+    }
     // Show stdout/stderr from tests (including logger output) even when Gradle runs in quiet mode
     testLogging {
         // Log the result of each test
@@ -41,6 +44,27 @@ tasks.withType<Test> {
         exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
     }
 }
+
+
+val integrationTest = tasks.register<Test>("integrationTest") {
+    description = "Runs integration tests."
+    group = "verification"
+    // Use the same test classes and classpath as the standard test task
+    testClassesDirs = tasks.named<Test>("test").get().testClassesDirs
+    classpath = tasks.named<Test>("test").get().classpath
+
+    useJUnitPlatform {
+        includeTags("integration")
+    }
+
+    testLogging {
+        events("passed", "skipped", "failed")
+        showStandardStreams = true
+        exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
+    }
+}
+
+tasks.check { dependsOn(integrationTest) }
 
 kotlin {
     jvmToolchain(17)
@@ -61,6 +85,8 @@ repositories {
     mavenCentral()
 }
 
+val resilience4jVersion = "2.3.0"
+
 dependencies {
     // -------------------------------------------------
     // Spring Boot starters – runtime dependencies
@@ -70,13 +96,10 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     implementation("org.hibernate.orm:hibernate-envers")
     implementation("org.springframework.boot:spring-boot-starter-actuator")
-    implementation("org.springframework.boot:spring-boot-starter-integration")
+    implementation("org.springframework.boot:spring-boot-starter-aop:4.0.0-M2")
     implementation("org.springframework.boot:spring-boot-starter-liquibase")
     implementation("org.springframework.boot:spring-boot-starter-restclient")
     implementation("org.springframework.boot:spring-boot-starter-validation")
-    implementation("org.springframework.boot:spring-boot-starter-webmvc")
-    implementation("org.springframework.integration:spring-integration-jpa")
-    implementation("org.springframework.integration:spring-integration-http")
 
     // -------------------------------------------------
     // Kotlin & logging
@@ -99,8 +122,9 @@ dependencies {
     implementation("jakarta.validation:jakarta.validation-api")
     implementation("jakarta.ws.rs:jakarta.ws.rs-api:4.0.0")
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.7.0")
-    implementation("io.github.resilience4j:resilience4j-spring-boot3:2.2.0")
-    implementation("io.github.resilience4j:resilience4j-core:2.2.0")
+    implementation("io.github.resilience4j:resilience4j-spring-boot3:${resilience4jVersion}")
+    implementation("io.github.resilience4j:resilience4j-all:${resilience4jVersion}")
+    implementation("io.github.resilience4j:resilience4j-kotlin:${resilience4jVersion}")
 
     // -------------------------------------------------
     // Database drivers

@@ -11,6 +11,7 @@ import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Assumptions
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
@@ -27,7 +28,8 @@ import java.nio.file.Paths
 
 @SpringBootTest
 @Testcontainers
-class SearchResultProductBehaviorTest {
+@Tag("integration")
+class SearchResultProductBehaviorIT {
 
     @TestConfiguration
     class ScraperTestConfig {

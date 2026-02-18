@@ -40,9 +40,31 @@ resilience4j:
   retry:
     instances:
       cardMarketRetry:
-        max-attempts: 3
-        wait-duration: 1s
-        wait-duration-multiplier: 2.0
+        maxAttempts: 3
+        waitDuration: 10s
+        enableExponentialBackoff: true
+        exponentialBackoffMultiplier: 2
+        retryExceptions:
+          - org.springframework.web.client.HttpServerErrorException
+          - java.io.IOException
+  bulkhead:
+    instances:
+      cardMarketBulkhead:
+        maxConcurrentCalls: 10
+  ratelimiter:
+    instances:
+      cardMarketRatelimiter:
+        limitForPeriod: 10
+        limitRefreshPeriod: 1s
+        timeoutDuration: 0
+        registerHealthIndicator: true
+        eventConsumerBufferSize: 100
+  timelimiter:
+    instances:
+      cardMarketTimeLimiter:
+        timeoutDuration: 2s
+        cancelRunningFuture: true
+
 
 logging:
   level:

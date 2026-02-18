@@ -1,9 +1,5 @@
-package io.github.havonte1.tcgwatcher.backend.adapter.out.webscraper
+package io.github.havonte1.tcgwatcher.backend.adapter.out.webscraper.cardmarket
 
-import io.github.havonte1.tcgwatcher.backend.adapter.out.webscraper.cardmarket.CardMarketProductMapper
-import io.github.havonte1.tcgwatcher.backend.adapter.out.webscraper.cardmarket.CardmarketProductGallaryItemDto
-import io.github.havonte1.tcgwatcher.backend.adapter.out.webscraper.cardmarket.NameDto
-import io.github.havonte1.tcgwatcher.backend.adapter.out.webscraper.cardmarket.SearchResultsPageDto
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
