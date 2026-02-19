@@ -53,7 +53,7 @@ resilience4j:
         maxConcurrentCalls: 10
   ratelimiter:
     instances:
-      cardMarketRatelimiter:
+      cardMarketRateLimiter:
         limitForPeriod: 10
         limitRefreshPeriod: 1s
         timeoutDuration: 0
@@ -64,8 +64,6 @@ resilience4j:
       cardMarketTimeLimiter:
         timeoutDuration: 2s
         cancelRunningFuture: true
-
-
 logging:
   level:
     io.github.havonte1: trace
