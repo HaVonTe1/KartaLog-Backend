@@ -1,10 +1,10 @@
-package io.github.havonte1.tcgwatcher.backend.adapter.out.webscraper.cardmarket
+package io.github.havonte1.tcgwatcher.backend.adapter.out.webscraper
 
 import com.microsoft.playwright.Browser
+import com.microsoft.playwright.BrowserType
 import com.microsoft.playwright.Playwright
-import com.microsoft.playwright.BrowserType.LaunchOptions
-import org.springframework.stereotype.Component
 import jakarta.annotation.PreDestroy
+import org.springframework.stereotype.Component
 
 /**
  * Manages a singleton Playwright instance and a shared Chromium browser.
@@ -16,7 +16,7 @@ import jakarta.annotation.PreDestroy
 class PlaywrightManager {
     val playwright: Playwright = Playwright.create()
     val browser: Browser = playwright.chromium().launch(
-        LaunchOptions().setHeadless(true)
+        BrowserType.LaunchOptions().setHeadless(true)
     )
 
     @PreDestroy

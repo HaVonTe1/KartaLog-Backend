@@ -4,6 +4,7 @@ import com.microsoft.playwright.Browser
 import com.microsoft.playwright.BrowserContext
 import com.microsoft.playwright.Page
 import com.microsoft.playwright.options.LoadState
+import io.github.havonte1.tcgwatcher.backend.adapter.out.webscraper.PlaywrightManager
 import io.github.havonte1.tcgwatcher.backend.config.CardMarketConfig
 import io.github.havonte1.tcgwatcher.backend.config.CardMarketConstants
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -35,6 +36,7 @@ open class CardMarketWebFetcher(
     @TimeLimiter(name = "cardMarketTimeLimiter")
     @Bulkhead(name = "cardMarketBulkHead")
     override fun fetch(searchString: String, locale: String, game: String): Result<String> {
+        logger.debug { "Fetching card market from $searchString" }
         return Result.success(performFetch(searchString, locale, game))
     }
 
@@ -54,7 +56,9 @@ open class CardMarketWebFetcher(
     }
 
     private fun performFetch(searchString: String, locale: String, game: String): String =
+
         playwrightManager.playwright.use {
+            logger.debug { "performFetch" }
             val browser: Browser = playwrightManager.browser
             val contextOptions = Browser.NewContextOptions()
                 .setGeolocation(BERLIN_LAT, BERLIN_LONG)
@@ -69,7 +73,7 @@ open class CardMarketWebFetcher(
             val page: Page = context.newPage()
             val encodedSearchString = URLEncoder.encode(searchString, Charsets.UTF_8)
             val url = buildUrl(locale, game, encodedSearchString)
-            page.navigate(url, Page.NavigateOptions().setTimeout(config.timeoutMs.toDouble()))
+            page.navigate(url, Page.NavigateOptions().setTimeout(10000.0))
             logger.debug { "Navigated to ${page.url()}" }
             page.waitForLoadState(LoadState.DOMCONTENTLOADED)
             val content = page.content()
@@ -100,7 +104,7 @@ open class CardMarketWebFetcher(
         val page: Page = context.newPage()
         val detailsUrl = buildDetailUrl(lang, genre, type, setname, cmId)
 
-        page.navigate(detailsUrl, Page.NavigateOptions().setTimeout(config.timeoutMs.toDouble()))
+        page.navigate(detailsUrl, Page.NavigateOptions().setTimeout(10000.0))
         logger.debug { "Navigated to ${page.url()}" }
         page.waitForLoadState(LoadState.DOMCONTENTLOADED)
         val content = page.content()

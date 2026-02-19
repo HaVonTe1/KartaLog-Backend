@@ -60,7 +60,7 @@ class CardMarketScraperAdapterIT {
         @Container
         @ServiceConnection
         @JvmStatic
-        val postgres = PostgreSQLContainer("postgres:15-alpine")
+        val postgres = PostgreSQLContainer("postgres:18.1-alpine")
     }
 
     @Test
