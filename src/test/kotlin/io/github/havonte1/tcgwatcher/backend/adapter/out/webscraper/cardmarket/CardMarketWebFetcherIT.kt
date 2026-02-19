@@ -80,7 +80,7 @@ class CardMarketWebFetcherIT {
 
         val rateLimiter = rateLimiterRegistry.rateLimiter("cardMarketRateLimiter")
         assertThat(rateLimiter).isNotNull()
-        assertThat(rateLimiter.metrics.availablePermissions).isEqualTo(10)
+        assertThat(rateLimiter.metrics.availablePermissions).isEqualTo(100)
         assertThat(rateLimiter.metrics.numberOfWaitingThreads).isEqualTo(0)
 
 
@@ -104,7 +104,7 @@ class CardMarketWebFetcherIT {
         assertThat(retry.metrics.numberOfSuccessfulCallsWithRetryAttempt).isEqualTo(0)
 
 
-        assertThat(rateLimiter.metrics.availablePermissions).isEqualTo(9)
+        assertThat(rateLimiter.metrics.availablePermissions).isEqualTo(99)
         assertThat(rateLimiter.metrics.numberOfWaitingThreads).isEqualTo(0)
 
     }

@@ -54,11 +54,11 @@ resilience4j:
   ratelimiter:
     instances:
       cardMarketRateLimiter:
-        limitForPeriod: 10
-        limitRefreshPeriod: 1s
+        limitForPeriod: 100
+        limitRefreshPeriod: 10s
         timeoutDuration: 0
         registerHealthIndicator: true
-        eventConsumerBufferSize: 100
+        eventConsumerBufferSize: 1000
   timelimiter:
     instances:
       cardMarketTimeLimiter:
