@@ -45,6 +45,7 @@ resilience4j:
         enableExponentialBackoff: true
         exponentialBackoffMultiplier: 2
         retryExceptions:
+          - io.github.havonte1.tcgwatcher.backend.adapter.out.webscraper.cardmarket.CloudFlareException
           - org.springframework.web.client.HttpServerErrorException
           - java.io.IOException
   bulkhead:
