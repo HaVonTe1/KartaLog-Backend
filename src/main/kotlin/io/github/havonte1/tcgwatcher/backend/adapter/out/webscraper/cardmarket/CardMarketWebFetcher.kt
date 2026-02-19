@@ -13,6 +13,7 @@ import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker
 import io.github.resilience4j.retry.annotation.Retry
 import io.github.resilience4j.ratelimiter.annotation.RateLimiter
 import io.github.resilience4j.timelimiter.annotation.TimeLimiter
+import jakarta.ws.rs.NotFoundException
 import org.springframework.http.HttpStatusCode
 import org.springframework.stereotype.Component
 import java.net.URLEncoder
@@ -55,35 +56,48 @@ open class CardMarketWebFetcher(
         return Result.success(performFetchDetails(cmId, genre, type, lang, setname))
     }
 
-    private fun performFetch(searchString: String, locale: String, game: String): String {
-        logger.debug { "performFetch" }
-        val browser: Browser = playwrightManager.browser
-        val contextOptions = Browser.NewContextOptions()
+    private fun createContextOptions(): Browser.NewContextOptions {
+        return Browser.NewContextOptions()
             .setGeolocation(BERLIN_LAT, BERLIN_LONG)
             .setPermissions(listOf("geolocation"))
             .setUserAgent(USERAGENT)
+    }
 
+    private fun fetchUrl(url: String, debugMessage: String): String {
+        val browser: Browser = playwrightManager.browser
+        val contextOptions = createContextOptions()
         val storageFile = Path.of("auth.json")
         if (Files.exists(storageFile)) {
             contextOptions.setStorageStatePath(storageFile)
         }
         val context = browser.newContext(contextOptions)
         val page: Page = context.newPage()
-        val encodedSearchString = URLEncoder.encode(searchString, Charsets.UTF_8)
-        val url = buildUrl(locale, game, encodedSearchString)
-        logger.debug { "Navigate to ${url}" }
+        logger.debug { debugMessage }
         val response = page.navigate(url, Page.NavigateOptions().setTimeout(10000.0))
         logger.debug { "Response: ${response.status()}" }
         page.waitForLoadState(LoadState.DOMCONTENTLOADED)
-        if(!response.ok()) {
-            throw CloudFlareException(HttpStatusCode.valueOf( response.status()))
+        if (!response.ok()) {
+            when(response.status()) {
+                404 -> {
+                    throw NotFoundException(response.url())
+                }
+                403 -> {
+                    throw CloudFlareException(HttpStatusCode.valueOf(response.status()))
+                }
+            }
         }
         val content = page.content()
-
         logger.debug { "Fetched content length: ${content.length}" }
         context.storageState(BrowserContext.StorageStateOptions().setPath(Path.of("auth.json")))
         context.close()
         return content
+    }
+
+    private fun performFetch(searchString: String, locale: String, game: String): String {
+        logger.debug { "performFetch" }
+        val encodedSearchString = URLEncoder.encode(searchString, Charsets.UTF_8)
+        val url = buildUrl(locale, game, encodedSearchString)
+        return fetchUrl(url, "Navigate to ${url}")
     }
 
     private fun performFetchDetails(
@@ -94,39 +108,8 @@ open class CardMarketWebFetcher(
         setname: String
     ): String {
         logger.debug { "performFetchDetails" }
-
-        val browser: Browser = playwrightManager.browser
-        val contextOptions = Browser.NewContextOptions()
-            .setGeolocation(BERLIN_LAT, BERLIN_LONG)
-            .setPermissions(listOf("geolocation"))
-            .setUserAgent(USERAGENT)
-
-        val storageFile = Path.of("auth.json")
-        if (Files.exists(storageFile)) {
-            contextOptions.setStorageStatePath(storageFile)
-        }
-        val context = try {
-            browser.newContext(contextOptions)
-        } catch (e: Exception) {
-            logger.error { e }
-            throw e;
-        }
-        val page: Page = context.newPage()
         val detailsUrl = buildDetailUrl(lang, genre, type, setname, cmId)
-        logger.debug { "Navigate to ${detailsUrl}" }
-
-        val response = page.navigate(detailsUrl, Page.NavigateOptions().setTimeout(10000.0))
-        page.waitForLoadState(LoadState.DOMCONTENTLOADED)
-
-        logger.debug { "Response: ${response.status()}" }
-        if(!response.ok()) {
-            throw CloudFlareException(HttpStatusCode.valueOf( response.status()))
-        }
-        val content = page.content()
-        logger.debug { "Fetched content length: ${content.length}" }
-        context.storageState(BrowserContext.StorageStateOptions().setPath(Path.of("auth.json")))
-        context.close()
-        return content
+        return fetchUrl(detailsUrl, "Navigate to ${detailsUrl}")
     }
 
     private fun buildUrl(locale: String, game: String, encodedSearchString: String): String {

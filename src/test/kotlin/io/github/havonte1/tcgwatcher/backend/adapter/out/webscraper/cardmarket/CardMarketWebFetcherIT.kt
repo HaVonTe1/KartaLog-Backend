@@ -160,6 +160,27 @@ class CardMarketWebFetcherIT {
         assertThat(rateLimiter.metrics.numberOfWaitingThreads).isEqualTo(0)
 
 
+        val result4 = try {
+            runBlocking { fetcher.fetchDetails("unknown", "Pokemon", "Singles", lang = "de", setname = "BaseSet") }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+        Assertions.assertTrue(result4.isFailure)
+        wiremockServer.verify(
+            exactly(1), //no retry
+            getRequestedFor(urlEqualTo("/de/Pokemon/products/Singles/BaseSet/unknown"))
+        )
+        // ---
+        assertThat(circuitBreaker.state).isEqualTo(CircuitBreaker.State.CLOSED)
+
+        assertThat(circuitBreaker.metrics.numberOfBufferedCalls).isEqualTo(6)
+        assertThat(circuitBreaker.metrics.numberOfSuccessfulCalls).isEqualTo(1)
+        assertThat(circuitBreaker.metrics.numberOfFailedCalls).isEqualTo(5)
+
+        assertThat(retry.metrics.numberOfFailedCallsWithoutRetryAttempt).isEqualTo(2)
+        assertThat(retry.metrics.numberOfFailedCallsWithRetryAttempt).isEqualTo(1)
+        assertThat(retry.metrics.numberOfSuccessfulCallsWithRetryAttempt).isEqualTo(0)
+        assertThat(rateLimiter.metrics.numberOfWaitingThreads).isEqualTo(0)
     }
 
     @TestConfiguration
@@ -218,6 +239,15 @@ class CardMarketWebFetcherIT {
                             .withStatus(403)
                             .withHeader("Content-Type", "text/html; charset=UTF-8")
                             .withBody("you want api key? too bad - here have some cloudflare")
+                    )
+            )
+            wm1.stubFor(
+                WireMock.get(WireMock.urlPathMatching("/de/Pokemon/products/Singles/BaseSet/unknown"))
+                    .willReturn(
+                        aResponse()
+                            .withStatus(404)
+                            .withHeader("Content-Type", "text/html; charset=UTF-8")
+                            .withBody("bro...")
                     )
             )
         }

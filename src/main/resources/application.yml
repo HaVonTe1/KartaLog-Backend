@@ -48,6 +48,8 @@ resilience4j:
           - io.github.havonte1.tcgwatcher.backend.adapter.out.webscraper.cardmarket.CloudFlareException
           - org.springframework.web.client.HttpServerErrorException
           - java.io.IOException
+        ignore-exceptions:
+          - jakarta.ws.rs.NotFoundException
   bulkhead:
     instances:
       cardMarketBulkhead:
