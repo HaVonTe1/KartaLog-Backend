@@ -23,7 +23,8 @@ spring:
         jdbc:
           batch_size: 50
         order_updates: true
-
+cache:
+  ttl-hours: 1
 resilience4j:
   circuitbreaker:
     instances:
@@ -53,12 +54,14 @@ resilience4j:
           - java.io.IOException
         ignore-exceptions:
           - jakarta.ws.rs.NotFoundException
-  bulkhead:
-    instances:
-      cardMarketBulkhead:
-        maxConcurrentCalls: 10
   ratelimiter:
     instances:
+      apiRateLimiter:
+        limitForPeriod: 100
+        limitRefreshPeriod: 10s
+        timeoutDuration: 0
+        registerHealthIndicator: true
+        eventConsumerBufferSize: 1000
       cardMarketRateLimiter:
         limitForPeriod: 100
         limitRefreshPeriod: 10s

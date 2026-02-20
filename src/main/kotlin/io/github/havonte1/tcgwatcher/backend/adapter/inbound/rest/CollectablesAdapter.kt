@@ -5,6 +5,8 @@ import io.github.havonte1.tcgwatcher.backend.adapter.inbound.rest.model.ProductD
 import io.github.havonte1.tcgwatcher.backend.adapter.inbound.rest.model.ProductDTO
 import io.github.havonte1.tcgwatcher.backend.application.SearchUseCase
 import io.github.oshai.kotlinlogging.KotlinLogging
+import io.github.resilience4j.ratelimiter.annotation.RateLimiter
+import org.springframework.cache.annotation.Cacheable
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.RestController
@@ -16,6 +18,7 @@ class CollectablesAdapter(
 
     private val logger = KotlinLogging.logger {}
 
+    @RateLimiter(name = "apiRateLimiter")
     override suspend fun listCollectables(
         query: String,
         page: Int,
@@ -39,6 +42,7 @@ class CollectablesAdapter(
         return ResponseEntity(dtoList, HttpStatus.OK)
     }
 
+    @RateLimiter(name = "apiRateLimiter")
     override suspend fun getProductDetails(
         cmId: String,
         setname: String,
@@ -46,7 +50,10 @@ class CollectablesAdapter(
         type: String,
         lang: String
     ): ResponseEntity<ProductDetailsDTO> {
-        logger.warn { "Product details endpoint not implemented yet" }
+        val productDetails = collectablesService.fetchProductDetails(cmId, genre, type, lang, setname)
+        if(productDetails!=null) {
+            return ResponseEntity.ok(CollectablesMapper.toDetailDto(product = productDetails))
+        }
         return ResponseEntity.notFound().build()
     }
 }

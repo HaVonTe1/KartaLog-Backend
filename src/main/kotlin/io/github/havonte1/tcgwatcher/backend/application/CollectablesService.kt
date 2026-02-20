@@ -8,6 +8,7 @@ import io.github.havonte1.tcgwatcher.backend.domain.port.out.ProductRepository
 import io.github.havonte1.tcgwatcher.backend.domain.port.out.SearchResultRepository
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.withTimeout
+import org.springframework.cache.annotation.Cacheable
 import org.springframework.stereotype.Service
 
 /**
@@ -24,7 +25,8 @@ class CollectablesService(
 
     private val logger = KotlinLogging.logger {}
 
-    /** Returns cards for the given query, using cached results when available. */
+
+    @Cacheable("listCache")
     override suspend fun search(searchString: String, locale: String, game: String): List<Product> {
         logger.debug { "Searching for collectables with query='$searchString'" }
 
@@ -59,7 +61,7 @@ class CollectablesService(
         return scraped
     }
 
-
+    @Cacheable("detailsCache")
     override suspend fun fetchProductDetails(
         cmId: String,
         genre: String,
@@ -90,12 +92,11 @@ class CollectablesService(
             }
         }
 
-        return null
+        return existingProduct
     }
 
     private fun hasChanges(oldProduct: Product, newProduct: Product): Boolean {
         if (oldProduct.price != newProduct.price) return true
-        if (oldProduct.rarity != newProduct.rarity) return true
 
         val oldSellOffersMap = oldProduct.sellOffers?.associate { it.sellerName to it } ?: emptyMap()
         val newSellOffersMap = newProduct.sellOffers?.associate { it.sellerName to it } ?: emptyMap()
