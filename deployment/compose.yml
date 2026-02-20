@@ -9,4 +9,4 @@ services:
     volumes:
       - ./postgres/initdb.d:/docker-entrypoint-initdb.d/
     env_file:
-      - ../.env
+      - .env

@@ -29,9 +29,19 @@ object CollectablesMapper {
             imageUrl = product.imgLink?.let { java.net.URI.create(it) },
             type = product.type,
             genre = product.genre,
-            detailsUrl = "${product.genre}/product/${product.type}/${product.setName}/${product.cmId}"?.let { java.net.URI.create(it) },
+            detailsUrl = listOfNotNull(product.genre, "product", product.type, product.setName, product.cmId).joinToString("/").let { java.net.URI.create(it) },
 
-            //TODO: add the selloffers
+            sellOffers = product.sellOffers?.map { sellOffer ->
+                io.github.havonte1.tcgwatcher.backend.adapter.inbound.rest.model.SellOfferDTO(
+                    sellerName = sellOffer.sellerName,
+                    sellerLocation = sellOffer.sellerLocation,
+                    productLanguage = sellOffer.productLanguage,
+                    special = sellOffer.special,
+                    condition = sellOffer.condition,
+                    amount = sellOffer.amount,
+                    price = sellOffer.price
+                )
+            }
             )
     }
 }

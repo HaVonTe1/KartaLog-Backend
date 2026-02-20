@@ -100,4 +100,8 @@ data class SellOfferEntity(
     }
 
     override fun hashCode(): Int = id?.hashCode() ?: toString().hashCode()
+    override fun toString(): String {
+        return "SellOfferEntity(id=$id, sellerName='$sellerName', sellerLocation='$sellerLocation', productLanguage='$productLanguage', special='$special', condition='$condition', amount='$amount', price='$price')"
+    }
+
 }

@@ -57,5 +57,25 @@
         tableName="product_name_translations_aud"/>
     </changeSet>
 
+    <changeSet author="havonte" id="7-create-sell_offers-aud-table">
+        <createTable schemaName="watcher" tableName="sell_offers_aud">
+            <column name="id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="product_id" type="BIGINT"/>
+            <column name="seller_name" type="VARCHAR(255)"/>
+            <column name="seller_location" type="VARCHAR(255)"/>
+            <column name="product_language" type="VARCHAR(255)"/>
+            <column name="special" type="VARCHAR(255)"/>
+            <column name="condition" type="VARCHAR(255)"/>
+            <column name="amount" type="VARCHAR(255)"/>
+            <column name="price" type="VARCHAR(255)"/>
+            <column name="rev" type="BIGINT"/>
+            <column name="REVTYPE" type="INTEGER"/>
+        </createTable>
+      <addPrimaryKey columnNames="id, rev" constraintName="pk_sell_offers_aud" schemaName="watcher"
+        tableName="sell_offers_aud"/>
+    </changeSet>
+
 
 </databaseChangeLog>

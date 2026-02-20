@@ -115,4 +115,9 @@ data class ProductEntity(
     }
 
     override fun hashCode(): Int = id?.hashCode() ?: externalId.hashCode()
+    override fun toString(): String {
+        return "ProductEntity(id=$id, externalId=$externalId, setName=$setName, rarity=$rarity, codeInfo=$codeInfo, codeInfoValid=$codeInfoValid, genre=$genre, type=$type, cmId=$cmId, imgLink=$imgLink, price=$price, priceTrend=$priceTrend, priceTrendValid=$priceTrendValid, createdAt=$createdAt, updatedAt=$updatedAt, nameTranslations=$nameTranslations, sellOffers=${sellOffers.size})"
+    }
+
+
 }

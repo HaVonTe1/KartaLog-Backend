@@ -183,7 +183,7 @@ class CardMarketWebFetcherIT {
         Assertions.assertTrue(result3.isFailure)
         wiremockServer.verify(
             exactly(3), //1 call and 2 retries
-            getRequestedFor(urlEqualTo("/de/Pokemon/products/Singles/BaseSet/cloudflare"))
+            getRequestedFor(urlEqualTo("/de/Pokemon/Products/Singles/BaseSet/cloudflare"))
         )
         // ---
         assertThat(circuitBreaker.state).isEqualTo(CircuitBreaker.State.CLOSED)
@@ -210,7 +210,7 @@ class CardMarketWebFetcherIT {
         Assertions.assertTrue(result4.isFailure)
         wiremockServer.verify(
             exactly(1),
-            getRequestedFor(urlEqualTo("/de/Pokemon/products/Singles/BaseSet/unknown"))
+            getRequestedFor(urlEqualTo("/de/Pokemon/Products/Singles/BaseSet/unknown"))
         )
 
         (0 until 10).forEach { i ->
@@ -227,7 +227,7 @@ class CardMarketWebFetcherIT {
 
         wiremockServer.verify(
             exactly(11),
-            getRequestedFor(urlEqualTo("/de/Pokemon/products/Singles/BaseSet/unknown"))
+            getRequestedFor(urlEqualTo("/de/Pokemon/Products/Singles/BaseSet/unknown"))
         )
         assertThat(circuitBreaker.state).isEqualTo(CircuitBreaker.State.CLOSED)
 
@@ -303,7 +303,7 @@ class CardMarketWebFetcherIT {
             )
             val evoli = Files.readString(Paths.get(testFileEvoli))
             wm1.stubFor(
-                WireMock.get(WireMock.urlPathMatching("/de/Pokemon/products/Singles/BaseSet/12345678.*"))
+                WireMock.get(WireMock.urlPathMatching("/de/Pokemon/Products/Singles/BaseSet/12345678.*"))
                     .willReturn(
                         aResponse()
                             .withStatus(200)
@@ -332,7 +332,7 @@ class CardMarketWebFetcherIT {
                     )
             )
             wm1.stubFor(
-                WireMock.get(WireMock.urlPathMatching("/de/Pokemon/products/Singles/BaseSet/cloudflare"))
+                WireMock.get(WireMock.urlPathMatching("/de/Pokemon/Products/Singles/BaseSet/cloudflare"))
                     .willReturn(
                         aResponse()
                             .withStatus(403)
@@ -341,7 +341,7 @@ class CardMarketWebFetcherIT {
                     )
             )
             wm1.stubFor(
-                WireMock.get(WireMock.urlPathMatching("/de/Pokemon/products/Singles/BaseSet/unknown"))
+                WireMock.get(WireMock.urlPathMatching("/de/Pokemon/Products/Singles/BaseSet/unknown"))
                     .willReturn(
                         aResponse()
                             .withStatus(404)

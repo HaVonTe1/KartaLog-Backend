@@ -99,7 +99,7 @@ paths:
           required: false
           schema:
             type: string
-            default: singles
+            default: Singles
         - name: lang
           in: query
           required: false
@@ -200,4 +200,3 @@ components:
           type: string
         price:
           type: string
-

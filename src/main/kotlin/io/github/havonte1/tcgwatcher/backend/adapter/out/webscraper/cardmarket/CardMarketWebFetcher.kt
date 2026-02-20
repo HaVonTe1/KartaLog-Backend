@@ -121,6 +121,6 @@ open class CardMarketWebFetcher(
     private fun buildDetailUrl(lang: String, genre: String, type: String, setname: String, cmId: String): String {
         val finalLocale = if (lang.isEmpty()) CardMarketConstants.DEFAULT_LOCALE else lang
         val finalGame = if (genre.isEmpty()) CardMarketConstants.DEFAULT_GAME else genre
-        return "${config.basePath}/$finalLocale/$finalGame/products/$type/$setname/$cmId"
+        return "${config.basePath}/$finalLocale/$finalGame/Products/$type/$setname/$cmId"
     }
 }
