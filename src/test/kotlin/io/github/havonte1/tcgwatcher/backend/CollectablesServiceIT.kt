@@ -14,6 +14,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.boot.cache.test.autoconfigure.AutoConfigureCache
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.context.TestConfiguration
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection
@@ -30,6 +31,7 @@ import kotlin.test.fail
 @SpringBootTest
 @Testcontainers
 @Tag("integration")
+@AutoConfigureCache
 class CollectablesServiceIT {
 
     @TestConfiguration

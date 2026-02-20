@@ -31,6 +31,7 @@ import org.testcontainers.postgresql.PostgreSQLContainer
 @Disabled("only for internal testing")
 @Testcontainers
 @Tag("integration")
+
 class CardMarketScraperAdapterIT {
 
     @Autowired
