@@ -48,7 +48,7 @@ import java.nio.file.Paths
 @SpringBootTest
 @Testcontainers
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-//@Tag("integration")
+@Tag("integration")
 class CardMarketWebFetcherIT {
 
     @Autowired

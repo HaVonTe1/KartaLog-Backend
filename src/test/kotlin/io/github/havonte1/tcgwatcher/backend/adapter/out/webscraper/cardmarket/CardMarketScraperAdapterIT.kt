@@ -1,8 +1,10 @@
-package io.github.havonte1.tcgwatcher.backend
+package io.github.havonte1.tcgwatcher.backend.adapter.out.webscraper.cardmarket
 
+import com.microsoft.playwright.BrowserType
 import com.microsoft.playwright.Playwright
 import io.github.havonte1.tcgwatcher.backend.domain.model.Product
 import io.github.havonte1.tcgwatcher.backend.domain.port.out.CardMarketScraperPort
+import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assumptions
@@ -41,7 +43,7 @@ class CardMarketScraperAdapterIT {
             try {
                 Playwright.create().use {
                     it.chromium().launch(
-                        com.microsoft.playwright.BrowserType.LaunchOptions()
+                        BrowserType.LaunchOptions()
                             .setHeadless(false)
                             .setArgs(listOf("--disable-blink-features=AutomationControlled"))
                     )
@@ -66,7 +68,7 @@ class CardMarketScraperAdapterIT {
     @Test
     fun `search returns products with required fields`() {
         val results: List<Product> =
-            kotlinx.coroutines.runBlocking {
+            runBlocking {
                 scraper.search("Pikachu", "de", "Pokemon")
             }
         Assertions.assertTrue(results.isNotEmpty(), "Expected at least one product for search term 'Pikachu'")
