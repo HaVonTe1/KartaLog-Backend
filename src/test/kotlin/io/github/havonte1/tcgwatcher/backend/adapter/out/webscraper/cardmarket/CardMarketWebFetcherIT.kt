@@ -18,7 +18,16 @@ import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry
 import io.github.resilience4j.ratelimiter.RateLimiterRegistry
 import io.github.resilience4j.retry.Retry
 import io.github.resilience4j.retry.RetryRegistry
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.newSingleThreadContext
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.resetMain
+import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.test.setMain
+import org.junit.jupiter.api.BeforeAll
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.*
 import org.springframework.beans.factory.annotation.Autowired
@@ -60,8 +69,29 @@ class CardMarketWebFetcherIT {
     @Autowired
     lateinit var wiremockServer: WireMockServer
 
+
+    companion object {
+        @OptIn(DelicateCoroutinesApi::class, ExperimentalCoroutinesApi::class)
+        private val mainThreadSurrogate = newSingleThreadContext("UI thread")
+
+        @OptIn(ExperimentalCoroutinesApi::class)
+        @BeforeAll
+        @JvmStatic
+        fun setUp() {
+            Dispatchers.setMain(mainThreadSurrogate)
+        }
+
+        @OptIn(ExperimentalCoroutinesApi::class)
+        @AfterAll
+        @JvmStatic
+        fun tearDown() {
+            Dispatchers.resetMain() // reset main dispatcher to the original Main dispatcher
+            mainThreadSurrogate.close()
+        }
+    }
+
     @Test
-    fun `should successfully fetch product page with valid search term`() {
+    fun `check state of circuit breaker, ratelimiter and retry when fetching stuff under various conditions`() {
         val circuitBreaker: CircuitBreaker = circuitBreakerRegistry.circuitBreaker("cardMarketCircuitBreaker")
         assertThat(circuitBreaker).isNotNull()
         assertThat(circuitBreaker.state).isEqualTo(CircuitBreaker.State.CLOSED)
@@ -80,7 +110,7 @@ class CardMarketWebFetcherIT {
         assertThat(rateLimiter.metrics.availablePermissions).isEqualTo(100)
         assertThat(rateLimiter.metrics.numberOfWaitingThreads).isEqualTo(0)
 
-        // -- first call : should success
+        //  first call : should success
         val result1 = runBlocking { fetcher.fetch("Pikachu", "de", "Pokemon") }
         Assertions.assertTrue(result1.isSuccess)
         val content = result1.getOrNull()
@@ -91,7 +121,7 @@ class CardMarketWebFetcherIT {
             exactly(1),
             getRequestedFor(urlEqualTo("/de/Pokemon/Products/Search?searchString=Pikachu"))
         )
-        // ---
+
 
         assertThat(circuitBreaker.state).isEqualTo(CircuitBreaker.State.CLOSED)
 
@@ -106,13 +136,16 @@ class CardMarketWebFetcherIT {
        // assertThat(rateLimiter.metrics.availablePermissions).isEqualTo(99)
         assertThat(rateLimiter.metrics.numberOfWaitingThreads).isEqualTo(0)
 
+        // now we cut the internet connection on both ways
         proxyForWiremockFetcher.toxics().bandwidth("CUT_CONNECTION_DOWNSTREAM", ToxicDirection.DOWNSTREAM, 0)
         proxyForWiremockFetcher.toxics().bandwidth("CUT_CONNECTION_UPSTREAM", ToxicDirection.UPSTREAM, 0)
 
-        // -- second call : should fail
+        //  second call : should fail
         val result2 = try {
             runBlocking { fetcher.fetch("Pikachu", "de", "Pokemon") }
         } catch (e: Exception) {
+            // we catch the exception because the test would fail otherwise even if it was handled by the breaker and retyer like we hope for
+            logThrowable("No Bandwidth", e)
             Result.failure(e)
         }
         Assertions.assertTrue(result2.isFailure)
@@ -134,13 +167,16 @@ class CardMarketWebFetcherIT {
 //        assertThat(rateLimiter.metrics.availablePermissions).isEqualTo(98)
         assertThat(rateLimiter.metrics.numberOfWaitingThreads).isEqualTo(0)
 
+        // restore the connection
         proxyForWiremockFetcher.toxics().get("CUT_CONNECTION_DOWNSTREAM").remove()
         proxyForWiremockFetcher.toxics().get("CUT_CONNECTION_UPSTREAM").remove()
 
 
+        // make a call when cloudflare decides to be an a*+hole again
         val result3 = try {
             runBlocking { fetcher.fetchDetails("cloudflare", "Pokemon", "Singles", lang = "de", setname = "BaseSet") }
         } catch (e: Exception) {
+            logThrowable("cloudflare", e)
             Result.failure(e)
         }
         Assertions.assertTrue(result3.isFailure)
@@ -158,11 +194,15 @@ class CardMarketWebFetcherIT {
         assertThat(retry.metrics.numberOfFailedCallsWithoutRetryAttempt).isEqualTo(1)
         assertThat(retry.metrics.numberOfFailedCallsWithRetryAttempt).isEqualTo(1)
         assertThat(retry.metrics.numberOfSuccessfulCallsWithRetryAttempt).isEqualTo(0)
+
         assertThat(rateLimiter.metrics.numberOfWaitingThreads).isEqualTo(0)
 
+        // what if the client searches for unknown stuff
         val result4 = try {
             runBlocking { fetcher.fetchDetails("unknown", "Pokemon", "Singles", lang = "de", setname = "BaseSet") }
         } catch (e: Exception) {
+            // the requst should fail and the exception be logged but i dont want the breaker to be open
+            // neither the retrier should do stupid things
             logThrowable("unknown", e)
             Result.failure(e)
         }
@@ -172,7 +212,7 @@ class CardMarketWebFetcherIT {
             getRequestedFor(urlEqualTo("/de/Pokemon/products/Singles/BaseSet/unknown"))
         )
 
-        for (i in 0 until 10) {
+        (0 until 10).forEach { i ->
             var result: Result<String>
             try {
                 result = runBlocking { fetcher.fetchDetails("unknown", "Pokemon", "Singles", lang = "de", setname = "BaseSet") }
@@ -196,6 +236,37 @@ class CardMarketWebFetcherIT {
 
         assertThat(retry.metrics.numberOfFailedCallsWithoutRetryAttempt).isEqualTo(12)
         assertThat(retry.metrics.numberOfFailedCallsWithRetryAttempt).isEqualTo(1)
+        assertThat(retry.metrics.numberOfSuccessfulCallsWithRetryAttempt).isEqualTo(0)
+        assertThat(rateLimiter.metrics.numberOfWaitingThreads).isEqualTo(0)
+
+        // now we want to test that the breaker opens when cloudflare decides to stay an a**hole
+        // in parallel !!
+        runBlocking {
+
+            (0 until 10).forEach { i ->
+
+                launch(Dispatchers.Default) {  // Use Default dispatcher for concurrency
+                    var result: Result<String>
+                    try {
+                        result =
+                            fetcher.fetchDetails("cloudflare", "Pokemon", "Singles", lang = "de", setname = "BaseSet")
+                    } catch (e: Exception) {
+                        logThrowable("unknown-loop", e)
+                        result = Result.failure(e)
+                    }
+                    Assertions.assertTrue(result.isFailure)
+                }
+            }
+
+        }
+
+        assertThat(circuitBreaker.state).isEqualTo(CircuitBreaker.State.OPEN)
+        assertThat(circuitBreaker.metrics.numberOfBufferedCalls).isGreaterThanOrEqualTo(10)
+        assertThat(circuitBreaker.metrics.numberOfSuccessfulCalls).isEqualTo(1)
+        assertThat(circuitBreaker.metrics.numberOfFailedCalls).isGreaterThanOrEqualTo(9)
+
+        assertThat(retry.metrics.numberOfFailedCallsWithoutRetryAttempt).isGreaterThanOrEqualTo(21)
+        assertThat(retry.metrics.numberOfFailedCallsWithRetryAttempt).isGreaterThanOrEqualTo(1)
         assertThat(retry.metrics.numberOfSuccessfulCallsWithRetryAttempt).isEqualTo(0)
         assertThat(rateLimiter.metrics.numberOfWaitingThreads).isEqualTo(0)
     }
