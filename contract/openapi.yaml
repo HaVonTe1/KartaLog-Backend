@@ -1,29 +1,86 @@
 openapi: 3.0.3
 info:
   title: TCGWatcher API
-  version: 0.1.0
+  version: 1.0.0
   description: |
-    Minimal OpenAPI contract for the TCGWatcher backend.
-    This file will be expanded with the full use‑case APIs.
+    TCGWatcher API provides endpoints for searching and retrieving collectible card data from multiple sources.
+    Currently integrates with CardMarket to fetch product information, pricing trends, and sell offers.
+    
+    ## Features
+    - Search and list collectable products with pagination
+    - Retrieve detailed product information including current prices
+    - Fetch sell offers from various sellers
+    
+    ## Rate Limits
+    Please be mindful of API usage to avoid rate limiting.
   contact:
+    name: TCGWatcher Support
     url: https://github.com/HaVonTe1
   license:
     name: Creative Commons
     url: https://creativecommons.org/licenses/
+  termsOfService: https://github.com/HaVonTe1/TCGWatcher-Backend#terms
 servers:
   - url: https://havonte.ddns.net:8080
     description: Production server
+  - url: http://localhost:8080
+    description: Local development server
+tags:
+  - name: collectables
+    description: Operations related to collectable products and pricing
 paths:
   /collectables/:
     get:
-      summary: List / search collectables
+      summary: List and search collectables
       tags:
         - collectables
       description: |
-        Placeholder endpoint that will later support search parameters.
-        Currently it provides pagination support and returns an array of collectables.
+        Search for collectable products with optional filtering and pagination support.
+        Results are sorted by relevance when a search query is provided.
       operationId: listCollectables
       parameters:
+        - name: query
+          in: query
+          description: Search query for collectable products (e.g., card name, set name)
+          required: false
+          schema:
+            type: string
+            minLength: 1
+            maxLength: 255
+            example: "Pikachu"
+        - name: game
+          in: query
+          description: Game filter (e.g., Pokemon, Magic, Yu-Gi-Oh)
+          required: false
+          schema:
+            type: string
+            default: Pokemon
+            example: Pokemon
+        - name: type
+          in: query
+          description: Product type filter (e.g., Singles, Boosters, Boxes)
+          required: false
+          schema:
+            type: string
+            default: Singles
+            example: Singles
+        - name: locale
+          in: query
+          description: Locale for CardMarket results (e.g., de, en, fr, es)
+          required: false
+          schema:
+            type: string
+            default: de
+            enum:
+              - de
+              - en
+              - fr
+              - es
+              - it
+              - pt
+              - pl
+              - ru
+            example: de
         - name: page
           in: query
           description: Page number (starting at 0)
@@ -32,171 +89,424 @@ paths:
             type: integer
             minimum: 0
             default: 0
+            example: 0
         - name: size
           in: query
-          description: Items per page
+          description: Number of items per page
           required: false
           schema:
             type: integer
             minimum: 1
+            maximum: 100
             default: 20
-        - name: query
+            example: 20
+        - name: sortBy
           in: query
-          description: Search query for collectable products
-          required: true
-          schema:
-            type: string
-            minLength: 1
-            maxLength: 255
-            example: "Pikachu"
-        - name: locale
-          in: query
-          description: Locale for CardMarket (e.g., de, en)
+          description: Field to sort by
           required: false
           schema:
             type: string
-            default: de
-        - name: game
+            default: relevance
+            enum:
+              - relevance
+              - price_asc
+              - price_desc
+              - name_asc
+              - name_desc
+        - name: minPrice
           in: query
-          description: Game for CardMarket (e.g., Pokemon)
+          description: Minimum price filter in EUR
           required: false
           schema:
-            type: string
-            default: Pokemon
+            type: number
+            minimum: 0
+            example: 1.00
+        - name: maxPrice
+          in: query
+          description: Maximum price filter in EUR
+          required: false
+          schema:
+            type: number
+            minimum: 0
+            example: 100.00
       responses:
         '200':
-          description: Successful response – a list of collectables
+          description: Paginated list of collectables matching the search criteria
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/ProductDTO'
+                $ref: '#/components/schemas/PaginatedProductResponse'
+              example:
+                content:
+                  - id: "prod_001"
+                    externalId: 123456
+                    setName: "Base Set"
+                    genre: "Pokemon"
+                    type: "Singles"
+                    rarity: "Rare Holo"
+                    imageUrl: "https://example.com/card.jpg"
+                page: 0
+                size: 20
+                totalElements: 150
+                totalPages: 8
+                first: true
+                last: false
+        '400':
+          description: Bad request - invalid query parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: "Bad Request"
+                message: "Invalid page number: -1"
+                timestamp: "2026-01-15T10:30:00Z"
+        '429':
+          description: Too many requests - rate limit exceeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: "Too Many Requests"
+                message: "Rate limit exceeded. Please try again later."
+                timestamp: "2026-01-15T10:30:00Z"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
   /collectables/{cmId}:
     get:
-      summary: Get product details by ID
+      summary: Get product details by CardMarket ID
       tags:
         - collectables
       description: |
-        Fetch detailed information for a specific product including sell offers.
-        The product data is updated from CardMarket on each request and persisted if changes are detected.
+        Fetch detailed information for a specific product including current pricing,
+        price trends, and available sell offers. Data is fetched from CardMarket on
+        each request and cached if no changes are detected.
       operationId: getProductDetails
       parameters:
         - name: cmId
           in: path
+          description: CardMarket product ID
           required: true
           schema:
             type: string
             example: "CM001"
-        - name: genre
+        - name: game
           in: query
+          description: Game category (pokemon, magic, etc.)
           required: false
           schema:
             type: string
             default: pokemon
+            example: pokemon
+            enum:
+              - pokemon
+              - magic
+              - yugioh
+              - ffi
         - name: type
           in: query
+          description: Product type (Singles, Boosters, etc.)
           required: false
           schema:
             type: string
             default: Singles
+            example: Singles
         - name: lang
           in: query
+          description: Language for the product card (de, en, fr, es, it, pt, pl, ru)
           required: false
           schema:
             type: string
             default: de
+            example: de
+            enum:
+              - de
+              - en
+              - fr
+              - es
+              - it
+              - pt
+              - pl
+              - ru
         - name: setname
           in: query
+          description: Set name to filter by (required for accurate pricing)
           required: true
           schema:
             type: string
-            example: "setx"
+            example: "Base Set"
       responses:
         '200':
-          description: Successful response – product details with all available information
+          description: Detailed product information including pricing and sell offers
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProductDetailsDTO'
+              example:
+                id: "prod_001"
+                externalId: 123456
+                setName: "Base Set"
+                genre: "Pokemon"
+                type: "Singles"
+                rarity: "Rare Holo"
+                imageUrl: "https://example.com/card.jpg"
+                detailsUrl: "https://www.cardmarket.com/en/Pokemon/Products/Singles/Charizard"
+                price: "15.00"
+                priceTrend: "12.50"
+                sellOffers:
+                  - sellerName: "TopSeller123"
+                    sellerLocation: "DE"
+                    productLanguage: "EN"
+                    special: ""
+                    condition: "NM"
+                    amount: "5"
+                    price: "12.00"
+        '400':
+          description: Bad request - invalid parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: "Bad Request"
+                message: "setname parameter is required"
+                timestamp: "2026-01-15T10:30:00Z"
         '404':
           description: Product not found on CardMarket
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: "Not Found"
+                message: "Product with ID CM001 not found on CardMarket"
+                timestamp: "2026-01-15T10:30:00Z"
+        '429':
+          description: Too many requests - rate limit exceeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 components:
   schemas:
     ProductDTO:
       type: object
-      description: Data Transfer Object representing a product/collectable
+      description: Basic product information for list views
       properties:
         id:
           type: string
+          description: Internal unique identifier
+          example: "prod_001"
         externalId:
           type: integer
           format: int64
+          description: CardMarket product ID
+          example: 123456
         setName:
           type: string
           nullable: true
+          description: Name of the product set/expansion
+          example: "Base Set"
         genre:
           type: string
+          description: Game category
+          example: "Pokemon"
         type:
           type: string
+          description: Product type (Singles, Boosters, etc.)
+          example: "Singles"
         rarity:
           type: string
           nullable: true
+          description: Rarity of the card
+          example: "Rare Holo"
         imageUrl:
           type: string
           format: uri
           nullable: true
+          description: URL to product image
+          example: "https://example.com/cards/charizard.jpg"
+      required:
+        - id
+        - externalId
+        - genre
+        - type
 
     ProductDetailsDTO:
       type: object
-      description: Detailed product information including sell offers
+      description: Detailed product information including pricing and sell offers
       properties:
         id:
           type: string
+          description: Internal unique identifier
+          example: "prod_001"
         externalId:
           type: integer
           format: int64
+          description: CardMarket product ID
+          example: 123456
         setName:
           type: string
           nullable: true
+          description: Name of the product set/expansion
+          example: "Base Set"
         genre:
           type: string
+          description: Game category
+          example: "Pokemon"
         type:
           type: string
+          description: Product type
+          example: "Singles"
         rarity:
           type: string
           nullable: true
+          description: Card rarity
+          example: "Rare Holo"
         imageUrl:
           type: string
           format: uri
           nullable: true
+          description: URL to product image
+          example: "https://example.com/cards/charizard.jpg"
         detailsUrl:
           type: string
           format: uri
+          description: Direct link to product on CardMarket
+          example: "https://www.cardmarket.com/en/Pokemon/Products/Singles/Charizard"
         price:
           type: string
+          description: Current lowest price in EUR
+          example: "15.00"
         priceTrend:
           type: string
+          description: Price trend indicator (7-day average)
+          example: "12.50"
         sellOffers:
           type: array
+          description: List of available sell offers
           items:
             $ref: '#/components/schemas/SellOfferDTO'
+      required:
+        - id
+        - externalId
+        - genre
+        - type
+        - detailsUrl
+        - price
 
     SellOfferDTO:
       type: object
-      description: Individual sell offer for a product
+      description: Individual sell offer from a seller
       properties:
         sellerName:
           type: string
+          description: Seller's username on CardMarket
+          example: "TopSeller123"
         sellerLocation:
           type: string
+          description: Seller's country/location (2-letter ISO code)
+          example: "DE"
         productLanguage:
           type: string
+          description: Language of the product card
+          example: "EN"
         special:
           type: string
+          description: Special flags (e.g., Foil, Damaged)
+          example: ""
         condition:
           type: string
+          description: Card condition (NM, LP, MP, HP, DM)
+          example: "NM"
         amount:
           type: string
+          description: Number of copies available
+          example: "5"
         price:
           type: string
+          description: Price per unit in EUR
+          example: "12.00"
+      required:
+        - sellerName
+        - sellerLocation
+        - productLanguage
+        - condition
+        - amount
+        - price
+
+    PaginatedProductResponse:
+      type: object
+      description: Paginated response wrapper for product lists
+      properties:
+        content:
+          type: array
+          description: List of products for the current page
+          items:
+            $ref: '#/components/schemas/ProductDTO'
+        page:
+          type: integer
+          description: Current page number (0-indexed)
+          example: 0
+        size:
+          type: integer
+          description: Number of items per page
+          example: 20
+        totalElements:
+          type: integer
+          format: int64
+          description: Total number of matching results
+          example: 150
+        totalPages:
+          type: integer
+          description: Total number of available pages
+          example: 8
+        first:
+          type: boolean
+          description: Whether this is the first page
+          example: true
+        last:
+          type: boolean
+          description: Whether this is the last page
+          example: false
+      required:
+        - content
+        - page
+        - size
+        - totalElements
+        - totalPages
+        - first
+        - last
+
+    ErrorResponse:
+      type: object
+      description: Standard error response format
+      properties:
+        error:
+          type: string
+          description: Error type/title
+          example: "Not Found"
+        message:
+          type: string
+          description: Detailed error message
+          example: "Product with ID CM001 not found"
+        timestamp:
+          type: string
+          format: date-time
+          description: ISO-8601 timestamp when the error occurred
+          example: "2026-01-15T10:30:00Z"
+      required:
+        - error
+        - message
+        - timestamp
