@@ -28,6 +28,7 @@ import org.springframework.boot.testcontainers.service.connection.ServiceConnect
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.EnableAspectJAutoProxy
 import org.springframework.context.annotation.Primary
+import org.springframework.util.Assert
 import org.testcontainers.junit.jupiter.Testcontainers
 import org.testcontainers.postgresql.PostgreSQLContainer
 import org.testcontainers.toxiproxy.ToxiproxyContainer
@@ -159,28 +160,53 @@ class CardMarketWebFetcherIT {
         assertThat(retry.metrics.numberOfSuccessfulCallsWithRetryAttempt).isEqualTo(0)
         assertThat(rateLimiter.metrics.numberOfWaitingThreads).isEqualTo(0)
 
-
         val result4 = try {
             runBlocking { fetcher.fetchDetails("unknown", "Pokemon", "Singles", lang = "de", setname = "BaseSet") }
         } catch (e: Exception) {
+            logThrowable("unknown", e)
             Result.failure(e)
         }
         Assertions.assertTrue(result4.isFailure)
         wiremockServer.verify(
-            exactly(1), //no retry
+            exactly(1),
             getRequestedFor(urlEqualTo("/de/Pokemon/products/Singles/BaseSet/unknown"))
         )
-        // ---
+
+        for (i in 0 until 10) {
+            var result: Result<String>
+            try {
+                result = runBlocking { fetcher.fetchDetails("unknown", "Pokemon", "Singles", lang = "de", setname = "BaseSet") }
+            } catch (e: Exception) {
+                logThrowable("unknown-loop", e)
+                result = Result.failure(e)
+            }
+            Assertions.assertTrue(result.isFailure)
+        }
         assertThat(circuitBreaker.state).isEqualTo(CircuitBreaker.State.CLOSED)
 
-        assertThat(circuitBreaker.metrics.numberOfBufferedCalls).isEqualTo(6)
-        assertThat(circuitBreaker.metrics.numberOfSuccessfulCalls).isEqualTo(1)
-        assertThat(circuitBreaker.metrics.numberOfFailedCalls).isEqualTo(5)
+        wiremockServer.verify(
+            exactly(11),
+            getRequestedFor(urlEqualTo("/de/Pokemon/products/Singles/BaseSet/unknown"))
+        )
+        assertThat(circuitBreaker.state).isEqualTo(CircuitBreaker.State.CLOSED)
 
-        assertThat(retry.metrics.numberOfFailedCallsWithoutRetryAttempt).isEqualTo(2)
+        assertThat(circuitBreaker.metrics.numberOfBufferedCalls).isEqualTo(5)
+        assertThat(circuitBreaker.metrics.numberOfSuccessfulCalls).isEqualTo(1)
+        assertThat(circuitBreaker.metrics.numberOfFailedCalls).isEqualTo(4)
+
+        assertThat(retry.metrics.numberOfFailedCallsWithoutRetryAttempt).isEqualTo(12)
         assertThat(retry.metrics.numberOfFailedCallsWithRetryAttempt).isEqualTo(1)
         assertThat(retry.metrics.numberOfSuccessfulCallsWithRetryAttempt).isEqualTo(0)
         assertThat(rateLimiter.metrics.numberOfWaitingThreads).isEqualTo(0)
+    }
+
+    private fun logThrowable(label: String, throwable: Throwable) {
+        println("$label exception=${throwable::class.java.name} message=${throwable.message}")
+        var current = throwable.cause
+        while (current != null) {
+            println("$label cause=${current::class.java.name} message=${current.message}")
+            current = current.cause
+        }
     }
 
     @TestConfiguration

@@ -37,6 +37,9 @@ resilience4j:
         permitted-number-of-calls-in-half-open-state: 3
         automatic-transition-from-open-to-half-open-enabled: true
         register-health-indicator: true
+        # ignore-exceptions does not work - seems to be a bug in resilience4j - see io.github.havonte1.tcgwatcher.backend.config.Resilience4jConfig
+        # ignore-exceptions:
+        #  - jakarta.ws.rs.NotFoundException
   retry:
     instances:
       cardMarketRetry:

@@ -120,6 +120,7 @@ dependencies {
     // -------------------------------------------------
     implementation("jakarta.validation:jakarta.validation-api")
     implementation("jakarta.ws.rs:jakarta.ws.rs-api:4.0.0")
+    implementation("org.glassfish.jersey.core:jersey-common:3.1.6")
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.7.0")
     implementation("io.github.resilience4j:resilience4j-spring-boot3:$resilience4jVersion")
     implementation("io.github.resilience4j:resilience4j-all:$resilience4jVersion")
