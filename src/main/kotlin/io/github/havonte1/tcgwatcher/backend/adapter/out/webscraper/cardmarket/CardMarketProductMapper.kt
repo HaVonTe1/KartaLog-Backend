@@ -1,6 +1,7 @@
 package io.github.havonte1.tcgwatcher.backend.adapter.out.webscraper.cardmarket
 
 import io.github.havonte1.tcgwatcher.backend.domain.model.Product
+import io.github.havonte1.tcgwatcher.backend.domain.model.SellOffer
 import io.github.havonte1.tcgwatcher.backend.domain.model.StringWithValidity
 import io.github.oshai.kotlinlogging.KotlinLogging
 
@@ -37,7 +38,6 @@ class CardMarketProductMapper {
     }
 
     fun toProductDetails(detailsDto: CardmarketProductDetailsDto): Product {
-        val parsedLink = parseLink(detailsDto.cmId)
 
         val externalIdFromImg = run {
             val lastSegment = detailsDto.imageUrl.substringAfterLast('/')
@@ -52,12 +52,12 @@ class CardMarketProductMapper {
             codeInfo = StringWithValidity(detailsDto.code.value, detailsDto.code.valid),
             genre = detailsDto.genre,
             type = detailsDto.type,
-            cmId = parsedLink.id,
+            cmId = detailsDto.cmId,
             imgLink = detailsDto.imageUrl,
             price = detailsDto.price,
             priceTrendInfo = StringWithValidity(detailsDto.priceTrend.value, detailsDto.priceTrend.valid),
             sellOffers = detailsDto.sellOffers.map { sellOffer ->
-                io.github.havonte1.tcgwatcher.backend.domain.model.SellOffer(
+                SellOffer(
                     sellerName = sellOffer.sellerName,
                     sellerLocation = sellOffer.sellerLocation,
                     productLanguage = sellOffer.productLanguage,

@@ -1,5 +1,7 @@
 package io.github.havonte1.tcgwatcher.backend.adapter.out.webscraper.cardmarket
 
+import io.github.havonte1.tcgwatcher.backend.adapter.inbound.rest.model.SellOfferDTO
+
 data class SearchResultsPageDto<T>(
     val results: List<T>,
     val page: Int,

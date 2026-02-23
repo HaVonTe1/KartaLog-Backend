@@ -10,6 +10,7 @@ import org.springframework.cache.annotation.Cacheable
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.RestController
+import java.math.BigDecimal
 
 @RestController
 class CollectablesAdapter(
@@ -18,27 +19,22 @@ class CollectablesAdapter(
 
     private val logger = KotlinLogging.logger {}
 
+
     @RateLimiter(name = "apiRateLimiter")
     override suspend fun listCollectables(
         query: String,
-        page: Int,
-        size: Int,
-        locale: String,
-        game: String
+        game: String,
+        type: String,
+        locale: String
     ): ResponseEntity<List<ProductDTO>> {
 
-        require(page >= 0) { "Page index must be non-negative" }
-        require(size > 0) { "Page size must be positive" }
         require(query.isNotBlank()) { "Query must not be blank" }
         logger.debug {
-            "listCollectables called with page={$page}, size={$size}, query={$query} locale={$locale} game=$game"
+            "listCollectables called with  query={$query} locale={$locale} game=$game"
         }
         val results = collectablesService.search(query, locale, game)
 
-        val from = (page * size).coerceAtMost(results.size)
-        val to = ((page + 1) * size).coerceAtMost(results.size)
-        val pageSlice = results.subList(from, to)
-        val dtoList: List<ProductDTO> = pageSlice.map { CollectablesMapper.toDto(it) }
+        val dtoList: List<ProductDTO> = results.map { CollectablesMapper.toDto(it) }
         return ResponseEntity(dtoList, HttpStatus.OK)
     }
 

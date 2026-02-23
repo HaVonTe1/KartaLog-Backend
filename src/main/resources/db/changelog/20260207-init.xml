@@ -21,8 +21,12 @@
       <column name="rarity" type="VARCHAR(255)"/>
       <column name="code_info" type="VARCHAR(255)"/>
       <column name="code_info_valid" type="BOOLEAN"/>
-      <column name="genre" type="VARCHAR(255)"/>
-      <column name="type" type="VARCHAR(255)"/>
+      <column name="genre" type="VARCHAR(255)">
+        <constraints nullable="false"/>
+      </column>
+      <column name="type" type="VARCHAR(255)">
+        <constraints nullable="false"/>
+      </column>
       <column name="cm_id" type="VARCHAR(255)"/>
       <column name="img_link" type="VARCHAR(255)"/>
       <column name="price" type="VARCHAR(255)"/>

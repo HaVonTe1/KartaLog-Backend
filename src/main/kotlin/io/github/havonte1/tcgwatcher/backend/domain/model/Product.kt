@@ -20,9 +20,9 @@ data class Product(
     /** Code value with validity flag */
     val codeInfo: StringWithValidity? = null,
     /** Genre of the product */
-    val genre: String? = null,
+    val genre: String = "",
     /** Type of the product */
-    val type: String? = null,
+    val type: String = "",
     /** CardMarket identifier as string */
     val cmId: String? = null,
     /** Image link from CardMarket */

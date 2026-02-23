@@ -40,10 +40,10 @@ data class ProductEntity(
     val codeInfoValid: Boolean? = null,
 
     @Column(name = "genre")
-    val genre: String? = null,
+    val genre: String = "",
 
     @Column(name = "type")
-    val type: String? = null,
+    val type: String = "",
 
     @Column(name = "cm_id")
     val cmId: String? = null,

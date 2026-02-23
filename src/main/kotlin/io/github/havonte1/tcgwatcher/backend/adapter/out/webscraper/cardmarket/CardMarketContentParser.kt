@@ -129,12 +129,14 @@ class CardMarketContentParser {
     }
 
     fun parseProductDetails(
-        document: Document, cmId: String,
+        content: String,
+        cmId: String,
         genre: String,
         type: String,
         lang: String,
         setname: String
     ): CardmarketProductDetailsDto {
+        val document = org.jsoup.Jsoup.parse(content)
         val imageTags = document.getElementsByTag("img")
         val frontImageTag =
             imageTags.first { img -> img.classNames().size == 1 } //filter out "lazy" img tags

@@ -63,7 +63,7 @@ open class CardMarketWebFetcher(
             .setUserAgent(USERAGENT)
     }
 
-    private fun fetchUrl(url: String, debugMessage: String): String {
+    private fun fetchUrl(url: String): String {
         val browser: Browser = playwrightManager.browser
         val contextOptions = createContextOptions()
         val storageFile = Path.of("auth.json")
@@ -72,7 +72,7 @@ open class CardMarketWebFetcher(
         }
         val context = browser.newContext(contextOptions)
         val page: Page = context.newPage()
-        logger.debug { debugMessage }
+        logger.debug { "Naviage to $url" }
         val response = page.navigate(url, Page.NavigateOptions().setTimeout(10000.0))
         logger.debug { "Response: ${response.status()}" }
         page.waitForLoadState(LoadState.DOMCONTENTLOADED)
@@ -97,7 +97,7 @@ open class CardMarketWebFetcher(
         logger.debug { "performFetch" }
         val encodedSearchString = URLEncoder.encode(searchString, Charsets.UTF_8)
         val url = buildUrl(locale, game, encodedSearchString)
-        return fetchUrl(url, "Navigate to ${url}")
+        return fetchUrl(url)
     }
 
     private fun performFetchDetails(
@@ -109,18 +109,18 @@ open class CardMarketWebFetcher(
     ): String {
         logger.debug { "performFetchDetails" }
         val detailsUrl = buildDetailUrl(lang, genre, type, setname, cmId)
-        return fetchUrl(detailsUrl, "Navigate to ${detailsUrl}")
+        return fetchUrl(detailsUrl)
     }
 
     private fun buildUrl(locale: String, game: String, encodedSearchString: String): String {
-        val finalLocale = if (locale.isEmpty()) CardMarketConstants.DEFAULT_LOCALE else locale
-        val finalGame = if (game.isEmpty()) CardMarketConstants.DEFAULT_GAME else game
+        val finalLocale = locale.ifEmpty { CardMarketConstants.DEFAULT_LOCALE }
+        val finalGame = game.ifEmpty { CardMarketConstants.DEFAULT_GAME }
         return "${config.basePath}${CardMarketConstants.PATH_SEPARATOR}$finalLocale${CardMarketConstants.PATH_SEPARATOR}$finalGame/Products/Search?searchString=$encodedSearchString"
     }
 
     private fun buildDetailUrl(lang: String, genre: String, type: String, setname: String, cmId: String): String {
-        val finalLocale = if (lang.isEmpty()) CardMarketConstants.DEFAULT_LOCALE else lang
-        val finalGame = if (genre.isEmpty()) CardMarketConstants.DEFAULT_GAME else genre
+        val finalLocale = lang.ifEmpty { CardMarketConstants.DEFAULT_LOCALE }
+        val finalGame = genre.ifEmpty { CardMarketConstants.DEFAULT_GAME }
         return "${config.basePath}/$finalLocale/$finalGame/Products/$type/$setname/$cmId"
     }
 }

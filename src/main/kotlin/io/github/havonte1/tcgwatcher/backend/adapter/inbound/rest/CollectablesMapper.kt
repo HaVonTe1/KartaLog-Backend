@@ -1,8 +1,11 @@
 package io.github.havonte1.tcgwatcher.backend.adapter.inbound.rest
 
 import io.github.havonte1.tcgwatcher.backend.adapter.inbound.rest.model.ProductDTO
+import io.github.havonte1.tcgwatcher.backend.adapter.inbound.rest.model.SellOfferDTO
 import io.github.havonte1.tcgwatcher.backend.adapter.inbound.rest.model.ProductDetailsDTO
 import io.github.havonte1.tcgwatcher.backend.domain.model.Product
+import java.math.BigDecimal
+import java.net.URI
 
 object CollectablesMapper {
     fun toDto(
@@ -10,11 +13,10 @@ object CollectablesMapper {
     ): ProductDTO {
 
         return ProductDTO(
-            id = product.cmId,
             externalId = product.externalId,
             setName = product.setName,
             rarity = product.rarity,
-            imageUrl = product.imgLink?.let { java.net.URI.create(it) },
+            imageUrl = product.imgLink?.let { URI.create(it) },
             type = product.type,
             genre = product.genre,
         )
@@ -22,17 +24,22 @@ object CollectablesMapper {
 
     fun toDetailDto(product: Product): ProductDetailsDTO {
         return ProductDetailsDTO(
-            id = product.cmId,
             externalId = product.externalId,
             setName = product.setName,
             rarity = product.rarity,
-            imageUrl = product.imgLink?.let { java.net.URI.create(it) },
+            imageUrl = product.imgLink?.let { URI.create(it) },
             type = product.type,
             genre = product.genre,
-            detailsUrl = listOfNotNull(product.genre, "product", product.type, product.setName, product.cmId).joinToString("/").let { java.net.URI.create(it) },
+            detailsUrl = listOfNotNull(
+                product.genre,
+                "product",
+                product.type,
+                product.setName,
+                product.cmId
+            ).joinToString("/").let { URI.create(it) },
 
             sellOffers = product.sellOffers?.map { sellOffer ->
-                io.github.havonte1.tcgwatcher.backend.adapter.inbound.rest.model.SellOfferDTO(
+                SellOfferDTO(
                     sellerName = sellOffer.sellerName,
                     sellerLocation = sellOffer.sellerLocation,
                     productLanguage = sellOffer.productLanguage,
@@ -41,7 +48,9 @@ object CollectablesMapper {
                     amount = sellOffer.amount,
                     price = sellOffer.price
                 )
-            }
-            )
+            },
+            price = product.price ?: BigDecimal.ZERO.toPlainString() ,
+            priceTrend = product.priceTrendInfo?.value
+        )
     }
 }

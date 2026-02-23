@@ -48,8 +48,8 @@ class CardMarketScraperAdapter(
             logger.warn { "Failed to fetch CardMarket detail page: ${it.message}" }
             return null
         }
-        val document = org.jsoup.Jsoup.parse(content)
-        val detailsDto = contentParser.parseProductDetails(document, cmId, genre, type, lang, setname)
+
+        val detailsDto = contentParser.parseProductDetails(content, cmId, genre, type, lang, setname)
         return mapper.toProductDetails(detailsDto)
     }
 
