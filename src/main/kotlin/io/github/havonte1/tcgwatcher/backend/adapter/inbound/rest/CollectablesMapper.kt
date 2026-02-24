@@ -6,6 +6,7 @@ import io.github.havonte1.tcgwatcher.backend.adapter.inbound.rest.model.ProductD
 import io.github.havonte1.tcgwatcher.backend.domain.model.Product
 import java.math.BigDecimal
 import java.net.URI
+import java.net.URLEncoder
 
 object CollectablesMapper {
     fun toDto(
@@ -36,7 +37,7 @@ object CollectablesMapper {
                 product.type,
                 product.setName,
                 product.cmId
-            ).joinToString("/").let { URI.create(it) },
+            ).joinToString("/") { URLEncoder.encode(it, "UTF-8") }.let { URI.create(it) },
 
             sellOffers = product.sellOffers?.map { sellOffer ->
                 SellOfferDTO(

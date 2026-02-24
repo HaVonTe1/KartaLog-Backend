@@ -67,4 +67,43 @@ class CardMarketContentParserTest {
         assertEquals("1,40 €", productDetails.sellOffers[0].price)
 
     }
+
+    @Test
+    fun extractDetailsFromHtmlPlaywright() {
+        val resourcePath = "src/test/resources/pikachu_mcd166_details_playwright.html"
+
+        val file = File(resourcePath)
+        Assumptions.assumeTrue(file.exists(), "Ressource fehlt, Test wird übersprungen")
+        val content = Files.readString(Paths.get(resourcePath))
+
+        val productDetails = parser.parseProductDetails(
+            content,
+            cmId = "Pikachu-MCD166",
+            genre = "Pokemon",
+            type = "Singles",
+            lang = "de",
+            setname = "McDonalds-Collection-2016",
+        )
+
+        assertEquals("Pikachu-MCD166", productDetails.cmId)
+        assertEquals("Pokemon", productDetails.genre)
+        assertEquals("Singles", productDetails.type)
+        assertEquals("Pikachu", productDetails.name.value)
+        assertEquals("de", productDetails.name.languageCode)
+        assertEquals("Pikachu-MCD166", productDetails.name.i18n)
+        assertEquals("MCD16 6", productDetails.code.value)
+        assertEquals("https://product-images.s3.cardmarket.com/51/MCD16/295142/295142.jpg", productDetails.imageUrl)
+        assertEquals("Promo", productDetails.rarity)
+        assertEquals("McDonald's Collection 2016", productDetails.set.name)
+        assertEquals("/de/Pokemon/Expansions/McDonalds-Collection-2016", productDetails.set.link)
+        assertEquals("1,40 €", productDetails.price)
+        assertEquals(50, productDetails.sellOffers.size)
+        assertEquals("Fable19", productDetails.sellOffers[0].sellerName)
+        assertEquals("italien", productDetails.sellOffers[0].sellerLocation)
+        assertEquals("Italienisch", productDetails.sellOffers[0].productLanguage)
+        assertEquals("Played", productDetails.sellOffers[0].condition)
+        assertEquals("1", productDetails.sellOffers[0].amount)
+        assertEquals("1,40 €", productDetails.sellOffers[0].price)
+
+    }
 }

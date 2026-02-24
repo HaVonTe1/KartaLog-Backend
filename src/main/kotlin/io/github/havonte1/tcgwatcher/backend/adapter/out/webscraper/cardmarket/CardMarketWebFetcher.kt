@@ -16,6 +16,7 @@ import io.github.resilience4j.timelimiter.annotation.TimeLimiter
 import jakarta.ws.rs.NotFoundException
 import org.springframework.http.HttpStatusCode
 import org.springframework.stereotype.Component
+import java.io.File
 import java.net.URLEncoder
 import java.nio.file.Files
 import java.nio.file.Path
@@ -51,8 +52,6 @@ open class CardMarketWebFetcher(
         lang: String,
         setname: String
     ): Result<String> {
-        logger.debug { "Fetching product details for $cmId" }
-
         return Result.success(performFetchDetails(cmId, genre, type, lang, setname))
     }
 
@@ -107,7 +106,6 @@ open class CardMarketWebFetcher(
         lang: String,
         setname: String
     ): String {
-        logger.debug { "performFetchDetails" }
         val detailsUrl = buildDetailUrl(lang, genre, type, setname, cmId)
         return fetchUrl(detailsUrl)
     }

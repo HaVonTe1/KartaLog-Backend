@@ -155,12 +155,15 @@ class CardMarketContentParser {
         val dts = infoDiv?.getElementsByTag("dt")
 
         val rarityDt = dts?.first { dt -> dt.text() == "Rarität" }
-        val rarityText = rarityDt?.nextElementSibling()?.getElementsByTag("svg")?.attr("title")
+
+        val rarityElement =rarityDt?.nextElementSibling()?.getElementsByTag("svg")
+        val rarityText = rarityElement?.attr("title")?.ifEmpty { rarityElement.attr("data-bs-original-title") }
 
         val setDt = dts?.first { dt -> dt.text().startsWith("Erschienen") }
         val setHref = setDt?.nextElementSibling()?.getElementsByTag("a")
-        val setLink = setHref?.first()?.attr("href")
-        val setName = setHref?.first()?.attr("title")
+        val setHrefElement = setHref?.first()
+        val setLink = setHrefElement?.attr("href")
+        val setName = setHrefElement?.attr("title")?.ifEmpty { setHrefElement.attr("aria-label") }
 
         val abDt = dts?.first { dt -> dt.text() == "ab" }
         val localPrice = abDt?.nextElementSibling()?.text() ?: "0,00 €"
@@ -177,7 +180,7 @@ class CardMarketContentParser {
             val sellerName = sellerHrefTag?.text()
 
             val sellerLocationTag = sellerCol?.getElementsByClass("icon")
-            val sellerLocation = sellerLocationTag?.first()?.attr("title")
+            val sellerLocation = sellerLocationTag?.first()?.attr("title")?.ifEmpty { sellerLocationTag.first()?.attr("aria-label") }
             val parts = sellerLocation?.split(": ")
             val sellerLocationSanatized = parts?.size?.let {
                 if (it < 2) {
@@ -191,12 +194,15 @@ class CardMarketContentParser {
 
             val sellerAttributDiv = sellOfferRow.getElementsByClass("product-attributes")
 
-            val productCondition = sellerAttributDiv.first()?.getElementsByClass("article-condition")?.first()
-                ?.attr("title")
+            val conditionElement = sellerAttributDiv.first()
+                ?.getElementsByClass("article-condition")
+                ?.first()
+            val productCondition = conditionElement?.attr("title")?.ifEmpty { conditionElement.attr("data-bs-original-title") }
 
             val productAttributIcons = sellerAttributDiv.first()?.getElementsByClass("icon")
             val productLanguage = productAttributIcons?.first()
-                ?.attr("title")
+                ?.attr("title")?.ifEmpty { productAttributIcons.first()
+                    ?.attr("aria-label") }
             var productSpeciality = ""
             productAttributIcons?.size?.let {
                 if (it > 1) {
@@ -209,7 +215,7 @@ class CardMarketContentParser {
             val price = priceContainer?.getElementsByTag("span")?.text()
 
             val productAmount =
-                sellOfferRow.getElementsByClass("amount-container")?.first()?.getElementsByTag("span")?.first()?.text()
+                sellOfferRow.getElementsByClass("amount-container").first()?.getElementsByTag("span")?.first()?.text()
 
             if (sellerName != null && sellerLocation != null && productLanguage != null && price != null && productAmount != null && productCondition != null) {
                 val cardmarketSellOfferDto = CardmarketSellOfferDto(
