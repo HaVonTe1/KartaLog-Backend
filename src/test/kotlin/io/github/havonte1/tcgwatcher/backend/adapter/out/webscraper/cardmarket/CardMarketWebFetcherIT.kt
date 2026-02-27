@@ -289,7 +289,7 @@ class CardMarketWebFetcherIT {
         fun setUp(wm1: WireMockServer) {
             val testFilePikachu30 = "src/test/resources/pikachu_gallery_30.html"
             val testFilePikachu40 = "src/test/resources/pikachu_gallery_40.html"
-            val testFileEvoli = "src/test/resources/evoli_details.html"
+            val testFileEvoli = "src/test/resources/evoli_details_stripped.html"
 
             val pika30 = Files.readString(Paths.get(testFilePikachu30))
             wm1.stubFor(

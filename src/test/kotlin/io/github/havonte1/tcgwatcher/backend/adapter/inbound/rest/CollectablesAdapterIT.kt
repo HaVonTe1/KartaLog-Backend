@@ -106,8 +106,8 @@ class CollectablesAdapterIT {
     class TestConfig {
 
         fun setUp(wm1: WireMockServer) {
-            val testFileEvoli = "src/test/resources/evoli_details.html"
-            val testFilePikaChrome = "src/test/resources/pikachu_mcd166_details.html"
+            val testFileEvoli = "src/test/resources/evoli_details_stripped.html"
+            val testFilePikaChrome = "src/test/resources/pikachu_mcd166_details_stripped.html"
 
             val evoli = Files.readString(Paths.get(testFileEvoli))
             val pikaChrome = Files.readString(Paths.get(testFilePikaChrome))
