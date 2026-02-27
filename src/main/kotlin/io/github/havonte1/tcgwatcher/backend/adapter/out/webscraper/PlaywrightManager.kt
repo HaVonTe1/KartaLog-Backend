@@ -17,6 +17,10 @@ import org.springframework.stereotype.Component
 class PlaywrightManager {
     private val logger = KotlinLogging.logger {}
 
+    init {
+        System.setProperty("playwright.browser.validate.hostDependencies", "false")
+    }
+
     val playwright: Playwright = Playwright.create()
     val browser: Browser = playwright.chromium().launch(
         BrowserType.LaunchOptions().setHeadless(true)
