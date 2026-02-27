@@ -32,7 +32,7 @@ tasks.named("compileKotlin") {
 
 tasks.named<Test>("test") {
     useJUnitPlatform {
-        excludeTags = setOf("integration")
+        excludeTags = setOf("integration", "e2e")
     }
     // Show stdout/stderr from tests (including logger output) even when Gradle runs in quiet mode
     testLogging {

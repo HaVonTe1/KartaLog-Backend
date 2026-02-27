@@ -49,7 +49,7 @@ import java.nio.file.Paths
 @SpringBootTest
 @Testcontainers
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-@Tag("integration")
+@Tag("e2e")
 class CardMarketWebFetcherIT {
 
     @Autowired

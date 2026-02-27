@@ -72,7 +72,7 @@ open class CardMarketWebFetcher(
         val context = browser.newContext(contextOptions)
         val page: Page = context.newPage()
         logger.debug { "Naviage to $url" }
-        val response = page.navigate(url, Page.NavigateOptions().setTimeout(10000.0))
+        val response = page.navigate(url, Page.NavigateOptions().setTimeout(20000.0))
         logger.debug { "Response: ${response.status()}" }
         page.waitForLoadState(LoadState.DOMCONTENTLOADED)
         if (!response.ok()) {
