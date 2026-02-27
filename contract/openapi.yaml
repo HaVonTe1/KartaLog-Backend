@@ -48,9 +48,9 @@ paths:
             minLength: 1
             maxLength: 255
             example: "Pikachu"
-        - name: game
+        - name: genre
           in: query
-          description: Game filter (e.g., Pokemon, Magic, Yu-Gi-Oh)
+          description: Genre filter (e.g., Pokemon, Magic, Yu-Gi-Oh)
           required: false
           schema:
             type: string
@@ -134,9 +134,9 @@ paths:
           schema:
             type: string
             example: "CM001"
-        - name: game
+        - name: genre
           in: query
-          description: Game category (pokemon, magic, etc.)
+          description: Genre category (pokemon, magic, etc.)
           required: false
           schema:
             type: string
@@ -254,7 +254,7 @@ components:
           example: "Base Set"
         genre:
           type: string
-          description: Game category
+          description: Genre category
           example: "Pokemon"
         type:
           type: string
@@ -292,7 +292,7 @@ components:
           example: "Base Set"
         genre:
           type: string
-          description: Game category
+          description: Genre category
           example: "Pokemon"
         type:
           type: string

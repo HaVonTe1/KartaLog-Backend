@@ -1,13 +1,11 @@
 package io.github.havonte1.tcgwatcher.backend.application
 
-import io.github.havonte1.tcgwatcher.backend.config.CacheConfig
 import io.github.havonte1.tcgwatcher.backend.domain.model.Product
 import io.github.havonte1.tcgwatcher.backend.domain.model.SearchResult
 import io.github.havonte1.tcgwatcher.backend.domain.port.out.CardMarketScraperPort
 import io.github.havonte1.tcgwatcher.backend.domain.port.out.ProductRepository
 import io.github.havonte1.tcgwatcher.backend.domain.port.out.SearchResultRepository
 import io.github.oshai.kotlinlogging.KotlinLogging
-import kotlinx.coroutines.withTimeout
 import org.springframework.cache.annotation.Cacheable
 import org.springframework.stereotype.Service
 
@@ -20,7 +18,6 @@ class CollectablesService(
     private val scraperPort: CardMarketScraperPort,
     private val searchResultRepository: SearchResultRepository,
     private val productRepository: ProductRepository,
-    private val cacheConfig: CacheConfig
 ) : SearchUseCase {
 
     private val logger = KotlinLogging.logger {}
@@ -30,31 +27,10 @@ class CollectablesService(
     override suspend fun search(searchString: String, locale: String, game: String): List<Product> {
         logger.debug { "Searching for collectables with query='$searchString'" }
 
-        val cached = searchResultRepository.findByQuery(searchString)
-        if (cached != null) {
-            val ttl = java.time.Duration.ofHours(cacheConfig.ttlHours)
-            val now = java.time.Instant.now()
-            val cachedAt = cached.cachedAt
-            if (cachedAt != null && now.isBefore(cachedAt.plus(ttl))) {
-                logger.debug {
-                    "Cache hit (fresh) for query='$searchString' – returning ${cached.products.size} products"
-                }
-                return cached.products
-            }
-            logger.debug { "Cache stale for query='$searchString' – refreshing" }
-        }
-
-        // Cache miss or stale – invoke the scraper
-        logger.debug { "Cache miss for query='$searchString' – invoking scraper" }
-        // Run blocking call to suspend scraper
-        val scraped: List<Product> = withTimeout(30_000) {
+        val scraped: List<Product> =
             scraperPort.search(searchString, locale, game)
-        }
-
-        // Store the full search result for future calls, with cache timestamp
         val searchResult = SearchResult(query = searchString, products = scraped, cachedAt = java.time.Instant.now())
 
-        // Persist synchronously to ensure caching works reliably
         searchResultRepository.save(searchResult)
 
         logger.debug { "Scrape completed and cached (${scraped.size} products) for query='$searchString'" }

@@ -31,7 +31,7 @@ class CardMarketContentParserTest {
 
     @Test
     fun extractDetailsFromHtml() {
-        val resourcePath = "src/test/resources/pikachu_mcd166_details.html"
+        val resourcePath = "src/test/resources/pikachu_mcd166_details_stripped.html"
 
         val file = File(resourcePath)
         Assumptions.assumeTrue(file.exists(), "Ressource fehlt, Test wird übersprungen")
@@ -58,7 +58,7 @@ class CardMarketContentParserTest {
         assertEquals("McDonald's Collection 2016", productDetails.set.name)
         assertEquals("/de/Pokemon/Expansions/McDonalds-Collection-2016", productDetails.set.link)
         assertEquals("1,40 €", productDetails.price)
-        assertEquals(50, productDetails.sellOffers.size)
+        assertEquals(2, productDetails.sellOffers.size)
         assertEquals("Fable19", productDetails.sellOffers[0].sellerName)
         assertEquals("italien", productDetails.sellOffers[0].sellerLocation)
         assertEquals("Italienisch", productDetails.sellOffers[0].productLanguage)
@@ -70,7 +70,7 @@ class CardMarketContentParserTest {
 
     @Test
     fun extractDetailsFromHtmlPlaywright() {
-        val resourcePath = "src/test/resources/pikachu_mcd166_details_playwright.html"
+        val resourcePath = "src/test/resources/pikachu_mcd166_details_playwright_stripped.html"
 
         val file = File(resourcePath)
         Assumptions.assumeTrue(file.exists(), "Ressource fehlt, Test wird übersprungen")
@@ -97,7 +97,7 @@ class CardMarketContentParserTest {
         assertEquals("McDonald's Collection 2016", productDetails.set.name)
         assertEquals("/de/Pokemon/Expansions/McDonalds-Collection-2016", productDetails.set.link)
         assertEquals("1,40 €", productDetails.price)
-        assertEquals(50, productDetails.sellOffers.size)
+        assertEquals(2, productDetails.sellOffers.size)
         assertEquals("Fable19", productDetails.sellOffers[0].sellerName)
         assertEquals("italien", productDetails.sellOffers[0].sellerLocation)
         assertEquals("Italienisch", productDetails.sellOffers[0].productLanguage)

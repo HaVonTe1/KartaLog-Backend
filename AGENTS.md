@@ -6,15 +6,15 @@
 - **Package Structure:** `domain`, `application`, `adapter/inbound`, `adapter/out`
 - **Testing:** JUnit 5 with Testcontainers (PostgreSQL) for integration tests
 - **Static Analysis:** Detekt, Ktlint
-- **API Generation:** OpenAPI Generator (kotlin-spring) generates REST interfaces from `contract/openapi.yaml`
-- **Key Tech Stack:
+- **API Generation:** OpenAPI Generator (kotlin-spring) from `contract/openapi.yaml`
+- **Key Tech Stack:**
   - Spring Boot 4.0.2 with WebMVC
   - Spring Data JPA + Hibernate Envers (auditing)
   - Liquibase (database migrations)
   - Playwright + Jsoup (web scraping)
   - Kotlin Coroutines + Reactor integration
   - Resilience4j (circuit breakers)
-- **Important Note:** DO NOT ADD ANY COMMENTS! No JavaDoc. No inline Comments. Nothing.
+- **Important:** DO NOT ADD ANY COMMENTS! No JavaDoc. No inline Comments. Nothing.
 
 ## Build & Test Commands
 
@@ -29,10 +29,7 @@
 | JaCoCo coverage | `./gradlew test jacocoTestReport` |
 | Parallel build | `./gradlew build -T 1C` |
 
-**Test Configuration:**
-- JUnit 5 with Testcontainers for integration tests
-- Show standard streams and full exceptions in test output (configured in `build.gradle.kts`)
-- Use `./gradlew test --tests "ClassName" --info` for verbose test debugging
+**Test Configuration:** JUnit 5 with Testcontainers for integration tests. Show standard streams and full exceptions in test output (configured in `build.gradle.kts`). Use `./gradlew test --tests "ClassName" --info` for verbose test debugging.
 
 ## Running a Single Test
 
@@ -75,30 +72,12 @@ Use `-i` for verbose output when debugging flaky tests.
 | Test method | `shouldDoSomethingWhenCondition` or backtick descriptions |
 | Integration test | `MyClassIT` |
 
-### Naming Conventions
-| Element | Convention |
-|--------|------------|
-| Package | `lowercase.dotted` |
-| Class/Interface | `PascalCase` |
-| Function/Method | `camelCase` |
-| Variable | `camelCase` |
-| Constant | `UPPER_SNAKE_CASE` |
-| Test class | `MyClassTest` |
-| Test method | `shouldDoSomethingWhenCondition` or backtick descriptions |
-| Integration test | `MyClassIT` |
-
 ### Types & Null-Safety
 - Prefer non-nullable types
 - Use `?.let {}` or explicit null checks for nullable values
 - `data class` for DTOs, `sealed class` for algebraic types
 - Prefer `Result<T>` for recoverable failures
 - Use `suspend` functions for async operations (coroutines)
-
-### Error Handling
-- Use `Result<T>` for expected failures; `throw` for unexpected
-- Log via `io.github.oshai.kotlinlogging.KotlinLogging`
-- Never swallow exceptions
-- For JPA entities, use `@PrePersist` and `@PreUpdate` lifecycle callbacks for timestamp management
 
 ### Error Handling
 - Use `Result<T>` for expected failures; `throw` for unexpected
