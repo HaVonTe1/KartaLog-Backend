@@ -1,3 +1,4 @@
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     id("org.openapi.generator") version "7.19.0"
@@ -72,6 +73,11 @@ kotlin {
             kotlin.srcDir(layout.buildDirectory.asFile.get().resolve("generated/src/main/kotlin"))
         }
     }
+}
+
+val compileKotlin: KotlinCompile by tasks
+compileKotlin.compilerOptions {
+    freeCompilerArgs.set(listOf("-Xannotation-default-target=param-property"))
 }
 
 group = "havonte1.github.com"

@@ -1,0 +1,15 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://postgres:5432/tcgwatcherdb
+    username: watcher_app
+    password: ${WATCHER_APP_PWD}
+  liquibase:
+    enabled: true
+    default-schema: watcher
+    password: ${WATCHER_MIG_PWD}
+    user: watcher_mig
+  docker:
+    compose:
+      enabled: false
+playwright:
+  executable-path: /usr/bin/chromium

@@ -80,3 +80,5 @@ logging:
     web: trace
     com.github.tomakehurst: trace
     eu.rekawek: trace
+playwright:
+  executable-path: /usr/local/bin/chromium

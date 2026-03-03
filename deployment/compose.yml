@@ -4,9 +4,9 @@ services:
   nginx:
     image: nginx:alpine
     ports:
-      - "8090:80"
+      - "19123:80"
     volumes:
-      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
     depends_on:
       app:
         condition: service_healthy
@@ -16,14 +16,9 @@ services:
       context: ..
       dockerfile: deployment/Dockerfile
     ports:
-      - "8091:8080"
+      - "8080"
     environment:
-      - SPRING_PROFILES_ACTIVE=default
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/tcgwatcherdb
-      - SPRING_DATASOURCE_USERNAME=postgres
-      - SPRING_DATASOURCE_PASSWORD=${POSTGRES_PASSWORD}
-      - POSTGRES_HOST=postgres
-      - SPRING_DOCKER_COMPOSE_ENABLED=false
+      - SPRING_PROFILES_ACTIVE=compose
     depends_on:
       postgres:
         condition: service_healthy
@@ -35,7 +30,6 @@ services:
     ports:
       - "51915:5432"
     environment:
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
       - POSTGRES_DB=tcgwatcherdb
     volumes:
       - ./postgres/initdb.d:/docker-entrypoint-initdb.d/

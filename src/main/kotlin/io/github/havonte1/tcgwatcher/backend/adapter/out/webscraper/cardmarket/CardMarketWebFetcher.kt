@@ -29,7 +29,7 @@ private const val BERLIN_LONG = 13.4050
 
 @Component
 open class CardMarketWebFetcher(
-    private val playwrightManager: PlaywrightManager = PlaywrightManager(),
+    private val playwrightManager: PlaywrightManager,
     private val config: CardMarketConfig = CardMarketConfig()
 ) : CardMarketWebFetcherPort {
     private val logger = KotlinLogging.logger {}

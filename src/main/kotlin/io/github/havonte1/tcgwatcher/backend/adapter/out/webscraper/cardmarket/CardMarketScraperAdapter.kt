@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component
  */
 @Component
 class CardMarketScraperAdapter(
-    private val webFetcher: CardMarketWebFetcherPort = CardMarketWebFetcher(),
+    private val webFetcher: CardMarketWebFetcherPort,
     private val contentParser: CardMarketContentParser = CardMarketContentParser(),
     private val mapper: CardMarketProductMapper = CardMarketProductMapper()
 ) :

@@ -5,18 +5,15 @@ import com.microsoft.playwright.BrowserType
 import com.microsoft.playwright.Playwright
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.annotation.PreDestroy
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
 import java.nio.file.Paths
 
 @Component
-class PlaywrightManager {
+class PlaywrightManager(
+    @Value("\${playwright.executable-path:/usr/bin/chromium}") private val executablePath: String,
+) {
     private val logger = KotlinLogging.logger {}
-
-    init {
-        System.setProperty("playwright.browser.validate.hostDependencies", "false")
-    }
-
-    private val executablePath: String = System.getProperty("playwright.chromium.executablePath", "/usr/bin/chromium")
 
     val playwright: Playwright = Playwright.create()
     val browser: Browser = playwright.chromium().launch(
