@@ -13,8 +13,10 @@ import org.hibernate.envers.Audited
 import java.io.Serializable
 
 /**
- * Entity representing a localized name translation for a product.
- * Stored as a separate table to allow many languages per product.
+ * Entity representing a localized name translation.
+ * This entity is reused for products, series, and sets by having nullable foreign
+ * keys to each parent entity. Exactly one of the foreign‑key fields should be
+ * non‑null for a given row.
  */
 @Audited
 @Entity
@@ -24,16 +26,27 @@ class NameTranslationEntity(
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long = 0,
 
+    // Parent product (original use case)
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "product_id", nullable = false)
+    @JoinColumn(name = "product_id")
     var product: ProductEntity? = null,
+
+    // Optional parent series – reuses the same table for i18n
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "series_id")
+    var series: SeriesEntity? = null,
+
+    // Optional parent product set – reuses the same table for i18n
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "set_id")
+    var productSet: ProductSetEntity? = null,
 
     @Column(name = "language_code", nullable = false)
     val languageCode: String,
 
-@Column(name = "name", nullable = false)
-     var name: String
+    @Column(name = "name", nullable = false)
+    var name: String
 ) : Serializable {
     // JPA requires a no‑arg constructor
-    constructor(): this(0, null, "", "")
+    constructor() : this(0, null, null, null, "", "")
 }
