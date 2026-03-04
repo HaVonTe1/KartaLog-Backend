@@ -6,8 +6,12 @@ data class Product(
     val id: Long? = null,
     /** Identifier from CardMarket (or other external source) */
     val externalId: Long,
+    /** Set ID for relation to sets table */
+    val setId: Long? = null,
     /** Optional set name (e.g., "Base Set", "Sword & Shield") */
     val setName: String? = null,
+    /** Series ID for relation to series table */
+    val seriesId: Long? = null,
     /** Rarity string as provided by the source (e.g., "Rare", "Ultra Rare") */
     val rarity: String? = null,
     /** Creation timestamp */

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.8.xsd">
+
+  <changeSet author="havonte" id="20260303-06">
+    <addColumn schemaName="watcher" tableName="products">
+      <column name="set_id" type="BIGINT"/>
+      <column name="series_id" type="BIGINT"/>
+    </addColumn>
+  </changeSet>
+
+  <changeSet author="havonte" id="20260303-07">
+    <createIndex schemaName="watcher" tableName="products" indexName="idx_products_set_id">
+      <column name="set_id"/>
+    </createIndex>
+    <createIndex schemaName="watcher" tableName="products" indexName="idx_products_series_id">
+      <column name="series_id"/>
+    </createIndex>
+  </changeSet>
+
+</databaseChangeLog>

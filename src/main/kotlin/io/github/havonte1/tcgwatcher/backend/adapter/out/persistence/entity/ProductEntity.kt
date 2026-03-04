@@ -27,8 +27,14 @@ data class ProductEntity(
     @Column(name = "external_id", nullable = false, unique = true)
     val externalId: Long,
 
+    @Column(name = "set_id")
+    val setId: Long? = null,
+
     @Column(name = "set_name")
     val setName: String? = null,
+
+    @Column(name = "series_id")
+    val seriesId: Long? = null,
 
     @Column(name = "rarity")
     val rarity: String? = null,

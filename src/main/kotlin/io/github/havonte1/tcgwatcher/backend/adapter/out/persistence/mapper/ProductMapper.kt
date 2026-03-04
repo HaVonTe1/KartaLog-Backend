@@ -14,7 +14,9 @@ class ProductMapper {
         val entity = ProductEntity(
             id = product.id,
             externalId = product.externalId,
+            setId = product.setId,
             setName = product.setName,
+            seriesId = product.seriesId,
             rarity = product.rarity,
             codeInfo = product.codeInfo?.value,
             codeInfoValid = product.codeInfo?.valid,
@@ -68,7 +70,9 @@ class ProductMapper {
         return Product(
             id = entity.id,
             externalId = entity.externalId,
+            setId = entity.setId,
             setName = entity.setName,
+            seriesId = entity.seriesId,
             rarity = entity.rarity,
             createdAt = entity.createdAt,
             updatedAt = entity.updatedAt,

@@ -5,3 +5,7 @@ databaseChangeLog:
       file: db/changelog/20260217-add-details-schema.xml
   - include:
       file: db/changelog/20260301-envers-products-aud.xml
+  - include:
+      file: db/changelog/20260303-add-series-sets-tables.xml
+  - include:
+      file: db/changelog/20260303-extend-products-table.xml
