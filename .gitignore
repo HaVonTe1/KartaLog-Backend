@@ -35,3 +35,4 @@ replay_pid*
 .gradle/**
 .idea/**
 /auth.json
+/.claude/

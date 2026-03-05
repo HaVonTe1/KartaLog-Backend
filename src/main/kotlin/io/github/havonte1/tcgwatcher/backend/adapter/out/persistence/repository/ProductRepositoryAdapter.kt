@@ -55,7 +55,7 @@ class ProductRepositoryAdapter(
             jpaRepository.findById(product.id).ifPresent { jpaRepository.delete(it) }
         }
     }
-
+    @Transactional(readOnly = true)
     override fun findByCmId(
         cmId: String,
     ): Product? {

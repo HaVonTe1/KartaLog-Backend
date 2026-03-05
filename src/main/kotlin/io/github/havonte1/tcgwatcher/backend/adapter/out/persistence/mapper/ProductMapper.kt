@@ -2,22 +2,26 @@ package io.github.havonte1.tcgwatcher.backend.adapter.out.persistence.mapper
 
 import io.github.havonte1.tcgwatcher.backend.adapter.out.persistence.entity.NameTranslationEntity
 import io.github.havonte1.tcgwatcher.backend.adapter.out.persistence.entity.ProductEntity
+import io.github.havonte1.tcgwatcher.backend.adapter.out.persistence.entity.ProductSetEntity
 import io.github.havonte1.tcgwatcher.backend.adapter.out.persistence.entity.SellOfferEntity
+import io.github.havonte1.tcgwatcher.backend.adapter.out.persistence.entity.SeriesEntity
 import io.github.havonte1.tcgwatcher.backend.domain.model.Product
+import io.github.havonte1.tcgwatcher.backend.domain.model.ProductSeries
+import io.github.havonte1.tcgwatcher.backend.domain.model.ProductSet
 import io.github.havonte1.tcgwatcher.backend.domain.model.SellOffer
 import io.github.havonte1.tcgwatcher.backend.domain.model.StringWithValidity
 import org.springframework.stereotype.Component
 
 @Component
 class ProductMapper {
-    fun toEntity(product: Product): ProductEntity {
+    fun toEntity(product: Product, set: ProductSetEntity): ProductEntity {
         val entity = ProductEntity(
             id = product.id,
             externalId = product.externalId,
             sourceId = product.sourceId,
-            setId = product.setId,
-            setName = product.setName,
-            seriesId = product.seriesId,
+            productSet = set,
+            setId = set.id,
+            seriesId = product.series?.seriesId,
             rarity = product.rarity,
             codeInfo = product.codeInfo?.value,
             codeInfoValid = product.codeInfo?.valid,
@@ -55,6 +59,20 @@ class ProductMapper {
         return entity
     }
 
+    fun toProductSet(entity: ProductSetEntity?): ProductSet?{
+        if(entity == null || entity.id == null )
+            return null
+        return ProductSet(setId = entity.id, cmCode = entity.cmProductCode?:"", names = entity.nameTranslations.associate { it.languageCode to it.name })
+
+    }
+
+    fun toProductSeries(entity: SeriesEntity?): ProductSeries? {
+        if(entity == null || entity.id == null )
+            return null
+        return ProductSeries(seriesId = entity.id, names = entity.nameTranslations.associate { it.languageCode to it.name })
+
+    }
+
     fun toDomain(entity: ProductEntity): Product {
         val namesMap = entity.nameTranslations.associate { it.languageCode to it.name }
         val sellOffers = entity.sellOffers.map { sellOffer ->
@@ -72,9 +90,8 @@ class ProductMapper {
             id = entity.id,
             externalId = entity.externalId,
             sourceId = entity.sourceId,
-            setId = entity.setId,
-            setName = entity.setName,
-            seriesId = entity.seriesId,
+            set = toProductSet(entity.productSet),
+            series = toProductSeries(entity.series),
             rarity = entity.rarity,
             createdAt = entity.createdAt,
             updatedAt = entity.updatedAt,

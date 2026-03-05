@@ -35,6 +35,9 @@ data class ProductSetEntity(
     @Column(name = "cm_product_id")
     val cmProductId: String? = null,
 
+    @Column(name = "cm_product_code")
+    val cmProductCode: String? = null,
+
     @Column(name = "code")
     val code: String? = null,
 

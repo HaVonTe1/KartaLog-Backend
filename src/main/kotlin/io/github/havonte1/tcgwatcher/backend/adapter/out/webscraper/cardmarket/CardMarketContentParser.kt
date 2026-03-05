@@ -136,6 +136,10 @@ class CardMarketContentParser {
         lang: String,
         setname: String
     ): CardmarketProductDetailsDto {
+
+        //FIXME: this works only for german details pages
+        //TODO: the labels should be mapeed to the language used in the search
+
         val document = org.jsoup.Jsoup.parse(content)
         val imageTags = document.getElementsByTag("img")
         val frontImageTag =
@@ -232,6 +236,7 @@ class CardMarketContentParser {
 
             }
         }
+        val setCode= setLink?.substringAfterLast("/")?:""
         val cardmarketProductDetailsDto = CardmarketProductDetailsDto(
             name = NameDto(value = name ?: cmId, languageCode = lang, i18n = cmId),
             code = CodeType(code ?: "", code != null),
@@ -239,7 +244,7 @@ class CardMarketContentParser {
             genre = genre,
             cmId = cmId,
             rarity = rarityText ?: "",
-            set = SetDto(setName ?: "", setLink ?: ""),
+            set = SetDto(setName ?: "", setCode),
             imageUrl = imageUrl,
             price = localPrice,
             priceTrend = PriceTrendType(localPriceTrend, true),

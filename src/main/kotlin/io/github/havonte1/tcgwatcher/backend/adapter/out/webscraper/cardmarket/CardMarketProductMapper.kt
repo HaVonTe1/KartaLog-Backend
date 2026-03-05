@@ -1,13 +1,11 @@
 package io.github.havonte1.tcgwatcher.backend.adapter.out.webscraper.cardmarket
 
 import io.github.havonte1.tcgwatcher.backend.domain.model.Product
+import io.github.havonte1.tcgwatcher.backend.domain.model.ProductSet
 import io.github.havonte1.tcgwatcher.backend.domain.model.SellOffer
 import io.github.havonte1.tcgwatcher.backend.domain.model.StringWithValidity
-import io.github.oshai.kotlinlogging.KotlinLogging
 
 class CardMarketProductMapper {
-    private val logger = KotlinLogging.logger {}
-
 
     fun toProducts(result: SearchResultsPageDto<CardmarketProductGallaryItemDto>): List<Product> {
         return result.results.map { item ->
@@ -23,7 +21,7 @@ class CardMarketProductMapper {
 
             Product(
                 externalId = externalIdFromImg,
-                setName = parsedLink.setName,
+                set = ProductSet(setId = 0, cmCode = parsedLink.setCode?:"", names = mapOf()),
                 rarity = null,
                 names = mapOf(item.name.languageCode to item.name.value),
                 codeInfo = StringWithValidity(item.code.value, item.code.valid),
@@ -46,7 +44,7 @@ class CardMarketProductMapper {
 
         return Product(
             externalId = externalIdFromImg,
-            setName = detailsDto.set.name,
+            set = ProductSet(setId = 0, cmCode = detailsDto.set.code, names = mapOf(detailsDto.name.languageCode to detailsDto.set.name)),
             rarity = detailsDto.rarity,
             names = mapOf(detailsDto.name.languageCode to detailsDto.name.value),
             codeInfo = StringWithValidity(detailsDto.code.value, detailsDto.code.valid),
@@ -73,7 +71,7 @@ class CardMarketProductMapper {
 
         val genre: String?,
         val type: String?,
-        val setName: String?,
+        val setCode: String?,
         val id: String?
     )
 

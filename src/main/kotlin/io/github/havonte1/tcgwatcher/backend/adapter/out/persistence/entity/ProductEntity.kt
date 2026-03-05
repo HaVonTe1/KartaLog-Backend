@@ -18,7 +18,7 @@ import org.hibernate.envers.NotAudited
 import java.io.Serializable
 import java.time.Instant
 
-@Audited // Envers auditing for product history
+@Audited
 @Entity
 @Table(name = "products", schema = "watcher")
 data class ProductEntity(
@@ -34,9 +34,6 @@ data class ProductEntity(
 
     @Column(name = "set_id")
     val setId: Long? = null,
-
-    @Column(name = "set_name")
-    val setName: String? = null,
 
     @Column(name = "series_id")
     val seriesId: Long? = null,
@@ -79,7 +76,6 @@ data class ProductEntity(
     @Column(name = "updated_at", nullable = false)
     var updatedAt: Instant = Instant.now(),
 
-    // i18n translations for product name
     @OneToMany(
         mappedBy = "product",
         cascade = [CascadeType.ALL],
@@ -88,12 +84,10 @@ data class ProductEntity(
     )
     val nameTranslations: MutableSet<NameTranslationEntity> = mutableSetOf(),
 
-    // i18n translations for series (reused NameTranslationEntity)
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "series_id", referencedColumnName = "id", insertable = false, updatable = false)
     val series: SeriesEntity? = null,
 
-    // i18n translations for set (reused NameTranslationEntity)
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "set_id", referencedColumnName = "id", insertable = false, updatable = false)
     val productSet: ProductSetEntity? = null,
@@ -137,6 +131,6 @@ data class ProductEntity(
 
     override fun hashCode(): Int = id?.hashCode() ?: externalId.hashCode()
     override fun toString(): String {
-        return "ProductEntity(id=$id, externalId=$externalId, setName=$setName, rarity=$rarity, codeInfo=$codeInfo, codeInfoValid=$codeInfoValid, genre=$genre, type=$type, cmId=$cmId, imgLink=$imgLink, price=$price, priceTrend=$priceTrend, priceTrendValid=$priceTrendValid, createdAt=$createdAt, updatedAt=$updatedAt, nameTranslations=$nameTranslations, sellOffers=${sellOffers.size})"
+        return "ProductEntity(id=$id, externalId=$externalId, rarity=$rarity, codeInfo=$codeInfo, codeInfoValid=$codeInfoValid, genre=$genre, type=$type, cmId=$cmId, imgLink=$imgLink, price=$price, priceTrend=$priceTrend, priceTrendValid=$priceTrendValid, createdAt=$createdAt, updatedAt=$updatedAt, nameTranslations=$nameTranslations, sellOffers=${sellOffers.size})"
     }
 }

@@ -61,6 +61,7 @@
       <column name="source_id" type="VARCHAR(50)"/>
       <column name="abbreviation" type="VARCHAR(255)"/>
       <column name="cm_product_id" type="VARCHAR(255)"/>
+      <column name="cm_product_code" type="VARCHAR(255)"/>
       <column name="code" type="VARCHAR(255)"/>
       <column name="official" type="INTEGER"/>
       <column name="tcgp_id" type="VARCHAR(255)"/>
@@ -82,6 +83,7 @@
       <column name="source_id" type="VARCHAR(50)"/>
       <column name="abbreviation" type="VARCHAR(255)"/>
       <column name="cm_product_id" type="VARCHAR(255)"/>
+      <column name="cm_product_code" type="VARCHAR(255)"/>
       <column name="code" type="VARCHAR(255)"/>
       <column name="official" type="INTEGER"/>
       <column name="tcgp_id" type="VARCHAR(255)"/>
@@ -109,7 +111,6 @@
       </column>
       <column name="source_id" type="VARCHAR(50)"/>
       <column name="set_id" type="BIGINT"/>
-      <column name="set_name" type="VARCHAR(255)"/>
       <column name="series_id" type="BIGINT"/>
       <column name="rarity" type="VARCHAR(255)"/>
       <column name="code_info" type="VARCHAR(255)"/>
@@ -143,7 +144,6 @@
       <column name="external_id" type="BIGINT"/>
       <column name="source_id" type="VARCHAR(50)"/>
       <column name="set_id" type="BIGINT"/>
-      <column name="set_name" type="VARCHAR(255)"/>
       <column name="series_id" type="BIGINT"/>
       <column name="rarity" type="VARCHAR(255)"/>
       <column name="code_info" type="VARCHAR(255)"/>
@@ -378,9 +378,6 @@
 
   <!-- Indexes -->
   <changeSet author="dirk" id="16-indexes">
-    <createIndex schemaName="watcher" tableName="products" indexName="idx_products_set_name">
-      <column name="set_name"/>
-    </createIndex>
     <createIndex schemaName="watcher" tableName="products" indexName="idx_products_rarity">
       <column name="rarity"/>
     </createIndex>

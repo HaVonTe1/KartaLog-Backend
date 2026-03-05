@@ -10,12 +10,13 @@ import java.net.URLEncoder
 
 object CollectablesMapper {
     fun toDto(
-        product: Product
+        product: Product,
+        locale: String,
     ): ProductDTO {
 
         return ProductDTO(
             externalId = product.externalId,
-            setName = product.setName,
+            setName = product.set?.names[locale],
             rarity = product.rarity,
             imageUrl = product.imgLink?.let { URI.create(it) },
             type = product.type,
@@ -23,10 +24,10 @@ object CollectablesMapper {
         )
     }
 
-    fun toDetailDto(product: Product): ProductDetailsDTO {
+    fun toDetailDto(product: Product,locale: String): ProductDetailsDTO {
         return ProductDetailsDTO(
             externalId = product.externalId,
-            setName = product.setName,
+            setName = product.set?.names[locale],
             rarity = product.rarity,
             imageUrl = product.imgLink?.let { URI.create(it) },
             type = product.type,
@@ -35,7 +36,7 @@ object CollectablesMapper {
                 product.genre,
                 "product",
                 product.type,
-                product.setName,
+                product.set?.cmCode,
                 product.cmId
             ).joinToString("/") { URLEncoder.encode(it, "UTF-8") }.let { URI.create(it) },
 

@@ -2,6 +2,7 @@ package io.github.havonte1.tcgwatcher.backend.adapter.out.persistence.repository
 
 import io.github.havonte1.tcgwatcher.backend.adapter.out.persistence.entity.NameTranslationEntity
 import io.github.havonte1.tcgwatcher.backend.adapter.out.persistence.entity.ProductEntity
+import io.github.havonte1.tcgwatcher.backend.adapter.out.persistence.entity.ProductSetEntity
 import io.github.havonte1.tcgwatcher.backend.adapter.out.persistence.mapper.ProductMapper
 import io.github.havonte1.tcgwatcher.backend.adapter.out.persistence.mapper.SearchResultMapper
 import io.github.havonte1.tcgwatcher.backend.domain.model.Product
@@ -19,6 +20,8 @@ import java.time.Instant
 class SearchResultRepositoryAdapter(
     private val jpaRepository: SearchResultJpaRepository,
     private val productJpaRepository: ProductJpaRepository,
+    private val productSetJpaRepository: ProductSetJpaRepository,
+    private val seriesJpaRepository: SeriesJpaRepository,
     private val searchResultMapper: SearchResultMapper,
     private val productMapper: ProductMapper,
 ) : SearchResultRepository {
@@ -59,8 +62,41 @@ class SearchResultRepositoryAdapter(
                 updateEntity(existing, product)
                 existing
             } else {
-                // Create new product entity
-                productMapper.toEntity(product)
+                if(product.set!=null) {
+                    var productSetEntity = productSetJpaRepository.findByCmProductCode(product.set.cmCode).firstOrNull()
+                    if(productSetEntity==null) {
+
+                        productSetEntity = ProductSetEntity(id = 0, cmProductCode = product.set.cmCode )
+                        product.set.names.forEach { lang,name ->
+                            val nameTranslationEntity = NameTranslationEntity(
+                                id = 0,
+                                productSet = productSetEntity,
+                                languageCode = lang,
+                                name = name
+                            )
+
+                            productSetEntity.nameTranslations.add(nameTranslationEntity)
+                        }
+                    }
+
+                    val productEntity = productMapper.toEntity(product, productSetEntity)
+                    productEntity
+                }else
+                {
+                    val productSetEntity = ProductSetEntity(id = 0, cmProductCode = "dummy" )
+
+                    val nameTranslationEntity = NameTranslationEntity(
+                        id = 0,
+                        productSet = productSetEntity,
+                        languageCode = "de",
+                        name = "dummy"
+                    )
+
+                    productSetEntity.nameTranslations.add(nameTranslationEntity)
+
+                    val productEntity = productMapper.toEntity(product, productSetEntity)
+                    productEntity
+                }
             }
         }
 

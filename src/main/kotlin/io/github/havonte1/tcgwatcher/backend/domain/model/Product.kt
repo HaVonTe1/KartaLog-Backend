@@ -8,12 +8,10 @@ data class Product(
     val externalId: Long,
     /** Source ID from SQLite quicksearch database */
     val sourceId: String? = null,
-    /** Set ID for relation to sets table */
-    val setId: Long? = null,
-    /** Optional set name (e.g., "Base Set", "Sword & Shield") */
-    val setName: String? = null,
-    /** Series ID for relation to series table */
-    val seriesId: Long? = null,
+
+    val set: ProductSet? = null,
+
+    val series: ProductSeries? = null,
     /** Rarity string as provided by the source (e.g., "Rare", "Ultra Rare") */
     val rarity: String? = null,
     /** Creation timestamp */
@@ -54,4 +52,17 @@ data class SellOffer(
     val condition: String,
     val amount: String,
     val price: String
+)
+
+data class ProductSet(
+    val setId: Long,
+
+    val cmCode: String,
+
+    val names: Map<String, String> = emptyMap(),
+)
+
+data class ProductSeries(
+    val seriesId: Long,
+    val names: Map<String, String> = emptyMap(),
 )
