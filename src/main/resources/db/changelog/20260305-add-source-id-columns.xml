@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                  xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.8.xsd">
+
+  <!-- Add source_id column to series table to preserve SQLite IDs -->
+  <changeSet author="dirk" id="20260305-01">
+    <addColumn schemaName="watcher" tableName="series">
+      <column name="source_id" type="VARCHAR(50)"/>
+    </addColumn>
+  </changeSet>
+
+  <!-- Add source_id column to product_set table to preserve SQLite IDs -->
+  <changeSet author="dirk" id="20260305-02">
+    <addColumn schemaName="watcher" tableName="product_set">
+      <column name="source_id" type="VARCHAR(50)"/>
+    </addColumn>
+  </changeSet>
+
+  <!-- Add source_id column to products table to preserve SQLite IDs -->
+  <changeSet author="dirk" id="20260305-03">
+    <addColumn schemaName="watcher" tableName="products">
+      <column name="source_id" type="VARCHAR(50)"/>
+    </addColumn>
+  </changeSet>
+
+</databaseChangeLog>
