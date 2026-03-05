@@ -14,6 +14,7 @@ class ProductMapper {
         val entity = ProductEntity(
             id = product.id,
             externalId = product.externalId,
+            sourceId = product.sourceId,
             setId = product.setId,
             setName = product.setName,
             seriesId = product.seriesId,
@@ -70,6 +71,7 @@ class ProductMapper {
         return Product(
             id = entity.id,
             externalId = entity.externalId,
+            sourceId = entity.sourceId,
             setId = entity.setId,
             setName = entity.setName,
             seriesId = entity.seriesId,

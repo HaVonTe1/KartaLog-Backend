@@ -1,6 +1,7 @@
 package io.github.havonte1.tcgwatcher.backend.adapter.out.persistence.entity
 
 import jakarta.persistence.CascadeType
+import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.FetchType
 import jakarta.persistence.GeneratedValue
@@ -22,6 +23,9 @@ data class SeriesEntity(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long? = null,
+
+    @Column(name = "source_id")
+    val sourceId: String? = null,
 
     @OneToMany(
         mappedBy = "series",

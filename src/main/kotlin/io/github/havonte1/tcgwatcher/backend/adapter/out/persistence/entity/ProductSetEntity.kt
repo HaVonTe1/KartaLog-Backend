@@ -26,6 +26,9 @@ data class ProductSetEntity(
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long? = null,
 
+    @Column(name = "source_id")
+    val sourceId: String? = null,
+
     @Column(name = "abbreviation")
     val abbreviation: String? = null,
 

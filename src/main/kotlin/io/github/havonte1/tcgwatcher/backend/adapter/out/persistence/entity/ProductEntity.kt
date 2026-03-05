@@ -29,6 +29,9 @@ data class ProductEntity(
     @Column(name = "external_id", nullable = false, unique = true)
     val externalId: Long,
 
+    @Column(name = "source_id")
+    val sourceId: String? = null,
+
     @Column(name = "set_id")
     val setId: Long? = null,
 

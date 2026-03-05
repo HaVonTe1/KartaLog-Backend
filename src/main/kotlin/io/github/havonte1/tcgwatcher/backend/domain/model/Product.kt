@@ -6,6 +6,8 @@ data class Product(
     val id: Long? = null,
     /** Identifier from CardMarket (or other external source) */
     val externalId: Long,
+    /** Source ID from SQLite quicksearch database */
+    val sourceId: String? = null,
     /** Set ID for relation to sets table */
     val setId: Long? = null,
     /** Optional set name (e.g., "Base Set", "Sword & Shield") */

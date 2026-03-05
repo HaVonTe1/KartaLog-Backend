@@ -2,6 +2,8 @@ name: TCGWatcher Backend
 
 services:
   nginx:
+    profiles:
+      - deployment
     image: nginx:alpine
     ports:
       - "19123:80"
@@ -12,6 +14,8 @@ services:
         condition: service_healthy
 
   app:
+    profiles:
+      - deployment
     build:
       context: ..
       dockerfile: deployment/Dockerfile
@@ -26,6 +30,9 @@ services:
       - ../.env
 
   postgres:
+    profiles:
+      - deployment
+      - local
     image: postgres:18.1
     ports:
       - "51915:5432"
