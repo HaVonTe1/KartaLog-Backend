@@ -62,41 +62,25 @@ class SearchResultRepositoryAdapter(
                 updateEntity(existing, product)
                 existing
             } else {
-                if(product.set!=null) {
-                    var productSetEntity = productSetJpaRepository.findByCmProductCode(product.set.cmCode).firstOrNull()
-                    if(productSetEntity==null) {
+                val productSetEntity = if (product.set != null) {
+                    productSetJpaRepository.findByCmProductCode(product.set.cmCode).firstOrNull()
+                        ?: ProductSetEntity(id = 0, cmProductCode = product.set.cmCode)
+                } else {
+                    ProductSetEntity(id = 0, cmProductCode = "dummy")
+                }
 
-                        productSetEntity = ProductSetEntity(id = 0, cmProductCode = product.set.cmCode )
-                        product.set.names.forEach { lang,name ->
-                            val nameTranslationEntity = NameTranslationEntity(
-                                id = 0,
-                                productSet = productSetEntity,
-                                languageCode = lang,
-                                name = name
-                            )
-
-                            productSetEntity.nameTranslations.add(nameTranslationEntity)
-                        }
-                    }
-
-                    val productEntity = productMapper.toEntity(product, productSetEntity)
-                    productEntity
-                }else
-                {
-                    val productSetEntity = ProductSetEntity(id = 0, cmProductCode = "dummy" )
-
+                product.set?.names?.forEach { (lang, name) ->
                     val nameTranslationEntity = NameTranslationEntity(
                         id = 0,
                         productSet = productSetEntity,
-                        languageCode = "de",
-                        name = "dummy"
+                        languageCode = lang,
+                        name = name
                     )
-
                     productSetEntity.nameTranslations.add(nameTranslationEntity)
-
-                    val productEntity = productMapper.toEntity(product, productSetEntity)
-                    productEntity
                 }
+
+                val productEntity = productMapper.toEntity(product, productSetEntity)
+                productEntity
             }
         }
 

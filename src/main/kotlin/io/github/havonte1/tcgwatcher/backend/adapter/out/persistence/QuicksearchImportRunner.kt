@@ -14,6 +14,7 @@ import org.springframework.boot.ApplicationRunner
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.core.annotation.Order
 import org.springframework.stereotype.Component
+import org.springframework.beans.factory.annotation.Value
 import java.sql.Connection
 import java.sql.DriverManager
 
@@ -56,9 +57,17 @@ class QuicksearchImportRunner(
         }
     }
 
+
+    @Value("\${app.data.import.sqlite.path:quicksearch.db}")
+    private lateinit var sqlitePath: String
+
     private fun getSqliteConnection(): Connection {
-        //TODO: make this parameter come from the application.yml
-        val dbPath = System.getProperty("user.dir") + "/quicksearch.db"
+        // Resolve relative paths against the working directory
+        val dbPath = if (java.nio.file.Paths.get(sqlitePath).isAbsolute) {
+            sqlitePath
+        } else {
+            System.getProperty("user.dir") + "/" + sqlitePath
+        }
         logger.info { "Opening SQLite database at: $dbPath" }
         return DriverManager.getConnection("jdbc:sqlite:$dbPath")
     }

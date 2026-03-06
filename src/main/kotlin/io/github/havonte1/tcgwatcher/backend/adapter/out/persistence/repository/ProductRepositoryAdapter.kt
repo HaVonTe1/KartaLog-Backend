@@ -1,5 +1,7 @@
 package io.github.havonte1.tcgwatcher.backend.adapter.out.persistence.repository
 
+import io.github.havonte1.tcgwatcher.backend.adapter.out.persistence.entity.NameTranslationEntity
+import io.github.havonte1.tcgwatcher.backend.adapter.out.persistence.entity.ProductSetEntity
 import io.github.havonte1.tcgwatcher.backend.adapter.out.persistence.mapper.ProductMapper
 import io.github.havonte1.tcgwatcher.backend.domain.model.Product
 import io.github.havonte1.tcgwatcher.backend.domain.port.out.ProductRepository
@@ -22,7 +24,15 @@ class ProductRepositoryAdapter(
 
     @Transactional
     override fun save(product: Product): Product {
-        val entity = mapper.toEntity(product)
+        val productSetEntity = ProductSetEntity(id = 0, cmProductCode = product.set?.cmCode ?: "dummy")
+        val nameTranslationEntity = NameTranslationEntity(
+            id = 0,
+            productSet = productSetEntity,
+            languageCode = "de",
+            name = product.set?.names["de"] ?: "dummy"
+        )
+        productSetEntity.nameTranslations.add(nameTranslationEntity)
+        val entity = mapper.toEntity(product, productSetEntity)
         val saved = jpaRepository.save(entity)
         sellOfferJpaRepository.saveAll(entity.sellOffers)
         return mapper.toDomain(saved)
@@ -30,7 +40,17 @@ class ProductRepositoryAdapter(
 
     @Transactional
     override fun saveAll(products: List<Product>): List<Product> {
-        val entities = products.map { mapper.toEntity(it) }
+        val entities = products.map { product ->
+            val productSetEntity = ProductSetEntity(id = 0, cmProductCode = product.set?.cmCode ?: "dummy")
+            val nameTranslationEntity = NameTranslationEntity(
+                id = 0,
+                productSet = productSetEntity,
+                languageCode = "de",
+                name = product.set?.names["de"] ?: "dummy"
+            )
+            productSetEntity.nameTranslations.add(nameTranslationEntity)
+            mapper.toEntity(product, productSetEntity)
+        }
         val productEntities = jpaRepository.saveAll(entities)
         val allSellOffers = entities.flatMap { it.sellOffers }
         sellOfferJpaRepository.saveAll(allSellOffers)

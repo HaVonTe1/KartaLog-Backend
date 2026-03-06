@@ -88,3 +88,5 @@ app:
   data:
     import:
       enabled: true
+      sqlite:
+        path: quicksearch.db
