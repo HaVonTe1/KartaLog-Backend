@@ -55,6 +55,33 @@ class SearchResultRepositoryAdapter(
         val existingProducts = productJpaRepository.findAllByExternalIdIn(externalIds)
             .associateBy { it.externalId }
 
+        val uniqueCmCodes = products.mapNotNull { it.set?.cmCode }.distinct()
+        val existingSets = uniqueCmCodes.flatMap { productSetJpaRepository.findByCmProductCode(it) }
+        val existingSetMap = existingSets.associateBy { it.cmProductCode }
+
+        val newCmCodes = uniqueCmCodes.filter { it !in existingSetMap.keys }
+        val newSets = newCmCodes.map { cmCode ->
+            val product = products.first { it.set?.cmCode == cmCode }
+            val productSetEntity = ProductSetEntity(cmProductCode = cmCode)
+            product.set?.names?.forEach { (lang, name) ->
+                val nameTranslationEntity = NameTranslationEntity(
+                    productSet = productSetEntity,
+                    languageCode = lang,
+                    name = name
+                )
+                productSetEntity.nameTranslations.add(nameTranslationEntity)
+            }
+            productSetEntity
+        }
+
+        val savedNewSets = if (newSets.isNotEmpty()) {
+            productSetJpaRepository.saveAll(newSets)
+        } else {
+            emptyList()
+        }
+
+        val allSetMap = (existingSets + savedNewSets).associateBy { it.cmProductCode }
+
         val entitiesToPersist = products.map { product ->
             val existing = existingProducts[product.externalId]
             if (existing != null) {
@@ -62,12 +89,9 @@ class SearchResultRepositoryAdapter(
                 updateEntity(existing, product)
                 existing
             } else {
-                val productSetEntity = if (product.set != null) {
-                    productSetJpaRepository.findByCmProductCode(product.set.cmCode).firstOrNull()
-                        ?: ProductSetEntity(id = 0, cmProductCode = product.set.cmCode)
-                } else {
-                    ProductSetEntity(id = 0, cmProductCode = "dummy")
-                }
+                val cmCode = product.set?.cmCode ?: "dummy"
+                val productSetEntity = allSetMap[cmCode]
+                    ?: ProductSetEntity(cmProductCode = cmCode)
 
                 product.set?.names?.forEach { (lang, name) ->
                     val nameTranslationEntity = NameTranslationEntity(

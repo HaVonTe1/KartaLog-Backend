@@ -19,6 +19,7 @@ import org.springframework.test.context.ActiveProfiles
 import org.testcontainers.junit.jupiter.Container
 import org.testcontainers.junit.jupiter.Testcontainers
 import org.testcontainers.postgresql.PostgreSQLContainer
+import kotlin.jvm.JvmStatic
 import java.io.File
 
 @SpringBootTest
@@ -28,9 +29,12 @@ import java.io.File
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 class QuicksearchImportRunnerTest {
 
-    @Container
-    @ServiceConnection
-    val postgres = PostgreSQLContainer("postgres:15-alpine")
+    companion object {
+        @Container
+        @ServiceConnection
+        @JvmStatic
+        val postgres = PostgreSQLContainer("postgres:15-alpine")
+    }
 
     @Autowired
     lateinit var seriesRepo: SeriesJpaRepository
