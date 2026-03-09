@@ -19,7 +19,7 @@ class PlaywrightManager(
     val browser: Browser = playwright.chromium().launch(
         BrowserType.LaunchOptions()
             .setHeadless(true)
-            .setExecutablePath(Paths.get(executablePath))
+            //.setExecutablePath(Paths.get(executablePath))
     )
 
     @PreDestroy

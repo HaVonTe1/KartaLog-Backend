@@ -4,6 +4,8 @@ spring:
   docker:
     compose:
       enabled: true
+      profiles:
+        active: local
       file: ${user.dir}/deployment/compose.yml
       lifecycle-management: start_only
       start:
@@ -11,20 +13,19 @@ spring:
   liquibase:
     parameters:
       watcher_readonly.password: ${WATCHER_READONLY_PWD}
-      migration.password: ${MIGRATION_PWD}
       watcher_mig.password: ${WATCHER_MIG_PWD}
       watcher_app.password: ${WATCHER_APP_PWD}
-      application.password: ${APPLICATION_PWD}
   jpa:
     show-sql: false
     open-in-view: false
+    hibernate:
+      ddl-auto: validate
     properties:
       hibernate:
         jdbc:
           batch_size: 50
         order_updates: true
-cache:
-  ttl-hours: 1
+
 resilience4j:
   circuitbreaker:
     instances:
@@ -81,4 +82,11 @@ logging:
     com.github.tomakehurst: trace
     eu.rekawek: trace
 playwright:
-  executable-path: /usr/local/bin/chromium
+  executable-path: /var/lib/snapd/snap/bin/chromium
+
+app:
+  data:
+    import:
+      enabled: true
+      sqlite:
+        path: quicksearch.db

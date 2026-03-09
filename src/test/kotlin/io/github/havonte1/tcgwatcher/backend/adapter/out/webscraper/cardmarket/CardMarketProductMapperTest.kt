@@ -1,6 +1,5 @@
 package io.github.havonte1.tcgwatcher.backend.adapter.out.webscraper.cardmarket
 
-import io.github.havonte1.tcgwatcher.backend.adapter.inbound.rest.model.SellOfferDTO
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
@@ -32,7 +31,7 @@ class CardMarketProductMapperTest {
         // externalId should come from the imgLink filename
         assertEquals(12345L, product.externalId, "externalId should be parsed from imgLink filename")
         assertEquals("12345", product.cmId)
-        assertEquals("setx", product.setName)
+        assertEquals("setx", product.set?.cmCode)
         assertEquals("https://images.cardmarket.com/12345.jpg", product.imgLink)
         assertEquals("10,00 €", product.price)
         assertEquals("up", product.priceTrendInfo?.value)
@@ -61,7 +60,7 @@ class CardMarketProductMapperTest {
             rarity = "Promo",
             set = SetDto(
                 name = "KRababel",
-                link = "/de/Pokemon/Products/Sets/kradfb"
+                code = "kradfb"
             ),
             price = "1,40 €",
             priceTrend = PriceTrendType(
@@ -84,7 +83,8 @@ class CardMarketProductMapperTest {
 
         assertEquals("Pikachu-V1-EVS049", product.cmId)
         assertEquals(12345L, product.externalId)
-        assertEquals("KRababel", product.setName)
+        assertEquals("KRababel", product.set?.names["de"])
+        assertEquals("kradfb", product.set?.cmCode)
         assertEquals("Promo", product.rarity)
         assertEquals("Rama", product.names["de"])
         assertEquals("bla", product.codeInfo?.value)

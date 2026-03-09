@@ -34,3 +34,5 @@ replay_pid*
 **/build/**
 .gradle/**
 .idea/**
+/auth.json
+/.claude/

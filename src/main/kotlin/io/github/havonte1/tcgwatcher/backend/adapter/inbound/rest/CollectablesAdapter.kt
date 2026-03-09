@@ -6,11 +6,9 @@ import io.github.havonte1.tcgwatcher.backend.adapter.inbound.rest.model.ProductD
 import io.github.havonte1.tcgwatcher.backend.application.SearchUseCase
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.github.resilience4j.ratelimiter.annotation.RateLimiter
-import org.springframework.cache.annotation.Cacheable
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.RestController
-import java.math.BigDecimal
 
 @RestController
 class CollectablesAdapter(
@@ -23,18 +21,18 @@ class CollectablesAdapter(
     @RateLimiter(name = "apiRateLimiter")
     override suspend fun listCollectables(
         query: String,
-        game: String,
+        genre: String,
         type: String,
         locale: String
     ): ResponseEntity<List<ProductDTO>> {
 
         require(query.isNotBlank()) { "Query must not be blank" }
         logger.debug {
-            "listCollectables called with  query={$query} locale={$locale} game=$game"
+            "listCollectables called with  query={$query} locale={$locale} game=$genre"
         }
-        val results = collectablesService.search(query, locale, game)
+        val results = collectablesService.search(query, locale, genre)
 
-        val dtoList: List<ProductDTO> = results.map { CollectablesMapper.toDto(it) }
+        val dtoList: List<ProductDTO> = results.map { CollectablesMapper.toDto(it, locale) }
         return ResponseEntity(dtoList, HttpStatus.OK)
     }
 
@@ -48,7 +46,7 @@ class CollectablesAdapter(
     ): ResponseEntity<ProductDetailsDTO> {
         val productDetails = collectablesService.fetchProductDetails(cmId, genre, type, lang, setname)
         if(productDetails!=null) {
-            return ResponseEntity.ok(CollectablesMapper.toDetailDto(product = productDetails))
+            return ResponseEntity.ok(CollectablesMapper.toDetailDto(product = productDetails, lang))
         }
         return ResponseEntity.notFound().build()
     }

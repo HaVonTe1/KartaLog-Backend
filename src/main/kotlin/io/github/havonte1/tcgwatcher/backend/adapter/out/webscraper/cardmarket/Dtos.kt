@@ -1,7 +1,5 @@
 package io.github.havonte1.tcgwatcher.backend.adapter.out.webscraper.cardmarket
 
-import io.github.havonte1.tcgwatcher.backend.adapter.inbound.rest.model.SellOfferDTO
-
 data class SearchResultsPageDto<T>(
     val results: List<T>,
     val page: Int,
@@ -47,7 +45,7 @@ data class CardmarketProductGallaryItemDto(
 data class CodeType(val value: String, val valid: Boolean)
 data class PriceTrendType(val value: String, val valid: Boolean)
 data class NameDto(val value: String, val languageCode: String, val i18n: String = "")
-data class SetDto(val name: String, val link: String)
+data class SetDto(val name: String, val code: String)
 
 data class CardmarketProductDetailsDto(
     val name: NameDto,

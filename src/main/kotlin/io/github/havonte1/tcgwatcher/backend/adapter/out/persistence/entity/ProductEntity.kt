@@ -7,6 +7,8 @@ import jakarta.persistence.FetchType
 import jakarta.persistence.GeneratedValue
 import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
+import jakarta.persistence.JoinColumn
+import jakarta.persistence.ManyToOne
 import jakarta.persistence.OneToMany
 import jakarta.persistence.PrePersist
 import jakarta.persistence.PreUpdate
@@ -16,7 +18,7 @@ import org.hibernate.envers.NotAudited
 import java.io.Serializable
 import java.time.Instant
 
-@Audited // Envers auditing for product history
+@Audited
 @Entity
 @Table(name = "products", schema = "watcher")
 data class ProductEntity(
@@ -27,8 +29,14 @@ data class ProductEntity(
     @Column(name = "external_id", nullable = false, unique = true)
     val externalId: Long,
 
-    @Column(name = "set_name")
-    val setName: String? = null,
+    @Column(name = "source_id")
+    val sourceId: String? = null,
+
+    @Column(name = "set_id")
+    val setId: Long? = null,
+
+    @Column(name = "series_id")
+    val seriesId: Long? = null,
 
     @Column(name = "rarity")
     val rarity: String? = null,
@@ -76,6 +84,14 @@ data class ProductEntity(
     )
     val nameTranslations: MutableSet<NameTranslationEntity> = mutableSetOf(),
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "series_id", referencedColumnName = "id", insertable = false, updatable = false)
+    val series: SeriesEntity? = null,
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "set_id", referencedColumnName = "id", insertable = false, updatable = false)
+    val productSet: ProductSetEntity? = null,
+
     @OneToMany(
         mappedBy = "product",
         cascade = [CascadeType.ALL],
@@ -105,7 +121,6 @@ data class ProductEntity(
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other !is ProductEntity) return false
-        // If both have DB ids, compare by id; otherwise fall back to externalId
         if (id != null && other.id != null) return id == other.id
         return externalId == other.externalId
     }
@@ -116,8 +131,6 @@ data class ProductEntity(
 
     override fun hashCode(): Int = id?.hashCode() ?: externalId.hashCode()
     override fun toString(): String {
-        return "ProductEntity(id=$id, externalId=$externalId, setName=$setName, rarity=$rarity, codeInfo=$codeInfo, codeInfoValid=$codeInfoValid, genre=$genre, type=$type, cmId=$cmId, imgLink=$imgLink, price=$price, priceTrend=$priceTrend, priceTrendValid=$priceTrendValid, createdAt=$createdAt, updatedAt=$updatedAt, nameTranslations=$nameTranslations, sellOffers=${sellOffers.size})"
+        return "ProductEntity(id=$id, externalId=$externalId, rarity=$rarity, codeInfo=$codeInfo, codeInfoValid=$codeInfoValid, genre=$genre, type=$type, cmId=$cmId, imgLink=$imgLink, price=$price, priceTrend=$priceTrend, priceTrendValid=$priceTrendValid, createdAt=$createdAt, updatedAt=$updatedAt, nameTranslations=$nameTranslations, sellOffers=${sellOffers.size})"
     }
-
-
 }

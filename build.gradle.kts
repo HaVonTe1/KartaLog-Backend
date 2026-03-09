@@ -138,6 +138,7 @@ dependencies {
     // Database drivers
     // -------------------------------------------------
     runtimeOnly("org.postgresql:postgresql")
+    implementation("org.xerial:sqlite-jdbc:3.45.1.0")
 
     // -------------------------------------------------
     // Optional dev tools (runtime)

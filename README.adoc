@@ -1,0 +1,95 @@
+= TCGWatcher Backend
+:toc: macro
+:toclevels: 2
+:source-highlighter: coderay
+:icons: font
+
+image::https://img.shields.io/badge/License-CC0%201.0-lightgrey.svg[License]
+image::https://img.shields.io/badge/Kotlin-2.2.21-blue.svg[Kotlin]
+image::https://img.shields.io/badge/Gradle-8.8-green.svg[Gradle]
+image::https://img.shields.io/badge/Spring%20Boot-4.0.2-brightgreen.svg[Spring Boot]
+image::https://img.shields.io/badge/Java-17-orange.svg[Java]
+
+== Overview
+TCGWatcher Backend is a Kotlin‑based service that aggregates trading‑card‑game data from various web sources. It provides a clean Spring Boot REST API, persists data with PostgreSQL (via Testcontainers for integration tests), and includes a robust web‑scraping layer built with Playwright and Jsoup.
+
+== Tech Stack
+* **Language**: Kotlin 2.2.21 (JVM 17)
+* **Framework**: Spring Boot 4.0.2 (WebMVC)
+* **Build**: Gradle Kotlin DSL
+* **Persistence**: Spring Data JPA, Hibernate Envers, Liquibase
+* **Database**: PostgreSQL (runtime) / SQLite (embedded)
+* **Web Scraping**: Playwright 1.58.0, Jsoup 1.22.1
+* **Resilience**: Resilience4j 2.3.0
+* **Logging**: Kotlin‑logging 7.0.14
+* **Testing**: JUnit 5, MockK, Testcontainers, WireMock, Playwright
+
+== Getting Started
+=== Prerequisites
+* JDK 17
+* Docker (required for Testcontainers)
+* Gradle (wrapper is included, no separate installation needed)
+
+=== Clone the Repository
+[source, bash]
+----
+git clone https://github.com/<your‑username>/TCGWatcher-Backend.git
+cd TCGWatcher-Backend
+----
+
+=== Build
+[source, bash]
+----
+./gradlew clean build
+----
+The build will generate the OpenAPI client, compile the source, and run all unit and integration tests.
+
+=== Run the Application
+[source, bash]
+----
+./gradlew bootRun
+----
+The service starts on `http://localhost:8080`. Swagger UI is available at `http://localhost:8080/swagger-ui.html`.
+
+=== Running Tests
+*All tests*:
+[source, bash]
+----
+./gradlew test
+----
+*Only unit tests* (exclude integration tests):
+[source, bash]
+----
+./gradlew test --exclude-tags integration
+----
+*Only integration tests*:
+[source, bash]
+----
+./gradlew integrationTest
+----
+
+== Project Structure
+[source, text]
+----
+src/main/kotlin/io/github/havonte1/tcgwatcher/backend/
+├── application/      # Use‑cases / services
+├── domain/           # Domain models & ports
+├── adapter/
+│   ├── inbound/      # REST controllers
+│   └── out/          # Persistence & web‑scraper adapters
+└── …
+----
+
+== License
+This project is released under the https://creativecommons.org/publicdomain/zero/1.0/[CC0 1.0 Universal] license. See the link for the full text.
+
+== Contributing
+Contributions are welcome! Please open an issue or a pull request. Follow the standard GitHub flow:
+1. Fork the repository
+2. Create a feature/bugfix branch
+3. Write tests for your changes
+4. Ensure `./gradlew check` passes
+5. Submit a pull request
+
+== Contact
+For questions or suggestions, open an issue on GitHub.

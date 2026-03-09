@@ -6,8 +6,12 @@ data class Product(
     val id: Long? = null,
     /** Identifier from CardMarket (or other external source) */
     val externalId: Long,
-    /** Optional set name (e.g., "Base Set", "Sword & Shield") */
-    val setName: String? = null,
+    /** Source ID from SQLite quicksearch database */
+    val sourceId: String? = null,
+
+    val set: ProductSet? = null,
+
+    val series: ProductSeries? = null,
     /** Rarity string as provided by the source (e.g., "Rare", "Ultra Rare") */
     val rarity: String? = null,
     /** Creation timestamp */
@@ -48,4 +52,17 @@ data class SellOffer(
     val condition: String,
     val amount: String,
     val price: String
+)
+
+data class ProductSet(
+    val setId: Long,
+
+    val cmCode: String,
+
+    val names: Map<String, String> = emptyMap(),
+)
+
+data class ProductSeries(
+    val seriesId: Long,
+    val names: Map<String, String> = emptyMap(),
 )
