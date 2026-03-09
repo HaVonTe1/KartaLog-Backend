@@ -24,17 +24,17 @@ class ProductRepositoryAdapter(
 
     @Transactional
     override fun save(product: Product): Product {
-        val cmCode = product.set?.cmCode ?: "dummy"
-        logger.debug { "save() called with cmCode: $cmCode, product.set: ${product.set}" }
-        
-        val existingSets = productSetJpaRepository.findByCmProductCode(cmCode)
-        logger.debug { "Existing sets for $cmCode: ${existingSets.size}" }
-        
+        val cmSetCode = product.set?.cmCode ?: "dummy"
+        logger.debug { "save() called with cmSetCode: $cmSetCode" }
+
+        val existingSets = productSetJpaRepository.findByCmProductCode(cmSetCode)
+        logger.debug { "Existing sets for $cmSetCode: ${existingSets.size}" }
+
         val productSetEntity = if (existingSets.isNotEmpty()) {
             existingSets.first()
         } else {
-            val newSet = ProductSetEntity(cmProductCode = cmCode)
-            logger.debug { "Creating new ProductSetEntity with cmCode: $cmCode" }
+            val newSet = ProductSetEntity(cmProductCode = cmSetCode)
+            logger.debug { "Creating new ProductSetEntity with cmCode: $cmSetCode" }
             val nameTranslationEntity = NameTranslationEntity(
                 productSet = newSet,
                 languageCode = "de",
@@ -48,13 +48,13 @@ class ProductRepositoryAdapter(
         }
 
         logger.debug { "Using ProductSetEntity with id: ${productSetEntity.id} for product" }
-        
+
         val entity = mapper.toEntity(product, productSetEntity)
         logger.debug { "Created ProductEntity with setId: ${entity.setId}" }
-        
+
         val saved = jpaRepository.save(entity)
         logger.debug { "Saved ProductEntity with id: ${saved.id}, setId: ${saved.setId}" }
-        
+
         sellOfferJpaRepository.saveAll(entity.sellOffers)
         return mapper.toDomain(saved)
     }
@@ -63,14 +63,14 @@ class ProductRepositoryAdapter(
     override fun saveAll(products: List<Product>): List<Product> {
         val uniqueCmCodes = products.mapNotNull { it.set?.cmCode }.distinct()
         logger.debug { "saveAll() called with ${products.size} products, unique cmCodes: $uniqueCmCodes" }
-        
+
         val existingSets = uniqueCmCodes.flatMap { productSetJpaRepository.findByCmProductCode(it) }
         val existingSetMap = existingSets.associateBy { it.cmProductCode }
         logger.debug { "Found ${existingSets.size} existing sets" }
 
         val newCmCodes = uniqueCmCodes.filter { it !in existingSetMap.keys }
         logger.debug { "Need to create ${newCmCodes.size} new sets: $newCmCodes" }
-        
+
         val newSets = newCmCodes.map { cmCode ->
             val product = products.first { it.set?.cmCode == cmCode }
             val productSetEntity = ProductSetEntity(cmProductCode = cmCode)
@@ -100,11 +100,11 @@ class ProductRepositoryAdapter(
             logger.debug { "Mapping product ${product.externalId} with ProductSetEntity id: ${productSetEntity.id}" }
             mapper.toEntity(product, productSetEntity)
         }
-        
+
         entities.forEach { entity ->
             logger.debug { "ProductEntity setId before save: ${entity.setId}" }
         }
-        
+
         val productEntities = jpaRepository.saveAll(entities)
         val allSellOffers = entities.flatMap { it.sellOffers }
         sellOfferJpaRepository.saveAll(allSellOffers)

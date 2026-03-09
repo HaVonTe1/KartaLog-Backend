@@ -20,7 +20,7 @@ class ProductMapper {
             externalId = product.externalId,
             sourceId = product.sourceId,
             productSet = set,
-            setId = set?.id,
+            setId = set.id,
             seriesId = product.series?.seriesId,
             rarity = product.rarity,
             codeInfo = product.codeInfo?.value,
