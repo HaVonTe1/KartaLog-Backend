@@ -10,6 +10,7 @@ image::https://img.shields.io/badge/Gradle-8.8-green.svg[Gradle]
 image::https://img.shields.io/badge/Spring%20Boot-4.0.2-brightgreen.svg[Spring Boot]
 image::https://img.shields.io/badge/Java-17-orange.svg[Java]
 
+
 == Overview
 TCGWatcher Backend is a Kotlin‑based service that aggregates trading‑card‑game data from various web sources. It provides a clean Spring Boot REST API, persists data with PostgreSQL (via Testcontainers for integration tests), and includes a robust web‑scraping layer built with Playwright and Jsoup.
 
