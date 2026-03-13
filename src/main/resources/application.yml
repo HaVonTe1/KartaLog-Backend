@@ -89,4 +89,4 @@ app:
     import:
       enabled: true
       sqlite:
-        path: quicksearch.db
+        path: import/quicksearch.db

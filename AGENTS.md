@@ -100,6 +100,7 @@ Use `-i` for verbose output when debugging flaky tests.
 ## Project Structure
 ```
 src/main/kotlin/io/github/havonte1/tcgwatcher/backend/
+├── config/           # Spring configuration classes
 ├── domain/           # Domain models and port interfaces
 ├── application/      # Use cases and services
 ├── adapter/inbound/  # REST controllers, mappers
@@ -123,7 +124,7 @@ src/main/kotlin/io/github/havonte1/tcgwatcher/backend/
 - Testcontainers for integration tests
 - Hibernate Envers for auditing
 - Liquibase for database migrations
-- Resilience4j 2.2.0 for circuit breakers
+- Resilience4j 2.3.0 for circuit breakers
 
 ## Git Conventions
 - Feature branches: `feature/<ticket-id>-description`
@@ -137,7 +138,7 @@ src/main/kotlin/io/github/havonte1/tcgwatcher/backend/
 - Fail on any lint error: `./gradlew detekt ktlintFormat`
 
 ## Cursor / Copilot Rules
-No `.cursorrules` or `.github/copilot-instructions.md` present. If added, copy rules here.
+`CLAUDE.md` present in project root with detailed guidance for Claude Code. If `.cursorrules` or `.github/copilot-instructions.md` added, copy rules here.
 
 ## OpenAPI Code Generation
 - Generated from `contract/openapi.yaml` using `openapi-generator` (kotlin-spring)
@@ -157,3 +158,7 @@ No `.cursorrules` or `.github/copilot-instructions.md` present. If added, copy r
 - JPA entities use lifecycle callbacks (`@PrePersist`, `@PreUpdate`) for timestamp management
 - Database schema managed by Liquibase, history tracked by Hibernate Envers
 - Configuration via `application.yml` and `application-{profile}.yml` files
+
+## Important Code Generation Notes
+- DO NOT WRITE COMMENTS! No JavaDoc. No inline Comments. Nothing.
+- When using the `edit` tool, remember the right parameter is `filePath` NOT `path`.

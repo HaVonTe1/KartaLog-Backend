@@ -62,12 +62,11 @@ class QuicksearchImportRunner(
     private lateinit var sqlitePath: String
 
     private fun getSqliteConnection(): Connection {
-        // Resolve relative paths against the working directory
-        val dbPath = if (java.nio.file.Paths.get(sqlitePath).isAbsolute) {
-            sqlitePath
-        } else {
-            System.getProperty("user.dir") + "/" + sqlitePath
-        }
+        // Load database from classpath resources
+        val resource = javaClass.classLoader.getResource(sqlitePath)
+            ?: throw IllegalArgumentException("Database file not found on classpath: $sqlitePath")
+        
+        val dbPath = resource.toURI().path
         logger.info { "Opening SQLite database at: $dbPath" }
         return DriverManager.getConnection("jdbc:sqlite:$dbPath")
     }
