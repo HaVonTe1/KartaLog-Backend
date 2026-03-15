@@ -17,6 +17,8 @@ import org.springframework.stereotype.Component
 import org.springframework.beans.factory.annotation.Value
 import java.sql.Connection
 import java.sql.DriverManager
+import java.io.BufferedReader
+import java.io.InputStreamReader
 
 @Component
 @Order(Int.MAX_VALUE)
@@ -44,6 +46,7 @@ class QuicksearchImportRunner(
             val seriesMap = buildSeriesMap()
 
             importSets(sqliteConnection, seriesMap)
+            importSetsFromCsv()
             val setsMap = buildSetsMap()
 
             importCards(sqliteConnection, setsMap)
@@ -120,6 +123,7 @@ class QuicksearchImportRunner(
     }
 
     private fun importSets(conn: Connection, seriesMap: Map<String, Long>) {
+        // Existing import from SQLite (unchanged)
         logger.info { "Importing sets from SQLite" }
         val stmt = conn.prepareStatement("""
             SELECT id, abbreviation, cm_product_id, code, name_de, name_en, name_fr, official, tcgp_id, total, series_id
@@ -180,12 +184,65 @@ class QuicksearchImportRunner(
 
             count++
         }
-        logger.info { "Imported $count sets with translations" }
+        logger.info { "Imported $count sets with translations from SQLite" }
         rs.close()
         stmt.close()
     }
 
+    private fun importSetsFromCsv() {
+        logger.info { "Importing sets from CSV" }
+        val resource = javaClass.classLoader.getResource("import/sets.csv")
+            ?: throw IllegalArgumentException("CSV file not found on classpath: sets.csv")
+        val reader = BufferedReader(InputStreamReader(resource.openStream()))
+        // Skip header line
+        var line = reader.readLine()
+        var count = 0
+        while (true) {
+            line = reader.readLine() ?: break
+            if (line.isBlank()) continue
+            val parts = line.split(';')
+            if (parts.size < 5) continue
+            val id = parts[0]
+            val nameDe = parts[1]
+            val nameEn = parts[2]
+            val nameFr = parts[3]
+            val code = parts[4]
+            val productSet = ProductSetEntity(
+                sourceId = null,
+                abbreviation = null,
+                cmProductId = id,
+                cmProductCode = null,
+                code = code,
+                official = null,
+                tcgpId = null,
+                total = null,
+                series = null
+            )
+            val saved = productSetJpaRepository.save(productSet)
+            nameTranslationJpaRepository.save(NameTranslationEntity(
+                languageCode = "de",
+                name = nameDe,
+                productSet = saved
+            ))
+            nameTranslationJpaRepository.save(NameTranslationEntity(
+                languageCode = "en",
+                name = nameEn,
+                productSet = saved
+            ))
+            nameTranslationJpaRepository.save(NameTranslationEntity(
+                languageCode = "fr",
+                name = nameFr,
+                productSet = saved
+            ))
+            count++
+        }
+        logger.info { "Imported $count sets with translations from CSV" }
+        reader.close()
+    }
+
     private fun buildSetsMap(): Map<String, Long> {
+        // existing sets map after CSV import
+
         return productSetJpaRepository.findAll()
             .filter { it.sourceId != null }
             .associate { it.sourceId!! to it.id!! }
