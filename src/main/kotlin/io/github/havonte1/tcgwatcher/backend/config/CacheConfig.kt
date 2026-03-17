@@ -6,6 +6,7 @@ import org.springframework.cache.annotation.EnableCaching
 import org.springframework.cache.caffeine.CaffeineCacheManager
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.web.filter.ShallowEtagHeaderFilter
 import java.util.concurrent.TimeUnit
 
 @Configuration
@@ -22,4 +23,7 @@ class CacheConfig {
         )
         return cacheManager
     }
+
+    @Bean
+    fun shallowEtagHeaderFilter(): ShallowEtagHeaderFilter = ShallowEtagHeaderFilter()
 }

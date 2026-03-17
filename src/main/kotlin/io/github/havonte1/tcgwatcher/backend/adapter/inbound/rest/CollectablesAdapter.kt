@@ -4,11 +4,16 @@ import io.github.havonte1.tcgwatcher.backend.adapter.inbound.rest.api.Collectabl
 import io.github.havonte1.tcgwatcher.backend.adapter.inbound.rest.model.ProductDetailsDTO
 import io.github.havonte1.tcgwatcher.backend.adapter.inbound.rest.model.ProductDTO
 import io.github.havonte1.tcgwatcher.backend.application.SearchUseCase
+import io.github.havonte1.tcgwatcher.backend.util.ETagUtil
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.github.resilience4j.ratelimiter.annotation.RateLimiter
+import jakarta.servlet.http.HttpServletRequest
+import org.springframework.http.CacheControl
+import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.RestController
+import java.util.concurrent.TimeUnit
 
 @RestController
 class CollectablesAdapter(
@@ -31,7 +36,12 @@ class CollectablesAdapter(
         val results = collectablesService.search(query, locale, genre)
 
         val dtoList: List<ProductDTO> = results.map { CollectablesMapper.toDto(it, locale) }
-        return ResponseEntity(dtoList, HttpStatus.OK)
+        val eTag = ETagUtil.computeWeakETag(dtoList)
+
+        return ResponseEntity.ok()
+            .cacheControl(CacheControl.maxAge(1, TimeUnit.HOURS).cachePublic())
+            .eTag(eTag)
+            .body(dtoList)
     }
 
     @RateLimiter(name = "apiRateLimiter")
@@ -43,8 +53,14 @@ class CollectablesAdapter(
         lang: String
     ): ResponseEntity<ProductDetailsDTO> {
         val productDetails = collectablesService.fetchProductDetails(cmId, genre, type, lang, setname)
-        if(productDetails!=null) {
-            return ResponseEntity.ok(CollectablesMapper.toDetailDto(product = productDetails, lang))
+        if (productDetails != null) {
+            val dto = CollectablesMapper.toDetailDto(productDetails, lang)
+            val eTag = ETagUtil.computeWeakETag(dto)
+
+            return ResponseEntity.ok()
+                .cacheControl(CacheControl.maxAge(1, TimeUnit.HOURS).cachePublic())
+                .eTag(eTag)
+                .body(dto)
         }
         return ResponseEntity.notFound().build()
     }

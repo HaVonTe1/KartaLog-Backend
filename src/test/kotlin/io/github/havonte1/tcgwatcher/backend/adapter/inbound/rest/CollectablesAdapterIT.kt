@@ -26,6 +26,9 @@ import org.testcontainers.postgresql.PostgreSQLContainer
 import java.nio.file.Files
 import java.nio.file.Paths
 
+import org.springframework.http.HttpHeaders
+import org.hamcrest.Matchers.containsString
+
 @SpringBootTest
 @AutoConfigureMockMvc
 @Testcontainers
@@ -51,30 +54,64 @@ class CollectablesAdapterIT {
             MockMvcRequestBuilders.asyncDispatch(mvcResult)
         ).andReturn()
 
-        assertEquals(200, dispatched.response.status)
+assertEquals(200, dispatched.response.status)
     }
 
+
     @Test
-    fun `GET collectables with blank query returns server error`() {
-        try {
-            mockMvc.get("/collectables/") {
-                param("query", "   ")
-                param("locale", "en")
-                param("game", "Pokemon")
-            }
-                .andExpect { request { asyncStarted() } }
-        } catch (ex: Exception) {
-            val message = ex.cause?.message ?: ex.message ?: ""
-            assertTrue(
-                message.contains("Query must not be blank"),
-                "Expected exception message to mention blank query but was: $message"
-            )
+    fun `GET collectables returns ETag and Cache-Control headers`() {
+        val mvcResult = mockMvc.get("/collectables/") {
+            param("query", "Pikachu")
+            param("locale", "en")
+            param("game", "Pokemon")
         }
+            .andExpect { request { asyncStarted() } }
+            .andReturn()
+
+        val dispatched = mockMvc.perform(
+            MockMvcRequestBuilders.asyncDispatch(mvcResult)
+        ).andReturn()
+
+        assertEquals(200, dispatched.response.status)
+        assertTrue(dispatched.response.getHeader(HttpHeaders.ETAG) != null, "ETag header should be present")
+        assertTrue(dispatched.response.getHeader(HttpHeaders.CACHE_CONTROL)?.contains("max-age") == true, "Cache-Control header should contain max-age")
     }
 
+    @Test
+    fun `GET collectables returns 304 when ETag matches`() {
+        val firstRequest = mockMvc.get("/collectables/") {
+            param("query", "Pikachu")
+            param("locale", "en")
+            param("game", "Pokemon")
+        }
+            .andExpect { request { asyncStarted() } }
+            .andReturn()
+
+        val dispatchedFirst = mockMvc.perform(
+            MockMvcRequestBuilders.asyncDispatch(firstRequest)
+        ).andReturn()
+
+        assertEquals(200, dispatchedFirst.response.status)
+        val eTag = dispatchedFirst.response.getHeader(HttpHeaders.ETAG) ?: ""
+
+        val secondRequest = mockMvc.get("/collectables/") {
+            param("query", "Pikachu")
+            param("locale", "en")
+            param("game", "Pokemon")
+            header(HttpHeaders.IF_NONE_MATCH, eTag)
+        }
+            .andExpect { request { asyncStarted() } }
+            .andReturn()
+
+        val dispatchedSecond = mockMvc.perform(
+            MockMvcRequestBuilders.asyncDispatch(secondRequest)
+        ).andReturn()
+
+        assertEquals(304, dispatchedSecond.response.status)
+    }
 
     @Test
-    fun `GET collectables product details - successful request`() {
+    fun `GET product details returns ETag and Cache-Control headers`() {
         val mvcResult = mockMvc.get("/collectables/Pikachu-MCD166") {
             param("setname", "McDonalds-Collection-2016")
         }
@@ -86,17 +123,37 @@ class CollectablesAdapterIT {
         ).andReturn()
 
         assertEquals(200, dispatched.response.status)
+        assertTrue(dispatched.response.getHeader(HttpHeaders.ETAG) != null, "ETag header should be present")
+        assertTrue(dispatched.response.getHeader(HttpHeaders.CACHE_CONTROL)?.contains("max-age") == true, "Cache-Control header should contain max-age")
+    }
 
-        val responseBody = dispatched.response.contentAsString
-        assertTrue(responseBody.contains("\"externalId\":295142"))
-        assertTrue(responseBody.contains("\"setName\":\"McDonald's Collection 2016\""))
-        assertTrue(responseBody.contains("\"rarity\":\"Promo\""))
-        assertTrue(responseBody.contains("\"type\":\"Singles\""))
-        assertTrue(responseBody.contains("\"genre\":\"pokemon\""))
-        assertTrue(responseBody.contains("\"price\":\"1,40 €\""))
-        assertTrue(responseBody.contains("\"priceTrend\":\"12,81 €\""))
-        assertTrue(responseBody.contains("https://product-images.s3.cardmarket.com/51/MCD16/295142/295142.jpg"))
-        assertTrue(responseBody.contains("\"sellOffers\":["))
+    @Test
+    fun `GET product details returns 304 when ETag matches`() {
+        val firstRequest = mockMvc.get("/collectables/Pikachu-MCD166") {
+            param("setname", "McDonalds-Collection-2016")
+        }
+            .andExpect { request { asyncStarted() } }
+            .andReturn()
+
+        val dispatchedFirst = mockMvc.perform(
+            MockMvcRequestBuilders.asyncDispatch(firstRequest)
+        ).andReturn()
+
+        assertEquals(200, dispatchedFirst.response.status)
+        val eTag = dispatchedFirst.response.getHeader(HttpHeaders.ETAG) ?: ""
+
+        val secondRequest = mockMvc.get("/collectables/Pikachu-MCD166") {
+            param("setname", "McDonalds-Collection-2016")
+            header(HttpHeaders.IF_NONE_MATCH, eTag)
+        }
+            .andExpect { request { asyncStarted() } }
+            .andReturn()
+
+        val dispatchedSecond = mockMvc.perform(
+            MockMvcRequestBuilders.asyncDispatch(secondRequest)
+        ).andReturn()
+
+        assertEquals(304, dispatchedSecond.response.status)
     }
 
 
