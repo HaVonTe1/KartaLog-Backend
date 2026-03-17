@@ -8,19 +8,16 @@ import io.github.havonte1.tcgwatcher.backend.adapter.out.webscraper.PlaywrightMa
 import io.github.havonte1.tcgwatcher.backend.config.CardMarketConfig
 import io.github.havonte1.tcgwatcher.backend.config.CardMarketConstants
 import io.github.oshai.kotlinlogging.KotlinLogging
-import io.github.resilience4j.bulkhead.annotation.Bulkhead
-import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker
-import io.github.resilience4j.retry.annotation.Retry
-import io.github.resilience4j.ratelimiter.annotation.RateLimiter
-import io.github.resilience4j.timelimiter.annotation.TimeLimiter
 import jakarta.ws.rs.NotFoundException
 import org.springframework.http.HttpStatusCode
+import org.springframework.retry.annotation.Backoff
+import org.springframework.retry.annotation.CircuitBreaker
+import org.springframework.retry.annotation.Retryable
 import org.springframework.stereotype.Component
 import java.io.File
 import java.net.URLEncoder
 import java.nio.file.Files
 import java.nio.file.Path
-import kotlin.math.log
 
 private const val USERAGENT =
     "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36"
@@ -34,17 +31,29 @@ open class CardMarketWebFetcher(
 ) : CardMarketWebFetcherPort {
     private val logger = KotlinLogging.logger {}
 
-    @Retry(name = "cardMarketRetry")
-    @CircuitBreaker(name = "cardMarketCircuitBreaker")
-    @RateLimiter(name = "cardMarketRateLimiter")
+    @Retryable(
+        retryFor = [Exception::class],
+        maxAttempts = 3,
+        backoff = Backoff(delay = 1000, multiplier = 2.0)
+    )
+    @CircuitBreaker(
+        maxAttempts = 3,
+        resetTimeout = 30000
+    )
     open override fun fetch(searchString: String, locale: String, game: String): Result<String> {
         logger.debug { "Fetching search results  from $searchString" }
         return Result.success(performFetch(searchString, locale, game))
     }
 
-    @Retry(name = "cardMarketRetry")
-    @CircuitBreaker(name = "cardMarketCircuitBreaker")
-    @RateLimiter(name = "cardMarketRateLimiter")
+    @Retryable(
+        retryFor = [Exception::class],
+        maxAttempts = 3,
+        backoff = Backoff(delay = 1000, multiplier = 2.0)
+    )
+    @CircuitBreaker(
+        maxAttempts = 3,
+        resetTimeout = 30000
+    )
     open override fun fetchDetails(
         cmId: String,
         genre: String,

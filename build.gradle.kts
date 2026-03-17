@@ -90,7 +90,13 @@ repositories {
     mavenCentral()
 }
 
-val resilience4jVersion = "2.3.0"
+val springCloudVersion = "2025.1.1"
+
+dependencyManagement {
+    imports {
+        mavenBom("org.springframework.cloud:spring-cloud-dependencies:$springCloudVersion")
+    }
+}
 
 dependencies {
     // -------------------------------------------------
@@ -130,9 +136,11 @@ dependencies {
     implementation("jakarta.ws.rs:jakarta.ws.rs-api:4.0.0")
     implementation("org.glassfish.jersey.core:jersey-common:3.1.6")
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.7.0")
-    implementation("io.github.resilience4j:resilience4j-spring-boot3:$resilience4jVersion")
-    implementation("io.github.resilience4j:resilience4j-all:$resilience4jVersion")
-    implementation("io.github.resilience4j:resilience4j-kotlin:$resilience4jVersion")
+
+    // -------------------------------------------------
+    // Resilience - Spring Cloud Circuit Breaker with Spring Framework Retry
+    // -------------------------------------------------
+    implementation("org.springframework.cloud:spring-cloud-starter-circuitbreaker-spring-retry")
 
     // -------------------------------------------------
     // Database drivers

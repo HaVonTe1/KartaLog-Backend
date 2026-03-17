@@ -5,9 +5,9 @@ import io.github.havonte1.tcgwatcher.backend.adapter.inbound.rest.model.ProductD
 import io.github.havonte1.tcgwatcher.backend.adapter.inbound.rest.model.ProductDTO
 import io.github.havonte1.tcgwatcher.backend.application.SearchUseCase
 import io.github.oshai.kotlinlogging.KotlinLogging
-import io.github.resilience4j.ratelimiter.annotation.RateLimiter
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
+import org.springframework.resilience.annotation.ConcurrencyLimit
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
@@ -18,7 +18,7 @@ class CollectablesAdapter(
     private val logger = KotlinLogging.logger {}
 
 
-    @RateLimiter(name = "apiRateLimiter")
+    @ConcurrencyLimit(limit = 10)
     override suspend fun listCollectables(
         query: String,
         genre: String,
@@ -36,7 +36,7 @@ class CollectablesAdapter(
         return ResponseEntity(dtoList, HttpStatus.OK)
     }
 
-    @RateLimiter(name = "apiRateLimiter")
+    @ConcurrencyLimit(limit = 10)
     override suspend fun getProductDetails(
         cmId: String,
         setname: String,
