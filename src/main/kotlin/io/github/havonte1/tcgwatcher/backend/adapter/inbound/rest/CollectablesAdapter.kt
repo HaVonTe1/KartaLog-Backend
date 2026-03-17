@@ -25,8 +25,6 @@ class CollectablesAdapter(
         type: String,
         locale: String
     ): ResponseEntity<List<ProductDTO>> {
-
-        require(query.isNotBlank()) { "Query must not be blank" }
         logger.debug {
             "listCollectables called with  query={$query} locale={$locale} game=$genre"
         }

@@ -36,7 +36,6 @@ open class CardMarketWebFetcher(
 
     @Retry(name = "cardMarketRetry")
     @CircuitBreaker(name = "cardMarketCircuitBreaker")
-    @RateLimiter(name = "cardMarketRateLimiter")
     open override fun fetch(searchString: String, locale: String, game: String): Result<String> {
         logger.debug { "Fetching search results  from $searchString" }
         return Result.success(performFetch(searchString, locale, game))
@@ -44,7 +43,6 @@ open class CardMarketWebFetcher(
 
     @Retry(name = "cardMarketRetry")
     @CircuitBreaker(name = "cardMarketCircuitBreaker")
-    @RateLimiter(name = "cardMarketRateLimiter")
     open override fun fetchDetails(
         cmId: String,
         genre: String,

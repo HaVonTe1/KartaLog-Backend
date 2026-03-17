@@ -49,7 +49,7 @@ import java.nio.file.Paths
 @SpringBootTest
 @Testcontainers
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-@Tag("e2e")
+@Tag("integration")
 class CardMarketWebFetcherIT {
 
     @Autowired
@@ -58,8 +58,6 @@ class CardMarketWebFetcherIT {
     @Autowired
     private lateinit var retryRegistry: RetryRegistry
 
-    @Autowired
-    private lateinit var rateLimiterRegistry: RateLimiterRegistry
 
     @Autowired
     private lateinit var fetcher: CardMarketWebFetcherPort
@@ -106,10 +104,6 @@ class CardMarketWebFetcherIT {
         assertThat(retry.metrics.numberOfFailedCallsWithRetryAttempt).isEqualTo(0)
         assertThat(retry.metrics.numberOfSuccessfulCallsWithRetryAttempt).isEqualTo(0)
 
-        val rateLimiter = rateLimiterRegistry.rateLimiter("cardMarketRateLimiter")
-        assertThat(rateLimiter).isNotNull()
-        assertThat(rateLimiter.metrics.availablePermissions).isEqualTo(100)
-        assertThat(rateLimiter.metrics.numberOfWaitingThreads).isEqualTo(0)
 
         //  first call : should success
         val result1 = runBlocking { fetcher.fetch("Pikachu", "de", "Pokemon") }
@@ -134,8 +128,6 @@ class CardMarketWebFetcherIT {
         assertThat(retry.metrics.numberOfFailedCallsWithRetryAttempt).isEqualTo(0)
         assertThat(retry.metrics.numberOfSuccessfulCallsWithRetryAttempt).isEqualTo(0)
 
-       // assertThat(rateLimiter.metrics.availablePermissions).isEqualTo(99)
-        assertThat(rateLimiter.metrics.numberOfWaitingThreads).isEqualTo(0)
 
         // now we cut the internet connection on both ways
         proxyForWiremockFetcher.toxics().bandwidth("CUT_CONNECTION_DOWNSTREAM", ToxicDirection.DOWNSTREAM, 0)
@@ -165,8 +157,6 @@ class CardMarketWebFetcherIT {
         assertThat(retry.metrics.numberOfFailedCallsWithRetryAttempt).isEqualTo(0)
         assertThat(retry.metrics.numberOfSuccessfulCallsWithRetryAttempt).isEqualTo(0)
 
-//        assertThat(rateLimiter.metrics.availablePermissions).isEqualTo(98)
-        assertThat(rateLimiter.metrics.numberOfWaitingThreads).isEqualTo(0)
 
         // restore the connection
         proxyForWiremockFetcher.toxics().get("CUT_CONNECTION_DOWNSTREAM").remove()
@@ -195,8 +185,6 @@ class CardMarketWebFetcherIT {
         assertThat(retry.metrics.numberOfFailedCallsWithoutRetryAttempt).isEqualTo(1)
         assertThat(retry.metrics.numberOfFailedCallsWithRetryAttempt).isEqualTo(1)
         assertThat(retry.metrics.numberOfSuccessfulCallsWithRetryAttempt).isEqualTo(0)
-
-        assertThat(rateLimiter.metrics.numberOfWaitingThreads).isEqualTo(0)
 
         // what if the client searches for unknown stuff
         val result4 = try {
@@ -238,7 +226,6 @@ class CardMarketWebFetcherIT {
         assertThat(retry.metrics.numberOfFailedCallsWithoutRetryAttempt).isEqualTo(12)
         assertThat(retry.metrics.numberOfFailedCallsWithRetryAttempt).isEqualTo(1)
         assertThat(retry.metrics.numberOfSuccessfulCallsWithRetryAttempt).isEqualTo(0)
-        assertThat(rateLimiter.metrics.numberOfWaitingThreads).isEqualTo(0)
 
         // now we want to test that the breaker opens when cloudflare decides to stay an a**hole
         // in parallel !!
@@ -269,7 +256,6 @@ class CardMarketWebFetcherIT {
         assertThat(retry.metrics.numberOfFailedCallsWithoutRetryAttempt).isGreaterThanOrEqualTo(21)
         assertThat(retry.metrics.numberOfFailedCallsWithRetryAttempt).isGreaterThanOrEqualTo(1)
         assertThat(retry.metrics.numberOfSuccessfulCallsWithRetryAttempt).isEqualTo(0)
-        assertThat(rateLimiter.metrics.numberOfWaitingThreads).isEqualTo(0)
     }
 
     private fun logThrowable(label: String, throwable: Throwable) {

@@ -55,25 +55,6 @@ resilience4j:
           - java.io.IOException
         ignore-exceptions:
           - jakarta.ws.rs.NotFoundException
-  ratelimiter:
-    instances:
-      apiRateLimiter:
-        limitForPeriod: 100
-        limitRefreshPeriod: 10s
-        timeoutDuration: 0
-        registerHealthIndicator: true
-        eventConsumerBufferSize: 1000
-      cardMarketRateLimiter:
-        limitForPeriod: 100
-        limitRefreshPeriod: 10s
-        timeoutDuration: 0
-        registerHealthIndicator: true
-        eventConsumerBufferSize: 1000
-  timelimiter:
-    instances:
-      cardMarketTimeLimiter:
-        timeoutDuration: 2s
-        cancelRunningFuture: true
 logging:
   level:
     io.github.havonte1: trace

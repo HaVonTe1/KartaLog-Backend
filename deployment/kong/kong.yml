@@ -1,0 +1,13 @@
+_format_version: "1.1"
+
+services:
+- name: tcgwatcher-app
+  url: http://app:8080
+  routes:
+  - name: tcgwatcher-route
+    paths:
+    - /
+    plugins:
+    - name: openapi-validator
+      config:
+        openapi_spec: /openapi/openapi.yaml
