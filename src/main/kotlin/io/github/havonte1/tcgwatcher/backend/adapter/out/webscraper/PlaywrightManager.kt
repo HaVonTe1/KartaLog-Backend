@@ -19,7 +19,26 @@ class PlaywrightManager(
     val browser: Browser = playwright.chromium().launch(
         BrowserType.LaunchOptions()
             .setHeadless(true)
-            //.setExecutablePath(Paths.get(executablePath))
+            .setExecutablePath(Paths.get(executablePath))
+            .setArgs(listOf(
+                "--no-sandbox",
+                "--disable-setuid-sandbox",
+                "--disable-gpu",
+                "--disable-dev-shm-usage",
+                "--disable-software-rasterizer",
+                "--disable-accelerated-2d-canvas",
+                "--no-first-run",
+                "--no-zygote",
+                "--single-process",
+                "--disable-background-networking",
+                "--disable-default-apps",
+                "--disable-extensions",
+                "--disable-sync",
+                "--disable-translate",
+                "--metrics-recording-only",
+                "--mute-audio",
+                "--headless=new"
+            ))
     )
 
     @PreDestroy

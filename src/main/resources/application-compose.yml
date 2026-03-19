@@ -13,3 +13,8 @@ spring:
       enabled: false
 playwright:
   executable-path: /usr/bin/chromium
+
+app:
+  data:
+    import:
+      enabled: false

@@ -7,7 +7,3 @@ services:
   - name: tcgwatcher-route
     paths:
     - /
-    plugins:
-    - name: openapi-validator
-      config:
-        openapi_spec: /openapi/openapi.yaml
