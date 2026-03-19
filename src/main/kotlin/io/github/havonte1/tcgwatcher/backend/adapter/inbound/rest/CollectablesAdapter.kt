@@ -1,10 +1,10 @@
 package io.github.havonte1.tcgwatcher.backend.adapter.inbound.rest
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import io.github.havonte1.tcgwatcher.backend.adapter.inbound.rest.api.CollectablesApi
 import io.github.havonte1.tcgwatcher.backend.adapter.inbound.rest.model.ProductDetailsDTO
 import io.github.havonte1.tcgwatcher.backend.adapter.inbound.rest.model.ProductDTO
 import io.github.havonte1.tcgwatcher.backend.application.SearchUseCase
-import io.github.havonte1.tcgwatcher.backend.util.ETagUtil
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.github.resilience4j.ratelimiter.annotation.RateLimiter
 import jakarta.servlet.http.HttpServletRequest
@@ -13,6 +13,8 @@ import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.RestController
+import java.security.MessageDigest
+import java.util.Base64
 import java.util.concurrent.TimeUnit
 
 @RestController
@@ -21,6 +23,8 @@ class CollectablesAdapter(
 ) : CollectablesApi {
 
     private val logger = KotlinLogging.logger {}
+    private val mapper = ObjectMapper()
+    private val digest = MessageDigest.getInstance("SHA-256")
 
 
     @RateLimiter(name = "apiRateLimiter")
@@ -36,7 +40,7 @@ class CollectablesAdapter(
         val results = collectablesService.search(query, locale, genre)
 
         val dtoList: List<ProductDTO> = results.map { CollectablesMapper.toDto(it, locale) }
-        val eTag = ETagUtil.computeWeakETag(dtoList)
+        val eTag = computeWeakETag(dtoList)
 
         return ResponseEntity.ok()
             .cacheControl(CacheControl.maxAge(1, TimeUnit.HOURS).cachePublic())
@@ -55,7 +59,7 @@ class CollectablesAdapter(
         val productDetails = collectablesService.fetchProductDetails(cmId, genre, type, lang, setname)
         if (productDetails != null) {
             val dto = CollectablesMapper.toDetailDto(productDetails, lang)
-            val eTag = ETagUtil.computeWeakETag(dto)
+            val eTag = computeWeakETag(dto)
 
             return ResponseEntity.ok()
                 .cacheControl(CacheControl.maxAge(1, TimeUnit.HOURS).cachePublic())
@@ -63,5 +67,12 @@ class CollectablesAdapter(
                 .body(dto)
         }
         return ResponseEntity.notFound().build()
+    }
+
+    private fun computeWeakETag(value: Any): String {
+        val json = mapper.writeValueAsBytes(value)
+        val hash = digest.digest(json)
+        val b64 = Base64.getUrlEncoder().withoutPadding().encodeToString(hash)
+        return b64
     }
 }

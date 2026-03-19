@@ -252,6 +252,22 @@ components:
           nullable: true
           description: Name of the product set/expansion
           example: "Base Set"
+        setCode:
+          type: string
+          nullable: true
+          description: Set code identifier
+          example: "kradfb"
+        seriesId:
+          type: integer
+          format: int64
+          nullable: true
+          description: Series identifier
+          example: 123
+        seriesName:
+          type: string
+          nullable: true
+          description: Name of the product series
+          example: "Base Series"
         genre:
           type: string
           description: Genre category
@@ -265,6 +281,26 @@ components:
           nullable: true
           description: Rarity of the card
           example: "Rare Holo"
+        code:
+          type: string
+          nullable: true
+          description: Product code value
+          example: "12345"
+        codeValid:
+          type: boolean
+          nullable: true
+          description: Code validity flag
+          example: true
+        price:
+          type: string
+          nullable: true
+          description: Current price
+          example: "15.00"
+        priceTrend:
+          type: string
+          nullable: true
+          description: Price trend indicator (7‑day average)
+          example: "12.50"
         imageUrl:
           type: string
           format: uri
@@ -290,6 +326,32 @@ components:
           nullable: true
           description: Name of the product set/expansion
           example: "Base Set"
+        setCode:
+          type: string
+          nullable: true
+          description: Set code identifier
+          example: "kradfb"
+        seriesId:
+          type: integer
+          format: int64
+          nullable: true
+          description: Series identifier
+          example: 123
+        seriesName:
+          type: string
+          nullable: true
+          description: Name of the product series
+          example: "Base Series"
+        code:
+          type: string
+          nullable: true
+          description: Product code value
+          example: "12345"
+        codeValid:
+          type: boolean
+          nullable: true
+          description: Code validity flag
+          example: true
         genre:
           type: string
           description: Genre category
