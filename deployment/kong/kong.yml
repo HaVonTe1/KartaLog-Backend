@@ -1,9 +1,0 @@
-_format_version: "1.1"
-
-services:
-- name: tcgwatcher-app
-  url: http://app:8080
-  routes:
-  - name: tcgwatcher-route
-    paths:
-    - /
