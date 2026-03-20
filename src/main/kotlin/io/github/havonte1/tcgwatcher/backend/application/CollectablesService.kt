@@ -8,11 +8,8 @@ import io.github.havonte1.tcgwatcher.backend.domain.port.out.SearchResultReposit
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.cache.annotation.Cacheable
 import org.springframework.stereotype.Service
+import java.time.Instant
 
-/**
- * Spring service implementing the [SearchUseCase].
- * Delegates the search to the configured [CardMarketScraperPort] and returns the scraped products.
- */
 @Service
 class CollectablesService(
     private val scraperPort: CardMarketScraperPort,
@@ -29,7 +26,7 @@ class CollectablesService(
 
         val scraped: List<Product> =
             scraperPort.search(searchString, locale, game)
-        val searchResult = SearchResult(query = searchString, products = scraped, cachedAt = java.time.Instant.now())
+        val searchResult = SearchResult(query = searchString, products = scraped, cachedAt = Instant.now())
 
         searchResultRepository.save(searchResult)
 
@@ -69,6 +66,14 @@ class CollectablesService(
         }
 
         return existingProduct
+    }
+
+    override suspend fun getSearchCachedAt(searchString: String): Instant? {
+        return searchResultRepository.findByQuery(searchString)?.cachedAt
+    }
+
+    override suspend fun getProductUpdatedAt(cmId: String): Instant? {
+        return productRepository.findByCmId(cmId)?.updatedAt
     }
 
     private fun hasChanges(oldProduct: Product, newProduct: Product): Boolean {

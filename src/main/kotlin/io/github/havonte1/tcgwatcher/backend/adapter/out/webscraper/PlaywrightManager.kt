@@ -11,16 +11,19 @@ import java.nio.file.Paths
 
 @Component
 class PlaywrightManager(
-    @Value("\${playwright.executable-path:/usr/bin/chromium}") private val executablePath: String,
+    @Value("\${playwright.executable-path:}") private val executablePath: String?,
 ) {
     private val logger = KotlinLogging.logger {}
 
     val playwright: Playwright = Playwright.create()
-    val browser: Browser = playwright.chromium().launch(
-        BrowserType.LaunchOptions()
-            .setHeadless(true)
-            .setExecutablePath(Paths.get(executablePath))
-            .setArgs(listOf(
+
+    val options = BrowserType.LaunchOptions().apply {
+        setHeadless(true)
+        if (!this@PlaywrightManager.executablePath.isNullOrBlank()) {
+            setExecutablePath(Paths.get(this@PlaywrightManager.executablePath))
+        }
+        setArgs(
+            listOf(
                 "--no-sandbox",
                 "--disable-setuid-sandbox",
                 "--disable-gpu",
@@ -38,8 +41,11 @@ class PlaywrightManager(
                 "--metrics-recording-only",
                 "--mute-audio",
                 "--headless=new"
-            ))
-    )
+            )
+        )
+    }
+
+    val browser: Browser = playwright.chromium().launch(options)
 
     @PreDestroy
     fun shutdown() {

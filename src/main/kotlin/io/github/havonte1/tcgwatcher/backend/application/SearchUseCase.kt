@@ -1,16 +1,15 @@
 package io.github.havonte1.tcgwatcher.backend.application
 
 import io.github.havonte1.tcgwatcher.backend.domain.model.Product
+import java.time.Instant
 
-/**
- * Use‑case for searching collectable products.
- * Currently provides a single method that returns a list of domain [Product] objects.
- */
 interface SearchUseCase {
 
-    /** Overloaded search allowing locale and game parameters. */
     suspend fun search(searchString: String, locale: String, game: String): List<Product>
 
     suspend fun fetchProductDetails(cmId: String, genre: String, type: String, lang: String, setname: String): Product?
 
+    suspend fun getSearchCachedAt(searchString: String): Instant?
+
+    suspend fun getProductUpdatedAt(cmId: String): Instant?
 }

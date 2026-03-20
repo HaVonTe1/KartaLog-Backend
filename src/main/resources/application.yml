@@ -62,8 +62,11 @@ logging:
     web: trace
     com.github.tomakehurst: trace
     eu.rekawek: trace
-playwright:
-  executable-path: /var/lib/snapd/snap/bin/chromium
+#playwright:
+#  executable-path: /var/lib/snapd/snap/bin/chromium
+#playwright:
+  #  executable-path: /usr/local/bin/chromium
+
 
 app:
   data:
