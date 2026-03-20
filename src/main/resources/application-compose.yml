@@ -11,6 +11,23 @@ spring:
   docker:
     compose:
       enabled: false
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: always
+      probes:
+        enabled: true
+      show-components: always
+  health:
+    db:
+      enabled: true
+      timeout: 10s
+
 playwright:
   executable-path: /usr/bin/chromium
 

@@ -56,7 +56,9 @@ class PlaywrightManager(
 
     val browser: Browser
         get() {
-            if (browserInstance == null) {
+            val existing = browserInstance
+            if (existing == null || !existing.isConnected()) {
+                existing?.close()
                 browserInstance = playwright.chromium().launch(options)
                 initialized = true
             }

@@ -24,10 +24,10 @@ services:
     environment:
       - SPRING_PROFILES_ACTIVE=compose
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:8080/actuator/health || exit 1"]
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/actuator/health/liveness || curl -f http://localhost:8080/actuator/health/readiness || exit 1"]
       interval: 10s
-      timeout: 5s
-      retries: 5
+      timeout: 15s
+      retries: 10
       start_period: 30s
     depends_on:
       postgres:

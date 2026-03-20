@@ -57,7 +57,21 @@ resilience4j:
           - jakarta.ws.rs.NotFoundException
 logging:
   level:
-    io.github.havonte1: info
+    io.github.oshai: info
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: always
+      probes:
+        enabled: true
+  health:
+    db:
+      timeout: 10s
 
 #playwright:
 #  executable-path: /var/lib/snapd/snap/bin/chromium
