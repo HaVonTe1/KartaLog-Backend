@@ -54,14 +54,12 @@ class CollectablesService(
 
         val existingProduct = productRepository.findByCmId(cmId)
 
-        val actualSetName = if (setname.isBlank()) {
+        val actualSetName = setname.ifBlank {
             if (existingProduct != null && !existingProduct.set?.cmCode.isNullOrBlank()) {
-                existingProduct.set!!.cmCode
+                existingProduct.set.cmCode
             } else {
                 throw ResponseStatusException(HttpStatus.BAD_REQUEST, "no setname provided")
             }
-        } else {
-            setname
         }
 
         if (existingProduct != null) {
