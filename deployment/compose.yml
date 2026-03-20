@@ -39,6 +39,7 @@ services:
       - POSTGRES_DB=tcgwatcherdb
     volumes:
       - ./postgres/initdb.d:/docker-entrypoint-initdb.d/
+      - ./backups:/backups
     env_file:
       - ../.env
     healthcheck:
@@ -46,3 +47,18 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+
+  backup:
+    profiles:
+      - backup
+    image: postgres:18.1
+    volumes:
+      - ./backups:/backups
+      - ./scripts:/scripts:ro
+    env_file:
+      - ../.env
+    entrypoint: ["/bin/bash", "-c"]
+    command:
+      - |
+        echo "0 2 * * * /scripts/backup.sh >> /backups/backup.log 2>&1" > /etc/crontabs/root
+        crond -f

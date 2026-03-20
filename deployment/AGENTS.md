@@ -35,6 +35,38 @@
 - Use SLF4J with Logback; config at `src/main/resources/logback.xml`.
 - Log level defaults to `INFO`; DEBUG enabled via env `LOG_LEVEL=DEBUG`.
 
+## BACKUP & RESTORE
+
+### Backup Scripts
+- Location: `deployment/scripts/`
+- `backup.sh` - Creates compressed SQL dump with date-based naming
+- `restore.sh` - Restores database from backup file
+
+### Manual Backup
+```bash
+cd deployment
+POSTGRES_PASSWORD=<password> ./scripts/backup.sh
+```
+
+### Manual Restore
+```bash
+cd deployment
+./scripts/restore.sh backups/<db_name>_<timestamp>.sql.gz
+# or list available backups:
+./scripts/restore.sh --list
+```
+
+### Automated Backups
+Start the backup container with cron (runs daily at 2 AM):
+```bash
+docker compose --profile backup up -d backup
+```
+
+### Backup Configuration
+Environment variables:
+- `BACKUP_DIR` - Backup directory (default: `./backups`)
+- `RETENTION_DAYS` - Days to keep backups (default: `7`)
+
 ## NOTES
 - Keep Dockerfile and init scripts in sync; CI fails if build image cannot locate scripts.
 - Do not commit generated `target/` or local Docker layers.
