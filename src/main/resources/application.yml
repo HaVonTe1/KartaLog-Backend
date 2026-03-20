@@ -57,11 +57,8 @@ resilience4j:
           - jakarta.ws.rs.NotFoundException
 logging:
   level:
-    io.github.havonte1: trace
-    org.springframework.web: trace
-    web: trace
-    com.github.tomakehurst: trace
-    eu.rekawek: trace
+    io.github.havonte1: info
+
 #playwright:
 #  executable-path: /var/lib/snapd/snap/bin/chromium
 #playwright:
