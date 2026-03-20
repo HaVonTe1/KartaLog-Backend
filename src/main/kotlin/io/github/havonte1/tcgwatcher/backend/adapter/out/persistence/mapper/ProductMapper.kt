@@ -34,10 +34,11 @@ class ProductMapper {
             priceTrendValid = product.priceTrendInfo?.valid,
         )
         product.names.forEach { (locale, name) ->
+            val sanitizedLocale = if (locale.length <= 5) locale else "?"
             val translation = NameTranslationEntity(
                 id = 0,
                 product = entity,
-                languageCode = locale,
+                languageCode = sanitizedLocale,
                 name = name
             )
             entity.nameTranslations.add(translation)

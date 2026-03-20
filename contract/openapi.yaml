@@ -197,10 +197,11 @@ paths:
               - ru
         - name: setname
           in: query
-          description: Set name to filter by (required for accurate pricing)
-          required: true
+          description: Set name to filter by. If omitted, the service will try to resolve it from the stored product data.
+          required: false
           schema:
             type: string
+            default: ""
             example: "Base Set"
         - name: If-None-Match
           in: header
@@ -256,7 +257,7 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
               example:
                 error: "Bad Request"
-                message: "setname parameter is required"
+                message: "no setname provided"
                 timestamp: "2026-01-15T10:30:00Z"
         '404':
           description: Product not found on CardMarket

@@ -7,7 +7,9 @@ import io.github.havonte1.tcgwatcher.backend.domain.port.out.ProductRepository
 import io.github.havonte1.tcgwatcher.backend.domain.port.out.SearchResultRepository
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.cache.annotation.Cacheable
+import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
+import org.springframework.web.server.ResponseStatusException
 import java.time.Instant
 
 @Service
@@ -50,11 +52,20 @@ class CollectablesService(
     ): Product? {
         logger.info { "Fetching product details for cmId=$cmId" }
 
-        val existingProduct =
-            productRepository.findByCmId(cmId)
+        val existingProduct = productRepository.findByCmId(cmId)
+
+        val actualSetName = if (setname.isBlank()) {
+            if (existingProduct != null && !existingProduct.set?.cmCode.isNullOrBlank()) {
+                existingProduct.set!!.cmCode
+            } else {
+                throw ResponseStatusException(HttpStatus.BAD_REQUEST, "no setname provided")
+            }
+        } else {
+            setname
+        }
 
         if (existingProduct != null) {
-            val newProduct = scraperPort.fetchProductDetails(cmId, genre, type, lang, setname)
+            val newProduct = scraperPort.fetchProductDetails(cmId, genre, type, lang, actualSetName)
 
             if (newProduct != null && hasChanges(existingProduct, newProduct)) {
                 logger.debug { "Changes detected, updating product" }
@@ -64,7 +75,7 @@ class CollectablesService(
                 return existingProduct
             }
         } else {
-            val newProduct = scraperPort.fetchProductDetails(cmId, genre, type, lang, setname)
+            val newProduct = scraperPort.fetchProductDetails(cmId, genre, type, lang, actualSetName)
             if (newProduct != null) {
                 logger.debug { "New product, persisting to database" }
                 return productRepository.save(newProduct)
