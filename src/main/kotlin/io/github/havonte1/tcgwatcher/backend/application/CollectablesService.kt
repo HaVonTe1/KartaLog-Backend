@@ -26,9 +26,15 @@ class CollectablesService(
 
         val scraped: List<Product> =
             scraperPort.search(searchString, locale, game)
-        val searchResult = SearchResult(query = searchString, products = scraped, cachedAt = Instant.now())
 
-        searchResultRepository.save(searchResult)
+        val existingResult = searchResultRepository.findByQuery(searchString)
+        if (existingResult != null) {
+            val updated = existingResult.copy(products = scraped, cachedAt = Instant.now())
+            searchResultRepository.save(updated)
+        } else {
+            val searchResult = SearchResult(query = searchString, products = scraped, cachedAt = Instant.now())
+            searchResultRepository.save(searchResult)
+        }
 
         logger.debug { "Scrape completed and cached (${scraped.size} products) for query='$searchString'" }
         return scraped

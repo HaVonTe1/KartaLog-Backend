@@ -14,10 +14,7 @@ class PlaywrightManager(
     @Value("\${playwright.executable-path:}") private val executablePath: String?,
 ) {
     private val logger = KotlinLogging.logger {}
-
-    val playwright: Playwright = Playwright.create()
-
-    val options = BrowserType.LaunchOptions().apply {
+    private val options = BrowserType.LaunchOptions().apply {
         setHeadless(true)
         if (!this@PlaywrightManager.executablePath.isNullOrBlank()) {
             setExecutablePath(Paths.get(this@PlaywrightManager.executablePath))
@@ -45,18 +42,39 @@ class PlaywrightManager(
         )
     }
 
-    val browser: Browser = playwright.chromium().launch(options)
+    private var playwrightInstance: Playwright? = null
+    private var browserInstance: Browser? = null
+    private var initialized = false
+
+    val playwright: Playwright
+        get() {
+            if (playwrightInstance == null) {
+                playwrightInstance = Playwright.create()
+            }
+            return playwrightInstance!!
+        }
+
+    val browser: Browser
+        get() {
+            if (browserInstance == null) {
+                browserInstance = playwright.chromium().launch(options)
+                initialized = true
+            }
+            return browserInstance!!
+        }
 
     @PreDestroy
     fun shutdown() {
         logger.info { "Shutting down Playwright..." }
-        try {
-            browser.close()
-        } catch (e: Exception) {
-            logger.warn { e.message }
+        if (initialized) {
+            try {
+                browserInstance?.close()
+            } catch (e: Exception) {
+                logger.warn { e.message }
+            }
         }
         try {
-            playwright.close()
+            playwrightInstance?.close()
         } catch (e: Exception) {
             logger.warn { e.message }
         }

@@ -68,26 +68,29 @@ open class CardMarketWebFetcher(
             contextOptions.setStorageStatePath(storageFile)
         }
         val context = browser.newContext(contextOptions)
-        val page: Page = context.newPage()
-        logger.debug { "Naviage to $url" }
-        val response = page.navigate(url, Page.NavigateOptions().setTimeout(20000.0))
-        logger.debug { "Response: ${response.status()}" }
-        page.waitForLoadState(LoadState.DOMCONTENTLOADED)
-        if (!response.ok()) {
-            when(response.status()) {
-                404 -> {
-                    throw NotFoundException(response.url())
-                }
-                403 -> {
-                    throw CloudFlareException(HttpStatusCode.valueOf(response.status()))
+        try {
+            val page: Page = context.newPage()
+            logger.debug { "Naviage to $url" }
+            val response = page.navigate(url, Page.NavigateOptions().setTimeout(20000.0))
+            logger.debug { "Response: ${response.status()}" }
+            page.waitForLoadState(LoadState.DOMCONTENTLOADED)
+            if (!response.ok()) {
+                when(response.status()) {
+                    404 -> {
+                        throw NotFoundException(response.url())
+                    }
+                    403 -> {
+                        throw CloudFlareException(HttpStatusCode.valueOf(response.status()))
+                    }
                 }
             }
+            val content = page.content()
+            logger.debug { "Fetched content length: ${content.length}" }
+            context.storageState(BrowserContext.StorageStateOptions().setPath(Path.of("auth.json")))
+            return content
+        } finally {
+            context.close()
         }
-        val content = page.content()
-        logger.debug { "Fetched content length: ${content.length}" }
-        context.storageState(BrowserContext.StorageStateOptions().setPath(Path.of("auth.json")))
-        context.close()
-        return content
     }
 
     private fun performFetch(searchString: String, locale: String, game: String): String {

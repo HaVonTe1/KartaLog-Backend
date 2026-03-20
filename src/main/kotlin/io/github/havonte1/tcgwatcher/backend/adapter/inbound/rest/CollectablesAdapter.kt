@@ -32,22 +32,24 @@ class CollectablesAdapter(
         logger.debug {
             "listCollectables called with  query={$query} locale={$locale} game=$genre"
         }
-        val cachedAt = collectablesService.getSearchCachedAt(query)
-        val currentETag = cachedAt?.epochSecond?.toString()
+        val existingCachedAt = collectablesService.getSearchCachedAt(query)
+        val existingETag = existingCachedAt?.epochSecond?.toString()
 
-        if (ifNoneMatch == currentETag) {
+        if (ifNoneMatch != null && ifNoneMatch == existingETag) {
             logger.debug { "ETag match, returning 304 for query='$query'" }
             return ResponseEntity.status(HttpStatus.NOT_MODIFIED)
-                .eTag(currentETag)
+                .eTag(existingETag)
                 .build()
         }
 
         val results = collectablesService.search(query, locale, genre)
         val dtoList: List<ProductDTO> = results.map { CollectablesMapper.toDto(it, locale) }
+        val newCachedAt = collectablesService.getSearchCachedAt(query)
+        val newETag = newCachedAt?.epochSecond?.toString()
 
         return ResponseEntity.ok()
             .cacheControl(CacheControl.maxAge(1, TimeUnit.HOURS).cachePublic())
-            .eTag(currentETag)
+            .eTag(newETag)
             .body(dtoList)
     }
 
@@ -60,23 +62,25 @@ class CollectablesAdapter(
         lang: String,
         ifNoneMatch: String?
     ): ResponseEntity<ProductDetailsDTO> {
-        val updatedAt = collectablesService.getProductUpdatedAt(cmId)
-        val currentETag = updatedAt?.epochSecond?.toString()
+        val existingUpdatedAt = collectablesService.getProductUpdatedAt(cmId)
+        val existingETag = existingUpdatedAt?.epochSecond?.toString()
 
-        if (ifNoneMatch == currentETag) {
+        if (ifNoneMatch != null && ifNoneMatch == existingETag) {
             logger.debug { "ETag match, returning 304 for cmId=$cmId" }
             return ResponseEntity.status(HttpStatus.NOT_MODIFIED)
-                .eTag(currentETag)
+                .eTag(existingETag)
                 .build()
         }
 
         val productDetails = collectablesService.fetchProductDetails(cmId, genre, type, lang, setname)
         if (productDetails != null) {
             val dto = CollectablesMapper.toDetailDto(productDetails, lang)
+            val newUpdatedAt = collectablesService.getProductUpdatedAt(cmId)
+            val newETag = newUpdatedAt?.epochSecond?.toString()
 
             return ResponseEntity.ok()
                 .cacheControl(CacheControl.maxAge(1, TimeUnit.HOURS).cachePublic())
-                .eTag(updatedAt?.epochSecond?.toString())
+                .eTag(newETag)
                 .body(dto)
         }
         return ResponseEntity.notFound().build()
