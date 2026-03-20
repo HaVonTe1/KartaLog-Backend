@@ -29,7 +29,6 @@ class PlaywrightManager(
                 "--disable-accelerated-2d-canvas",
                 "--no-first-run",
                 "--no-zygote",
-                "--single-process",
                 "--disable-background-networking",
                 "--disable-default-apps",
                 "--disable-extensions",
