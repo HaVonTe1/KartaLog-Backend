@@ -16,6 +16,7 @@ object CollectablesMapper {
 
         return ProductDTO(
             externalId = product.externalId,
+            cmId = product.cmId?:"",
             genre = product.genre,
             type = product.type,
             setName = product.set?.names[locale],
@@ -34,6 +35,7 @@ object CollectablesMapper {
     fun toDetailDto(product: Product,locale: String): ProductDetailsDTO {
         return ProductDetailsDTO(
             externalId = product.externalId,
+            cmId = product.cmId?:"",
             genre = product.genre,
             type = product.type,
             detailsUrl = listOfNotNull(

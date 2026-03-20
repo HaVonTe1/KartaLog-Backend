@@ -292,6 +292,10 @@ components:
           format: int64
           description: CardMarket product ID
           example: 123456
+        cmId:
+          type: string
+          description: CardMarket sanatized product name
+          example: "Charizard-VSTAR-V1-BRS018"
         setName:
           type: string
           nullable: true
@@ -354,6 +358,7 @@ components:
           example: "https://example.com/cards/charizard.jpg"
       required:
         - externalId
+        - cmId
         - genre
         - type
 
@@ -366,6 +371,10 @@ components:
           format: int64
           description: CardMarket product ID
           example: 123456
+        cmId:
+          type: string
+          description: CardMarket sanatized product name
+          example: "Charizard-VSTAR-V1-BRS018"
         setName:
           type: string
           nullable: true
