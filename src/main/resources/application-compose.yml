@@ -1,4 +1,8 @@
+server:
+  port: 8080
 management:
+  server:
+    port: 8081
   endpoints:
     web:
       exposure:
@@ -27,10 +31,10 @@ app:
   data:
     import:
       enabled: false
-logging:
-  level:
-    io.github.havonte1: trace
-    org.springframework.web: trace
-    web: trace
-    com.github.tomakehurst: trace
-    eu.rekawek: trace
+#logging:
+#  level:
+#    io.github.havonte1: trace
+#    org.springframework.web: trace
+#    web: trace
+#    com.github.tomakehurst: trace
+#    eu.rekawek: trace

@@ -44,6 +44,6 @@ if [ -t 0 ]; then
     fi
 fi
 
-gunzip -c "$BACKUP_FILE" | docker exec -i "$DB_CONTAINER" psql -U "$DB_USER" -d "$DB_NAME"
+gunzip -c "$BACKUP_FILE" |  psql -U "$DB_USER" -d "$DB_NAME"
 
 echo "[$(date '+%Y-%m-%d %H:%M:%S')] Restore completed successfully"

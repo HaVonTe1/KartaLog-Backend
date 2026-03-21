@@ -21,10 +21,11 @@ services:
       dockerfile: deployment/Dockerfile
     ports:
       - "8080"
+      - "8081"
     environment:
       - SPRING_PROFILES_ACTIVE=compose
     healthcheck:
-      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:8080/actuator/health || exit 1"]
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:8081/actuator/health || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -47,6 +48,7 @@ services:
     volumes:
       - ./postgres/initdb.d:/docker-entrypoint-initdb.d/
       - ./backups:/backups
+      - ./scripts:/scripts:ro
     env_file:
       - ../.env
     healthcheck:
@@ -54,18 +56,17 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+    labels:
+      ofelia.enabled: "true"
+      ofelia.job-exec.db-backup.schedule: "@every 1d"
+      ofelia.job-exec.db-backup.command: "/scripts/backup.sh >> /backups/backup.log 2>&1"
 
-  backup:
+  ofelia:
     profiles:
-      - backup
-    image: postgres:18.1
+      - deployment
+    image: mcuadros/ofelia:latest
+    depends_on:
+      - postgres
+    command: daemon --docker
     volumes:
-      - ./backups:/backups
-      - ./scripts:/scripts:ro
-    env_file:
-      - ../.env
-    entrypoint: ["/bin/bash", "-c"]
-    command:
-      - |
-        echo "0 2 * * * /scripts/backup.sh >> /backups/backup.log 2>&1" > /etc/crontabs/root
-        crond -f
+      - /var/run/docker.sock:/var/run/docker.sock

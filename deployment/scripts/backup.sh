@@ -2,7 +2,7 @@
 set -euo pipefail
 
 BACKUP_DIR="${BACKUP_DIR:-./backups}"
-DB_CONTAINER="${DB_CONTAINER:-tcgwatcher-backend-postgres-1}"
+DB_CONTAINER="${DB_CONTAINER:-tcgwatcherbackend-postgres-1}"
 DB_NAME="${DB_NAME:-tcgwatcherdb}"
 DB_USER="${POSTGRES_USER:-postgres}"
 DB_PASSWORD="${POSTGRES_PASSWORD:-}"
@@ -17,7 +17,7 @@ export PGPASSWORD="$DB_PASSWORD"
 
 echo "[$(date '+%Y-%m-%d %H:%M:%S')] Starting backup of ${DB_NAME}..."
 
-docker exec "$DB_CONTAINER" pg_dump -U "$DB_USER" -d "$DB_NAME" --no-owner --no-acl | gzip > "$BACKUP_FILE"
+pg_dump -U "$DB_USER" -d "$DB_NAME" --no-owner --no-acl | gzip > "$BACKUP_FILE"
 
 BACKUP_SIZE=$(du -h "$BACKUP_FILE" | cut -f1)
 echo "[$(date '+%Y-%m-%d %H:%M:%S')] Backup created: $BACKUP_FILE ($BACKUP_SIZE)"
