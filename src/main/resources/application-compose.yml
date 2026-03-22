@@ -21,6 +21,8 @@ spring:
           name: TCGWatcher-Backend
           management-url: http://app:8081
           service-base-url: http://app:8080
+          auto-registration: true
+          auto-deregistration: true
   datasource:
     url: jdbc:postgresql://postgres:5432/tcgwatcherdb
     username: watcher_app

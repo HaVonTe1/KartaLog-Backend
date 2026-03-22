@@ -6,4 +6,3 @@ pluginManagement {
 }
 
 rootProject.name = "tcgwatcher-backend"
-include("admin-server")
