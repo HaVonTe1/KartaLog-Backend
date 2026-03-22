@@ -6,7 +6,7 @@ management:
   endpoints:
     web:
       exposure:
-        include: health,info,metrics,prometheus
+        include: health,info,metrics,prometheus,loggers,env,heapdump,threaddump
   endpoint:
     health:
       show-details: always
@@ -19,10 +19,13 @@ spring:
         url: http://admin-server:8080
         instance:
           name: TCGWatcher-Backend
-          management-url: http://app:8081
+          management-url: http://app:8081/actuator
+          health-url: http://app:8081/actuator/health
           service-base-url: http://app:8080
           auto-registration: true
           auto-deregistration: true
+        metadata:
+          context-path: /actuator
   datasource:
     url: jdbc:postgresql://postgres:5432/tcgwatcherdb
     username: watcher_app

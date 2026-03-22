@@ -10,7 +10,7 @@ repositories {
 
 dependencies {
     implementation("de.codecentric:spring-boot-admin-starter-server:4.0.2")
-    implementation("org.springframework.boot:spring-boot-starter-webmvc")
+    implementation("org.springframework.boot:spring-boot-starter-webflux")
 }
 
 springBoot {
