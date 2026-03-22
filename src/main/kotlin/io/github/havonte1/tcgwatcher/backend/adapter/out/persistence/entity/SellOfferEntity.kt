@@ -1,6 +1,5 @@
 package io.github.havonte1.tcgwatcher.backend.adapter.out.persistence.entity
 
-import jakarta.persistence.CascadeType
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.FetchType
@@ -23,35 +22,26 @@ data class SellOfferEntity(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long? = null,
-
     @ManyToOne(
         fetch = FetchType.LAZY,
-        optional = false
+        optional = false,
     )
     val product: ProductEntity,
-
     @Column(name = "seller_name", nullable = false)
     val sellerName: String,
-
     @Column(name = "seller_location", nullable = false)
     val sellerLocation: String,
-
     @Column(name = "product_language", nullable = false)
     val productLanguage: String,
-
     @Column(name = "special", nullable = false)
     val special: String,
-
     @Column(name = "condition", nullable = false)
     val condition: String,
-
     @Column(name = "amount", nullable = false)
     val amount: String,
-
     @Column(name = "price", nullable = false)
-    val price: String
+    val price: String,
 ) : Serializable {
-
     @PrePersist
     fun onPrePersist() {
         createdAt = Instant.now()
@@ -84,7 +74,7 @@ data class SellOfferEntity(
         special = "",
         condition = "",
         amount = "",
-        price = ""
+        price = "",
     )
 
     override fun equals(other: Any?): Boolean {
@@ -100,8 +90,7 @@ data class SellOfferEntity(
     }
 
     override fun hashCode(): Int = id?.hashCode() ?: toString().hashCode()
-    override fun toString(): String {
-        return "SellOfferEntity(id=$id, sellerName='$sellerName', sellerLocation='$sellerLocation', productLanguage='$productLanguage', special='$special', condition='$condition', amount='$amount', price='$price')"
-    }
 
+    override fun toString(): String =
+        "SellOfferEntity(id=$id, sellerName='$sellerName', sellerLocation='$sellerLocation', productLanguage='$productLanguage', special='$special', condition='$condition', amount='$amount', price='$price')"
 }

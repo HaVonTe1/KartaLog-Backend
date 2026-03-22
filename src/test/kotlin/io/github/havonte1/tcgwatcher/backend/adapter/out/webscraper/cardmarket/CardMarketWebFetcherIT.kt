@@ -5,7 +5,6 @@ import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.client.WireMock.aResponse
 import com.github.tomakehurst.wiremock.client.WireMock.exactly
 import com.github.tomakehurst.wiremock.client.WireMock.getRequestedFor
-import com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor
 import com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo
 import com.github.tomakehurst.wiremock.client.WireMock.verify
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration.options
@@ -15,7 +14,6 @@ import eu.rekawek.toxiproxy.model.ToxicDirection
 import io.github.havonte1.tcgwatcher.backend.config.CardMarketConfig
 import io.github.resilience4j.circuitbreaker.CircuitBreaker
 import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry
-import io.github.resilience4j.ratelimiter.RateLimiterRegistry
 import io.github.resilience4j.retry.Retry
 import io.github.resilience4j.retry.RetryRegistry
 import kotlinx.coroutines.DelicateCoroutinesApi
@@ -25,11 +23,14 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.newSingleThreadContext
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.resetMain
-import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
-import org.junit.jupiter.api.BeforeAll
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.*
+import org.junit.jupiter.api.AfterAll
+import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.BeforeAll
+import org.junit.jupiter.api.Tag
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.TestInstance
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.cache.test.autoconfigure.AutoConfigureCache
 import org.springframework.boot.test.context.SpringBootTest
@@ -38,7 +39,6 @@ import org.springframework.boot.testcontainers.service.connection.ServiceConnect
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.EnableAspectJAutoProxy
 import org.springframework.context.annotation.Primary
-import org.springframework.util.Assert
 import org.testcontainers.junit.jupiter.Testcontainers
 import org.testcontainers.postgresql.PostgreSQLContainer
 import org.testcontainers.toxiproxy.ToxiproxyContainer
@@ -51,13 +51,11 @@ import java.nio.file.Paths
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @Tag("e2e")
 class CardMarketWebFetcherIT {
-
     @Autowired
     private lateinit var circuitBreakerRegistry: CircuitBreakerRegistry
 
     @Autowired
     private lateinit var retryRegistry: RetryRegistry
-
 
     @Autowired
     private lateinit var fetcher: CardMarketWebFetcherPort
@@ -67,7 +65,6 @@ class CardMarketWebFetcherIT {
 
     @Autowired
     lateinit var wiremockServer: WireMockServer
-
 
     companion object {
         @OptIn(DelicateCoroutinesApi::class, ExperimentalCoroutinesApi::class)
@@ -104,7 +101,6 @@ class CardMarketWebFetcherIT {
         assertThat(retry.metrics.numberOfFailedCallsWithRetryAttempt).isEqualTo(0)
         assertThat(retry.metrics.numberOfSuccessfulCallsWithRetryAttempt).isEqualTo(0)
 
-
         //  first call : should success
         val result1 = runBlocking { fetcher.fetch("Pikachu", "de", "Pokemon") }
         Assertions.assertTrue(result1.isSuccess)
@@ -114,9 +110,8 @@ class CardMarketWebFetcherIT {
 
         wiremockServer.verify(
             exactly(1),
-            getRequestedFor(urlEqualTo("/de/Pokemon/Products/Search?searchString=Pikachu"))
+            getRequestedFor(urlEqualTo("/de/Pokemon/Products/Search?searchString=Pikachu")),
         )
-
 
         assertThat(circuitBreaker.state).isEqualTo(CircuitBreaker.State.CLOSED)
 
@@ -128,23 +123,23 @@ class CardMarketWebFetcherIT {
         assertThat(retry.metrics.numberOfFailedCallsWithRetryAttempt).isEqualTo(0)
         assertThat(retry.metrics.numberOfSuccessfulCallsWithRetryAttempt).isEqualTo(0)
 
-
         // now we cut the internet connection on both ways
         proxyForWiremockFetcher.toxics().bandwidth("CUT_CONNECTION_DOWNSTREAM", ToxicDirection.DOWNSTREAM, 0)
         proxyForWiremockFetcher.toxics().bandwidth("CUT_CONNECTION_UPSTREAM", ToxicDirection.UPSTREAM, 0)
 
         //  second call : should fail
-        val result2 = try {
-            runBlocking { fetcher.fetch("Pikachu", "de", "Pokemon") }
-        } catch (e: Exception) {
-            // we catch the exception because the test would fail otherwise even if it was handled by the breaker and retyer like we hope for
-            logThrowable("No Bandwidth", e)
-            Result.failure(e)
-        }
+        val result2 =
+            try {
+                runBlocking { fetcher.fetch("Pikachu", "de", "Pokemon") }
+            } catch (e: Exception) {
+                // we catch the exception because the test would fail otherwise even if it was handled by the breaker and retyer like we hope for
+                logThrowable("No Bandwidth", e)
+                Result.failure(e)
+            }
         Assertions.assertTrue(result2.isFailure)
         wiremockServer.verify(
             exactly(1),
-            getRequestedFor(urlEqualTo("/de/Pokemon/Products/Search?searchString=Pikachu"))
+            getRequestedFor(urlEqualTo("/de/Pokemon/Products/Search?searchString=Pikachu")),
         )
         // ---
         assertThat(circuitBreaker.state).isEqualTo(CircuitBreaker.State.CLOSED)
@@ -157,23 +152,22 @@ class CardMarketWebFetcherIT {
         assertThat(retry.metrics.numberOfFailedCallsWithRetryAttempt).isEqualTo(0)
         assertThat(retry.metrics.numberOfSuccessfulCallsWithRetryAttempt).isEqualTo(0)
 
-
         // restore the connection
         proxyForWiremockFetcher.toxics().get("CUT_CONNECTION_DOWNSTREAM").remove()
         proxyForWiremockFetcher.toxics().get("CUT_CONNECTION_UPSTREAM").remove()
 
-
         // make a call when cloudflare decides to be an a*+hole again
-        val result3 = try {
-            runBlocking { fetcher.fetchDetails("cloudflare", "Pokemon", "Singles", lang = "de", setname = "BaseSet") }
-        } catch (e: Exception) {
-            logThrowable("cloudflare", e)
-            Result.failure(e)
-        }
+        val result3 =
+            try {
+                runBlocking { fetcher.fetchDetails("cloudflare", "Pokemon", "Singles", lang = "de", setname = "BaseSet") }
+            } catch (e: Exception) {
+                logThrowable("cloudflare", e)
+                Result.failure(e)
+            }
         Assertions.assertTrue(result3.isFailure)
         wiremockServer.verify(
-            exactly(3), //1 call and 2 retries
-            getRequestedFor(urlEqualTo("/de/Pokemon/Products/Singles/BaseSet/cloudflare"))
+            exactly(3), // 1 call and 2 retries
+            getRequestedFor(urlEqualTo("/de/Pokemon/Products/Singles/BaseSet/cloudflare")),
         )
         // ---
         assertThat(circuitBreaker.state).isEqualTo(CircuitBreaker.State.CLOSED)
@@ -187,18 +181,19 @@ class CardMarketWebFetcherIT {
         assertThat(retry.metrics.numberOfSuccessfulCallsWithRetryAttempt).isEqualTo(0)
 
         // what if the client searches for unknown stuff
-        val result4 = try {
-            runBlocking { fetcher.fetchDetails("unknown", "Pokemon", "Singles", lang = "de", setname = "BaseSet") }
-        } catch (e: Exception) {
-            // the requst should fail and the exception be logged but i dont want the breaker to be open
-            // neither the retrier should do stupid things
-            logThrowable("unknown", e)
-            Result.failure(e)
-        }
+        val result4 =
+            try {
+                runBlocking { fetcher.fetchDetails("unknown", "Pokemon", "Singles", lang = "de", setname = "BaseSet") }
+            } catch (e: Exception) {
+                // the requst should fail and the exception be logged but i dont want the breaker to be open
+                // neither the retrier should do stupid things
+                logThrowable("unknown", e)
+                Result.failure(e)
+            }
         Assertions.assertTrue(result4.isFailure)
         wiremockServer.verify(
             exactly(1),
-            getRequestedFor(urlEqualTo("/de/Pokemon/Products/Singles/BaseSet/unknown"))
+            getRequestedFor(urlEqualTo("/de/Pokemon/Products/Singles/BaseSet/unknown")),
         )
 
         (0 until 10).forEach { i ->
@@ -215,7 +210,7 @@ class CardMarketWebFetcherIT {
 
         wiremockServer.verify(
             exactly(11),
-            getRequestedFor(urlEqualTo("/de/Pokemon/Products/Singles/BaseSet/unknown"))
+            getRequestedFor(urlEqualTo("/de/Pokemon/Products/Singles/BaseSet/unknown")),
         )
         assertThat(circuitBreaker.state).isEqualTo(CircuitBreaker.State.CLOSED)
 
@@ -230,10 +225,10 @@ class CardMarketWebFetcherIT {
         // now we want to test that the breaker opens when cloudflare decides to stay an a**hole
         // in parallel !!
         runBlocking {
-
             (0 until 10).forEach { i ->
 
-                launch(Dispatchers.Default) {  // Use Default dispatcher for concurrency
+                launch(Dispatchers.Default) {
+                    // Use Default dispatcher for concurrency
                     var result: Result<String>
                     try {
                         result =
@@ -245,7 +240,6 @@ class CardMarketWebFetcherIT {
                     Assertions.assertTrue(result.isFailure)
                 }
             }
-
         }
 
         assertThat(circuitBreaker.state).isEqualTo(CircuitBreaker.State.OPEN)
@@ -258,7 +252,10 @@ class CardMarketWebFetcherIT {
         assertThat(retry.metrics.numberOfSuccessfulCallsWithRetryAttempt).isEqualTo(0)
     }
 
-    private fun logThrowable(label: String, throwable: Throwable) {
+    private fun logThrowable(
+        label: String,
+        throwable: Throwable,
+    ) {
         println("$label exception=${throwable::class.java.name} message=${throwable.message}")
         var current = throwable.cause
         while (current != null) {
@@ -271,7 +268,6 @@ class CardMarketWebFetcherIT {
     @EnableAspectJAutoProxy(proxyTargetClass = true)
     @AutoConfigureCache
     class TestConfig {
-
         fun setUp(wm1: WireMockServer) {
             val testFilePikachu30 = "src/test/resources/pikachu_gallery_30.html"
             val testFilePikachu40 = "src/test/resources/pikachu_gallery_40.html"
@@ -279,61 +275,67 @@ class CardMarketWebFetcherIT {
 
             val pika30 = Files.readString(Paths.get(testFilePikachu30))
             wm1.stubFor(
-                WireMock.get(WireMock.urlPathMatching("/de/Pokemon/Products/Search.*"))
+                WireMock
+                    .get(WireMock.urlPathMatching("/de/Pokemon/Products/Search.*"))
                     .willReturn(
                         aResponse()
                             .withStatus(200)
                             .withHeader("Content-Type", "text/html; charset=UTF-8")
-                            .withBody(pika30)
-                    )
+                            .withBody(pika30),
+                    ),
             )
             val evoli = Files.readString(Paths.get(testFileEvoli))
             wm1.stubFor(
-                WireMock.get(WireMock.urlPathMatching("/de/Pokemon/Products/Singles/BaseSet/12345678.*"))
+                WireMock
+                    .get(WireMock.urlPathMatching("/de/Pokemon/Products/Singles/BaseSet/12345678.*"))
                     .willReturn(
                         aResponse()
                             .withStatus(200)
                             .withHeader("Content-Type", "text/html; charset=UTF-8")
-                            .withBody(evoli)
-                    )
+                            .withBody(evoli),
+                    ),
             )
             val pika40 = Files.readString(Paths.get(testFilePikachu40))
 
             wm1.stubFor(
-                WireMock.get(WireMock.urlPathMatching("/en/Pokemon/Products/Search.*"))
+                WireMock
+                    .get(WireMock.urlPathMatching("/en/Pokemon/Products/Search.*"))
                     .willReturn(
                         aResponse()
                             .withStatus(200)
                             .withHeader("Content-Type", "text/html; charset=UTF-8")
-                            .withBody(pika40)
-                    )
+                            .withBody(pika40),
+                    ),
             )
             wm1.stubFor(
-                WireMock.get(WireMock.urlPathMatching("/fr/Pokemon/Products/Search.*"))
+                WireMock
+                    .get(WireMock.urlPathMatching("/fr/Pokemon/Products/Search.*"))
                     .willReturn(
                         aResponse()
                             .withStatus(200)
                             .withHeader("Content-Type", "text/html; charset=UTF-8")
-                            .withBody(pika30)
-                    )
+                            .withBody(pika30),
+                    ),
             )
             wm1.stubFor(
-                WireMock.get(WireMock.urlPathMatching("/de/Pokemon/Products/Singles/BaseSet/cloudflare"))
+                WireMock
+                    .get(WireMock.urlPathMatching("/de/Pokemon/Products/Singles/BaseSet/cloudflare"))
                     .willReturn(
                         aResponse()
                             .withStatus(403)
                             .withHeader("Content-Type", "text/html; charset=UTF-8")
-                            .withBody("you want api key? too bad - here have some cloudflare")
-                    )
+                            .withBody("you want api key? too bad - here have some cloudflare"),
+                    ),
             )
             wm1.stubFor(
-                WireMock.get(WireMock.urlPathMatching("/de/Pokemon/Products/Singles/BaseSet/unknown"))
+                WireMock
+                    .get(WireMock.urlPathMatching("/de/Pokemon/Products/Singles/BaseSet/unknown"))
                     .willReturn(
                         aResponse()
                             .withStatus(404)
                             .withHeader("Content-Type", "text/html; charset=UTF-8")
-                            .withBody("bro...")
-                    )
+                            .withBody("bro..."),
+                    ),
             )
         }
 
@@ -347,7 +349,10 @@ class CardMarketWebFetcherIT {
         }
 
         @Bean
-        fun proxyForWiremockFetcher(toxiproxyContainer: ToxiproxyContainer, wireMockServer: WireMockServer): Proxy {
+        fun proxyForWiremockFetcher(
+            toxiproxyContainer: ToxiproxyContainer,
+            wireMockServer: WireMockServer,
+        ): Proxy {
             val toxiproxyClient = ToxiproxyClient(toxiproxyContainer.getHost(), toxiproxyContainer.getControlPort())
             val wmUpstream = "host.testcontainers.internal:${wireMockServer.port()}"
             return toxiproxyClient.createProxy("cm", "0.0.0.0:8666", wmUpstream)
@@ -355,9 +360,10 @@ class CardMarketWebFetcherIT {
 
         @Bean
         fun toxiproxyContainer(): ToxiproxyContainer {
-            val toxiproxyContainer = ToxiproxyContainer(
-                DockerImageName.parse("shopify/toxiproxy:2.1.4")
-            ).withAccessToHost(true)
+            val toxiproxyContainer =
+                ToxiproxyContainer(
+                    DockerImageName.parse("shopify/toxiproxy:2.1.4"),
+                ).withAccessToHost(true)
             toxiproxyContainer.start()
             return toxiproxyContainer
         }

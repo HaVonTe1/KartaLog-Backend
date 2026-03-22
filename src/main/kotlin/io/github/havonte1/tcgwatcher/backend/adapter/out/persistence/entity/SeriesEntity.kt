@@ -23,15 +23,13 @@ data class SeriesEntity(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long? = null,
-
     @Column(name = "source_id")
     val sourceId: String? = null,
-
     @OneToMany(
         mappedBy = "series",
         cascade = [CascadeType.ALL],
         orphanRemoval = true,
-        fetch = FetchType.LAZY
+        fetch = FetchType.LAZY,
     )
-    val nameTranslations: MutableSet<NameTranslationEntity> = mutableSetOf()
+    val nameTranslations: MutableSet<NameTranslationEntity> = mutableSetOf(),
 ) : Serializable

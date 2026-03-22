@@ -24,25 +24,21 @@ class SearchResultEntity(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long? = null,
-
     @Column(nullable = false, unique = true)
     val query: String,
-
-
     @Column(name = "cached_at")
     val cachedAt: Instant? = null,
-
     @ManyToMany(
         cascade = [CascadeType.PERSIST, CascadeType.MERGE],
-        fetch = FetchType.EAGER
+        fetch = FetchType.EAGER,
     )
     @JoinTable(
         name = "search_result_products",
         schema = "watcher",
         joinColumns = [JoinColumn(name = "search_result_id")],
-        inverseJoinColumns = [JoinColumn(name = "product_id")]
+        inverseJoinColumns = [JoinColumn(name = "product_id")],
     )
-    val products: MutableSet<ProductEntity> = mutableSetOf()
+    val products: MutableSet<ProductEntity> = mutableSetOf(),
 ) : java.io.Serializable {
     // JPA requires a no‑arg constructor
     constructor() : this(0, "", Instant.now())

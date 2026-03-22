@@ -1,0 +1,55 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues/>
+  <CurrentIssues>
+    <ID>ComplexCondition:CardMarketContentParser.kt:CardMarketContentParser$sellerName != null &amp;&amp; sellerLocation != null &amp;&amp; productLanguage != null &amp;&amp; price != null &amp;&amp; productAmount != null &amp;&amp; productCondition != null</ID>
+    <ID>CyclomaticComplexMethod:CardMarketContentParser.kt:CardMarketContentParser$fun parseGalaryPage( content: String, page: Int = 1, ): SearchResultsPageDto&lt;CardmarketProductGallaryItemDto&gt;</ID>
+    <ID>CyclomaticComplexMethod:CardMarketContentParser.kt:CardMarketContentParser$fun parseProductDetails( content: String, cmId: String, genre: String, type: String, lang: String, setname: String, ): CardmarketProductDetailsDto</ID>
+    <ID>ForbiddenComment:CardMarketContentParser.kt:CardMarketContentParser$// FIXME: this works only for german details pages</ID>
+    <ID>ForbiddenComment:CardMarketContentParser.kt:CardMarketContentParser$// TODO: the labels should be mapeed to the language used in the search</ID>
+    <ID>LongMethod:CardMarketContentParser.kt:CardMarketContentParser$fun parseProductDetails( content: String, cmId: String, genre: String, type: String, lang: String, setname: String, ): CardmarketProductDetailsDto</ID>
+    <ID>LongMethod:CardMarketProductMapperTest.kt:CardMarketProductMapperTest$@Test fun `toProductDetails maps CardmarketProductDetailsDto correctly`()</ID>
+    <ID>LongMethod:CardMarketWebFetcherIT.kt:CardMarketWebFetcherIT$@Test fun `check state of circuit breaker, ratelimiter and retry when fetching stuff under various conditions`()</ID>
+    <ID>LongMethod:CardMarketWebFetcherIT.kt:CardMarketWebFetcherIT.TestConfig$fun setUp(wm1: WireMockServer)</ID>
+    <ID>LongMethod:QuicksearchImportRunner.kt:QuicksearchImportRunner$private fun importCards( conn: Connection, setsMap: Map&lt;String, Long&gt;, )</ID>
+    <ID>LongMethod:QuicksearchImportRunner.kt:QuicksearchImportRunner$private fun importSets( conn: Connection, seriesMap: Map&lt;String, Long&gt;, )</ID>
+    <ID>LoopWithTooManyJumpStatements:QuicksearchImportRunner.kt:QuicksearchImportRunner$while</ID>
+    <ID>MagicNumber:CacheConfig.kt:CacheConfig$1000</ID>
+    <ID>MagicNumber:CardMarketContentParser.kt:CardMarketContentParser$3</ID>
+    <ID>MagicNumber:CardMarketContentParser.kt:CardMarketContentParser$4</ID>
+    <ID>MagicNumber:CardMarketProductMapper.kt:CardMarketProductMapper$3</ID>
+    <ID>MagicNumber:CardMarketProductMapper.kt:CardMarketProductMapper$4</ID>
+    <ID>MagicNumber:CardMarketProductMapper.kt:CardMarketProductMapper$5</ID>
+    <ID>MagicNumber:CardMarketWebFetcher.kt:CardMarketWebFetcher$20000.0</ID>
+    <ID>MagicNumber:CardMarketWebFetcher.kt:CardMarketWebFetcher$403</ID>
+    <ID>MagicNumber:CardMarketWebFetcher.kt:CardMarketWebFetcher$404</ID>
+    <ID>MagicNumber:ProductMapper.kt:ProductMapper$5</ID>
+    <ID>MagicNumber:QuicksearchImportRunner.kt:QuicksearchImportRunner$3</ID>
+    <ID>MagicNumber:QuicksearchImportRunner.kt:QuicksearchImportRunner$4</ID>
+    <ID>MagicNumber:QuicksearchImportRunner.kt:QuicksearchImportRunner$5</ID>
+    <ID>MaxLineLength:CardMarketContentParser.kt:CardMarketContentParser$"Warning: sellerLocationString '$sellerLocation' does not match expected format 'Prefix: CountryName'"</ID>
+    <ID>MaxLineLength:CardMarketContentParser.kt:CardMarketContentParser$val productCondition = conditionElement?.attr("title")?.ifEmpty { conditionElement.attr("data-bs-original-title") }</ID>
+    <ID>MaxLineLength:CardMarketContentParser.kt:CardMarketContentParser$val sellerLocation = sellerLocationTag?.first()?.attr("title")?.ifEmpty { sellerLocationTag.first()?.attr("aria-label") }</ID>
+    <ID>MaxLineLength:CardMarketProductMapper.kt:CardMarketProductMapper$// we want the genre (Pokemon), the type (Singles) , the set (Evolving-Skies) and the last segment (e.g. "Pikachu-V1-EVS049").</ID>
+    <ID>MaxLineLength:CardMarketProductMapper.kt:CardMarketProductMapper$set = ProductSet(setId = 0, cmCode = detailsDto.set.code, names = mapOf(detailsDto.name.languageCode to detailsDto.set.name))</ID>
+    <ID>MaxLineLength:CardMarketWebFetcherIT.kt:CardMarketWebFetcherIT$// we catch the exception because the test would fail otherwise even if it was handled by the breaker and retyer like we hope for</ID>
+    <ID>MaxLineLength:CardMarketWebFetcherIT.kt:CardMarketWebFetcherIT$result = runBlocking { fetcher.fetchDetails("unknown", "Pokemon", "Singles", lang = "de", setname = "BaseSet") }</ID>
+    <ID>MaxLineLength:CardMarketWebFetcherIT.kt:CardMarketWebFetcherIT$runBlocking { fetcher.fetchDetails("cloudflare", "Pokemon", "Singles", lang = "de", setname = "BaseSet") }</ID>
+    <ID>MaxLineLength:CollectablesService.kt:CollectablesService$override suspend fun getSearchCachedAt(searchString: String): Instant?</ID>
+    <ID>MaxLineLength:ProductEntity.kt:ProductEntity$fun compareTo(other: ProductEntity): Int</ID>
+    <ID>MaxLineLength:ProductMapper.kt:ProductMapper$return ProductSeries(seriesId = entity.id, names = entity.nameTranslations.associate { it.languageCode to it.name })</ID>
+    <ID>MaxLineLength:ProductRepositoryAdapter.kt:ProductRepositoryAdapter$logger.debug { "Mapping product ${product.externalId} with ProductSetEntity id: ${productSetEntity.id}" }</ID>
+    <ID>MaxLineLength:ProductRepositoryAdapter.kt:ProductRepositoryAdapter$override</ID>
+    <ID>MaxLineLength:SearchResultRepositoryAdapter.kt:SearchResultRepositoryAdapter$override</ID>
+    <ID>ReturnCount:CardMarketContentParser.kt:CardMarketContentParser$private fun parseLink(typePath: String?): ParsedLink</ID>
+    <ID>ReturnCount:CollectablesAdapter.kt:CollectablesAdapter$@RateLimiter(name = "apiRateLimiter") override suspend fun getProductDetails( cmId: String, setname: String, genre: String, type: String, lang: String, ifNoneMatch: String?, ): ResponseEntity&lt;ProductDetailsDTO&gt;</ID>
+    <ID>ReturnCount:CollectablesService.kt:CollectablesService$@Cacheable("detailsCache") override suspend fun fetchProductDetails( cmId: String, genre: String, type: String, lang: String, setname: String, ): Product?</ID>
+    <ID>ReturnCount:CollectablesService.kt:CollectablesService$private fun hasChanges( oldProduct: Product, newProduct: Product, ): Boolean</ID>
+    <ID>SerialVersionUIDInSerializableClass:NameTranslationEntity.kt:NameTranslationEntity : Serializable</ID>
+    <ID>SerialVersionUIDInSerializableClass:ProductSetEntity.kt:ProductSetEntity : Serializable</ID>
+    <ID>SerialVersionUIDInSerializableClass:SeriesEntity.kt:SeriesEntity : Serializable</ID>
+    <ID>TooGenericExceptionCaught:PlaywrightManager.kt:PlaywrightManager$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:QuicksearchImportRunner.kt:QuicksearchImportRunner$e: Exception</ID>
+    <ID>UnusedParameter:CardMarketContentParser.kt:CardMarketContentParser$setname: String</ID>
+  </CurrentIssues>
+</SmellBaseline>

@@ -3,7 +3,7 @@ package io.github.havonte1.tcgwatcher.backend.adapter.out.webscraper.cardmarket
 data class SearchResultsPageDto<T>(
     val results: List<T>,
     val page: Int,
-    val totalPages: Int
+    val totalPages: Int,
 )
 
 // --- Cardmarket -----
@@ -17,7 +17,7 @@ data class CardmarketProductGallaryItemDto(
     val cmLink: String,
     val imgLink: String,
     val price: String,
-    val priceTrend: PriceTrendType
+    val priceTrend: PriceTrendType,
 ) {
     constructor(
         name: NameDto,
@@ -28,7 +28,7 @@ data class CardmarketProductGallaryItemDto(
         cmLink: String,
         imgLink: String,
         price: String,
-        priceTrend: String
+        priceTrend: String,
     ) : this(
         name = name,
         code = CodeType(code, code.isNotEmpty()),
@@ -38,14 +38,30 @@ data class CardmarketProductGallaryItemDto(
         cmLink = cmLink,
         imgLink = imgLink,
         price = price,
-        priceTrend = PriceTrendType(priceTrend, priceTrend.isNotEmpty())
+        priceTrend = PriceTrendType(priceTrend, priceTrend.isNotEmpty()),
     )
 }
 
-data class CodeType(val value: String, val valid: Boolean)
-data class PriceTrendType(val value: String, val valid: Boolean)
-data class NameDto(val value: String, val languageCode: String, val i18n: String = "")
-data class SetDto(val name: String, val code: String)
+data class CodeType(
+    val value: String,
+    val valid: Boolean,
+)
+
+data class PriceTrendType(
+    val value: String,
+    val valid: Boolean,
+)
+
+data class NameDto(
+    val value: String,
+    val languageCode: String,
+    val i18n: String = "",
+)
+
+data class SetDto(
+    val name: String,
+    val code: String,
+)
 
 data class CardmarketProductDetailsDto(
     val name: NameDto,
@@ -58,7 +74,7 @@ data class CardmarketProductDetailsDto(
     val set: SetDto = SetDto("", ""),
     val price: String = "0,00 €",
     val priceTrend: PriceTrendType = PriceTrendType("?", false),
-    val sellOffers: List<CardmarketSellOfferDto> = emptyList()
+    val sellOffers: List<CardmarketSellOfferDto> = emptyList(),
 )
 
 data class CardmarketSellOfferDto(

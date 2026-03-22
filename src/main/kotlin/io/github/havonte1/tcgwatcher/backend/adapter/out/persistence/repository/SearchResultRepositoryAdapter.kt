@@ -10,7 +10,6 @@ import io.github.havonte1.tcgwatcher.backend.domain.model.SearchResult
 import io.github.havonte1.tcgwatcher.backend.domain.port.out.SearchResultRepository
 import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional
-
 import java.time.Instant
 
 /**
@@ -25,10 +24,8 @@ class SearchResultRepositoryAdapter(
     private val searchResultMapper: SearchResultMapper,
     private val productMapper: ProductMapper,
 ) : SearchResultRepository {
-
     @Transactional(readOnly = true)
-    override fun findByQuery(query: String): SearchResult? =
-        jpaRepository.findByQuery(query)?.let { searchResultMapper.toDomain(it) }
+    override fun findByQuery(query: String): SearchResult? = jpaRepository.findByQuery(query)?.let { searchResultMapper.toDomain(it) }
 
     @Transactional
     override fun save(searchResult: SearchResult): SearchResult {
@@ -52,76 +49,88 @@ class SearchResultRepositoryAdapter(
         val externalIds = products.map { it.externalId }
 
         // Query existing products in the same transaction to get a consistent view
-        val existingProducts = productJpaRepository.findAllByExternalIdIn(externalIds)
-            .associateBy { it.externalId }
+        val existingProducts =
+            productJpaRepository
+                .findAllByExternalIdIn(externalIds)
+                .associateBy { it.externalId }
 
         val uniqueCmCodes = products.mapNotNull { it.set?.cmCode }.distinct()
         val existingSets = uniqueCmCodes.flatMap { productSetJpaRepository.findByCmProductCode(it) }
         val existingSetMap = existingSets.associateBy { it.cmProductCode }
 
         val newCmCodes = uniqueCmCodes.filter { it !in existingSetMap.keys }
-        val newSets = newCmCodes.map { cmCode ->
-            val product = products.first { it.set?.cmCode == cmCode }
-            val productSetEntity = ProductSetEntity(cmProductCode = cmCode)
-            product.set?.names?.forEach { (lang, name) ->
-                val nameTranslationEntity = NameTranslationEntity(
-                    productSet = productSetEntity,
-                    languageCode = lang,
-                    name = name
-                )
-                productSetEntity.nameTranslations.add(nameTranslationEntity)
+        val newSets =
+            newCmCodes.map { cmCode ->
+                val product = products.first { it.set?.cmCode == cmCode }
+                val productSetEntity = ProductSetEntity(cmProductCode = cmCode)
+                product.set?.names?.forEach { (lang, name) ->
+                    val nameTranslationEntity =
+                        NameTranslationEntity(
+                            productSet = productSetEntity,
+                            languageCode = lang,
+                            name = name,
+                        )
+                    productSetEntity.nameTranslations.add(nameTranslationEntity)
+                }
+                productSetEntity
             }
-            productSetEntity
-        }
 
-        val savedNewSets = if (newSets.isNotEmpty()) {
-            productSetJpaRepository.saveAll(newSets)
-        } else {
-            emptyList()
-        }
+        val savedNewSets =
+            if (newSets.isNotEmpty()) {
+                productSetJpaRepository.saveAll(newSets)
+            } else {
+                emptyList()
+            }
 
         val allSetMap = (existingSets + savedNewSets).associateBy { it.cmProductCode }
 
-        val entitiesToPersist = products.map { product ->
-            val existing = existingProducts[product.externalId]
-            if (existing != null) {
-                // Update existing product with new data
-                updateEntity(existing, product)
-                existing
-            } else {
-                val cmCode = product.set?.cmCode ?: "dummy"
-                val productSetEntity = allSetMap[cmCode]
-                    ?: ProductSetEntity(cmProductCode = cmCode)
+        val entitiesToPersist =
+            products.map { product ->
+                val existing = existingProducts[product.externalId]
+                if (existing != null) {
+                    // Update existing product with new data
+                    updateEntity(existing, product)
+                    existing
+                } else {
+                    val cmCode = product.set?.cmCode ?: "dummy"
+                    val productSetEntity =
+                        allSetMap[cmCode]
+                            ?: ProductSetEntity(cmProductCode = cmCode)
 
-                product.set?.names?.forEach { (lang, name) ->
-                    val nameTranslationEntity = NameTranslationEntity(
-                        id = 0,
-                        productSet = productSetEntity,
-                        languageCode = lang,
-                        name = name
-                    )
-                    productSetEntity.nameTranslations.add(nameTranslationEntity)
+                    product.set?.names?.forEach { (lang, name) ->
+                        val nameTranslationEntity =
+                            NameTranslationEntity(
+                                id = 0,
+                                productSet = productSetEntity,
+                                languageCode = lang,
+                                name = name,
+                            )
+                        productSetEntity.nameTranslations.add(nameTranslationEntity)
+                    }
+
+                    val productEntity = productMapper.toEntity(product, productSetEntity)
+                    productEntity
                 }
-
-                val productEntity = productMapper.toEntity(product, productSetEntity)
-                productEntity
             }
-        }
 
         // Persist all entities in a single batch operation within the same transaction
         return productJpaRepository.saveAll(entitiesToPersist)
     }
 
-    private fun mergeNameTranslations(entity: ProductEntity, product: Product) {
+    private fun mergeNameTranslations(
+        entity: ProductEntity,
+        product: Product,
+    ) {
         val existingLocales = entity.nameTranslations.associate { it.languageCode to it }
         product.names.forEach { (locale, name) ->
             if (existingLocales.containsKey(locale)) {
                 existingLocales[locale]!!.name = name
             } else {
-                val translation = NameTranslationEntity(
-                    languageCode = locale,
-                    name = name
-                )
+                val translation =
+                    NameTranslationEntity(
+                        languageCode = locale,
+                        name = name,
+                    )
                 entity.nameTranslations.add(translation)
             }
         }
@@ -129,14 +138,15 @@ class SearchResultRepositoryAdapter(
 
     private fun updateEntity(
         productEntity: ProductEntity,
-        product: Product
+        product: Product,
     ): ProductEntity {
-        val updated = productEntity.copy(
-            price = product.price,
-            priceTrend = product.priceTrendInfo?.value,
-            priceTrendValid = product.priceTrendInfo?.valid ?: false,
-            updatedAt = product.updatedAt ?: Instant.now()
-        )
+        val updated =
+            productEntity.copy(
+                price = product.price,
+                priceTrend = product.priceTrendInfo?.value,
+                priceTrendValid = product.priceTrendInfo?.valid ?: false,
+                updatedAt = product.updatedAt ?: Instant.now(),
+            )
 
         // only update if values actually changed
         if (productEntity.compareTo(updated) != 0) {
@@ -152,5 +162,4 @@ class SearchResultRepositoryAdapter(
     }
 
     override fun countByQuery(query: String): Int = jpaRepository.countByQuery(query)
-
 }

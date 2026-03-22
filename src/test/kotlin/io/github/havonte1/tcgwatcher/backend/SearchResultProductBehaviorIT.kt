@@ -8,7 +8,8 @@ import io.github.havonte1.tcgwatcher.backend.domain.port.out.CardMarketScraperPo
 import io.github.havonte1.tcgwatcher.backend.domain.port.out.ProductRepository
 import io.github.havonte1.tcgwatcher.backend.domain.port.out.SearchResultRepository
 import kotlinx.coroutines.runBlocking
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assumptions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Tag
@@ -16,9 +17,9 @@ import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.cache.test.autoconfigure.AutoConfigureCache
 import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.cache.CacheManager
 import org.springframework.boot.test.context.TestConfiguration
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection
+import org.springframework.cache.CacheManager
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Primary
 import org.testcontainers.junit.jupiter.Container
@@ -33,7 +34,6 @@ import java.nio.file.Paths
 @Tag("integration")
 @AutoConfigureCache
 class SearchResultProductBehaviorIT {
-
     @TestConfiguration
     class ScraperTestConfig {
         private val testFilePikachu30 = "src/test/resources/pikachu_gallery_30.html"
@@ -41,39 +41,52 @@ class SearchResultProductBehaviorIT {
 
         @Bean
         @Primary
-        fun cardMarketScraperPort(): CardMarketScraperPort = object : CardMarketScraperPort {
-            var callCount = 0
-            override suspend fun search(searchString: String, locale: String, game: String): List<Product> {
-                callCount++
-                class TestFetcher : CardMarketWebFetcherPort {
-                    override fun fetch(searchString: String, locale: String, game: String): Result<String> {
-                        val content = when (callCount) {
-                            1, 2 -> Files.readString(Paths.get(testFilePikachu30))
-                            else -> Files.readString(Paths.get(testFilePikachu40))
+        fun cardMarketScraperPort(): CardMarketScraperPort =
+            object : CardMarketScraperPort {
+                var callCount = 0
+
+                override suspend fun search(
+                    searchString: String,
+                    locale: String,
+                    game: String,
+                ): List<Product> {
+                    callCount++
+
+                    class TestFetcher : CardMarketWebFetcherPort {
+                        override fun fetch(
+                            searchString: String,
+                            locale: String,
+                            game: String,
+                        ): Result<String> {
+                            val content =
+                                when (callCount) {
+                                    1, 2 -> Files.readString(Paths.get(testFilePikachu30))
+                                    else -> Files.readString(Paths.get(testFilePikachu40))
+                                }
+                            return Result.success(content)
                         }
-                        return Result.success(content)
+
+                        override fun fetchDetails(
+                            cmId: String,
+                            genre: String,
+                            type: String,
+                            lang: String,
+                            setname: String,
+                        ): Result<String> = Result.failure(UnsupportedOperationException("Not implemented"))
                     }
 
-                    override fun fetchDetails(
-                        cmId: String,
-                        genre: String,
-                        type: String,
-                        lang: String,
-                        setname: String
-                    ): Result<String> {
-                        return Result.failure(UnsupportedOperationException("Not implemented"))
-                    }
-
+                    val adapter = CardMarketScraperAdapter(TestFetcher())
+                    return adapter.search(searchString, locale, game)
                 }
 
-                val adapter = CardMarketScraperAdapter(TestFetcher())
-                return adapter.search(searchString, locale, game)
+                override suspend fun fetchProductDetails(
+                    cmId: String,
+                    genre: String,
+                    type: String,
+                    lang: String,
+                    setname: String,
+                ): Product? = null
             }
-
-            override suspend fun fetchProductDetails(cmId: String, genre: String, type: String, lang: String, setname: String): Product? {
-                return null
-            }
-        }
     }
 
     companion object {
@@ -128,7 +141,6 @@ class SearchResultProductBehaviorIT {
         assertEquals(30, secondResult.size)
     }
 
-
     @Test
     fun `search results are cached correctly`() {
         Assumptions.assumeTrue(File("src/test/resources/pikachu_gallery_30.html").exists())
@@ -139,7 +151,6 @@ class SearchResultProductBehaviorIT {
         val cachedResult = runBlocking { service.search("Pikachu", "de", "Pokemon") }
         assertEquals(30, cachedResult.size)
         assertEquals(1, searchRepo.countByQuery("Pikachu"))
-
     }
 
     @Test

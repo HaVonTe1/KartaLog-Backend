@@ -4,9 +4,7 @@ import io.github.havonte1.tcgwatcher.backend.adapter.out.persistence.repository.
 import io.github.havonte1.tcgwatcher.backend.adapter.out.persistence.repository.ProductJpaRepository
 import io.github.havonte1.tcgwatcher.backend.adapter.out.persistence.repository.ProductSetJpaRepository
 import io.github.havonte1.tcgwatcher.backend.adapter.out.persistence.repository.SeriesJpaRepository
-import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -25,7 +23,6 @@ import kotlin.jvm.JvmStatic
 @ActiveProfiles("test")
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 class QuicksearchImportRunnerTest {
-
     companion object {
         @Container
         @ServiceConnection
@@ -61,7 +58,6 @@ class QuicksearchImportRunnerTest {
         assertEquals(20, seriesRepo.count(), "Series count should be 20")
         assertEquals(916, productSetRepo.count(), "Product set count should be 916")
         assertEquals(972, productRepo.count(), "Product count should be 972")
-
     }
 
     @Test

@@ -33,52 +33,63 @@ import kotlin.test.fail
 @Tag("integration")
 @AutoConfigureCache
 class CollectablesServiceIT {
-
     @TestConfiguration
     class ScraperTestConfig {
-
         private val testFilePikachu30 = "src/test/resources/pikachu_gallery_30.html"
         private val testFilePikachu40 = "src/test/resources/pikachu_gallery_40.html"
 
         @Bean
         @Primary
-        fun cardMarketScraperPort(): CardMarketScraperPort = object : CardMarketScraperPort {
-            var callCount = 0
-            override suspend fun search(searchString: String, locale: String, game: String): List<Product> {
-                callCount++
-                class TestFetcher : CardMarketWebFetcherPort {
-                    override fun fetch(searchString: String, locale: String, game: String): Result<String> {
-                        val content = if (callCount == 1) {
-                            Files.readString(Paths.get(testFilePikachu30))
-                        } else {
-                            Files.readString(Paths.get(testFilePikachu40))
+        fun cardMarketScraperPort(): CardMarketScraperPort =
+            object : CardMarketScraperPort {
+                var callCount = 0
+
+                override suspend fun search(
+                    searchString: String,
+                    locale: String,
+                    game: String,
+                ): List<Product> {
+                    callCount++
+
+                    class TestFetcher : CardMarketWebFetcherPort {
+                        override fun fetch(
+                            searchString: String,
+                            locale: String,
+                            game: String,
+                        ): Result<String> {
+                            val content =
+                                if (callCount == 1) {
+                                    Files.readString(Paths.get(testFilePikachu30))
+                                } else {
+                                    Files.readString(Paths.get(testFilePikachu40))
+                                }
+                            return Result.success(content)
                         }
-                        return Result.success(content)
-                    }
 
-                    override fun fetchDetails(
-                        cmId: String,
-                        genre: String,
-                        type: String,
-                        lang: String,
-                        setname: String
-                    ): Result<String> {
-                        return Result.failure(UnsupportedOperationException("Not implemented"))
+                        override fun fetchDetails(
+                            cmId: String,
+                            genre: String,
+                            type: String,
+                            lang: String,
+                            setname: String,
+                        ): Result<String> = Result.failure(UnsupportedOperationException("Not implemented"))
                     }
-
+                    val adapter = CardMarketScraperAdapter(TestFetcher())
+                    return adapter.search(
+                        searchString,
+                        locale = locale,
+                        game = game,
+                    )
                 }
-                val adapter = CardMarketScraperAdapter(TestFetcher())
-                return adapter.search(
-                    searchString,
-                    locale = locale,
-                    game = game
-                )
-            }
 
-            override suspend fun fetchProductDetails(cmId: String, genre: String, type: String, lang: String, setname: String): Product? {
-                return null
+                override suspend fun fetchProductDetails(
+                    cmId: String,
+                    genre: String,
+                    type: String,
+                    lang: String,
+                    setname: String,
+                ): Product? = null
             }
-        }
     }
 
     companion object {
@@ -132,7 +143,7 @@ class CollectablesServiceIT {
             assertEquals("1,50 €", it.price)
         } ?: fail("No element with externalId=576753 found")
 
-        val thirdResult = runBlocking {service.search("Pikachu40", "de", "Pokemon")}
+        val thirdResult = runBlocking { service.search("Pikachu40", "de", "Pokemon") }
         assertEquals(30, thirdResult.size)
         assertEquals(2, callCountField.getInt(testScraper), "Scraper should  be called on another query")
 

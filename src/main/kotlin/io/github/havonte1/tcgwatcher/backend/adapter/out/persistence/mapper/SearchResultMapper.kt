@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component
  */
 @Component
 class SearchResultMapper(
-    private val productMapper: ProductMapper
+    private val productMapper: ProductMapper,
 ) {
     fun toDomain(entity: SearchResultEntity): SearchResult {
         val products: List<Product> = entity.products.map { productMapper.toDomain(it) }
@@ -19,14 +19,15 @@ class SearchResultMapper(
             id = entity.id,
             query = entity.query,
             products = products,
-            cachedAt = entity.cachedAt
+            cachedAt = entity.cachedAt,
         )
     }
 
-    fun toEntityWithoutProducts(searchResult: SearchResult) = SearchResultEntity(
-        id = searchResult.id,
-        query = searchResult.query,
-        cachedAt = searchResult.cachedAt,
-        products = mutableSetOf()
-    )
+    fun toEntityWithoutProducts(searchResult: SearchResult) =
+        SearchResultEntity(
+            id = searchResult.id,
+            query = searchResult.query,
+            cachedAt = searchResult.cachedAt,
+            products = mutableSetOf(),
+        )
 }

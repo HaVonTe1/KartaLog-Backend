@@ -25,80 +25,60 @@ data class ProductEntity(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long? = null,
-
     @Column(name = "external_id", nullable = false, unique = true)
     val externalId: Long,
-
     @Column(name = "source_id")
     val sourceId: String? = null,
-
     @Column(name = "set_id")
     val setId: Long? = null,
-
     @Column(name = "series_id")
     val seriesId: Long? = null,
-
     @Column(name = "rarity")
     val rarity: String? = null,
-
     @Column(name = "code_info")
     val codeInfo: String? = null,
-
     @Column(name = "code_info_valid")
     val codeInfoValid: Boolean? = null,
-
     @Column(name = "genre")
     val genre: String = "",
-
     @Column(name = "type")
     val type: String = "",
-
     @Column(name = "cm_id")
     val cmId: String? = null,
-
     @Column(name = "img_link")
     val imgLink: String? = null,
-
     @Column(name = "price")
     val price: String? = null,
-
     @Column(name = "price_trend")
     val priceTrend: String? = null,
-
     @Column(name = "price_trend_valid")
     val priceTrendValid: Boolean? = null,
-
     @NotAudited
     @Column(name = "created_at", nullable = false, updatable = false)
     var createdAt: Instant = Instant.now(),
-
     @NotAudited
     @Column(name = "updated_at", nullable = false)
     var updatedAt: Instant = Instant.now(),
-
     @OneToMany(
         mappedBy = "product",
         cascade = [CascadeType.ALL],
         orphanRemoval = true,
-        fetch = FetchType.EAGER
+        fetch = FetchType.EAGER,
     )
     val nameTranslations: MutableSet<NameTranslationEntity> = mutableSetOf(),
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "series_id", referencedColumnName = "id", insertable = false, updatable = false)
     val series: SeriesEntity? = null,
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "set_id", referencedColumnName = "id", insertable = false, updatable = false)
     val productSet: ProductSetEntity? = null,
-
     @OneToMany(
         mappedBy = "product",
         cascade = [CascadeType.ALL],
         orphanRemoval = true,
-        fetch = FetchType.EAGER
+        fetch = FetchType.EAGER,
     )
-    val sellOffers: MutableSet<SellOfferEntity> = mutableSetOf()
+    val sellOffers: MutableSet<SellOfferEntity> = mutableSetOf(),
 ) : Serializable {
     companion object {
         private const val serialVersionUID: Long = 1L
@@ -125,12 +105,10 @@ data class ProductEntity(
         return externalId == other.externalId
     }
 
-    fun compareTo(other: ProductEntity): Int {
-        return compareValuesBy(this, other, { it.price }, { it.priceTrend }, { it.priceTrendValid })
-    }
+    fun compareTo(other: ProductEntity): Int = compareValuesBy(this, other, { it.price }, { it.priceTrend }, { it.priceTrendValid })
 
     override fun hashCode(): Int = id?.hashCode() ?: externalId.hashCode()
-    override fun toString(): String {
-        return "ProductEntity(id=$id, externalId=$externalId, rarity=$rarity, codeInfo=$codeInfo, codeInfoValid=$codeInfoValid, genre=$genre, type=$type, cmId=$cmId, imgLink=$imgLink, price=$price, priceTrend=$priceTrend, priceTrendValid=$priceTrendValid, createdAt=$createdAt, updatedAt=$updatedAt, nameTranslations=$nameTranslations, sellOffers=${sellOffers.size})"
-    }
+
+    override fun toString(): String =
+        "ProductEntity(id=$id, externalId=$externalId, rarity=$rarity, codeInfo=$codeInfo, codeInfoValid=$codeInfoValid, genre=$genre, type=$type, cmId=$cmId, imgLink=$imgLink, price=$price, priceTrend=$priceTrend, priceTrendValid=$priceTrendValid, createdAt=$createdAt, updatedAt=$updatedAt, nameTranslations=$nameTranslations, sellOffers=${sellOffers.size})"
 }

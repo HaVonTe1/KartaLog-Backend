@@ -9,7 +9,6 @@ import java.nio.file.Files
 import java.nio.file.Paths
 
 class CardMarketContentParserTest {
-
     private val parser = CardMarketContentParser()
 
     @Test
@@ -37,14 +36,15 @@ class CardMarketContentParserTest {
         Assumptions.assumeTrue(file.exists(), "Ressource fehlt, Test wird übersprungen")
         val content = Files.readString(Paths.get(resourcePath))
 
-        val productDetails = parser.parseProductDetails(
-            content,
-            cmId = "Pikachu-MCD166",
-            genre = "Pokemon",
-            type = "Singles",
-            lang = "de",
-            setname = "McDonalds-Collection-2016",
-        )
+        val productDetails =
+            parser.parseProductDetails(
+                content,
+                cmId = "Pikachu-MCD166",
+                genre = "Pokemon",
+                type = "Singles",
+                lang = "de",
+                setname = "McDonalds-Collection-2016",
+            )
 
         assertEquals("Pikachu-MCD166", productDetails.cmId)
         assertEquals("Pokemon", productDetails.genre)
@@ -65,7 +65,6 @@ class CardMarketContentParserTest {
         assertEquals("Played", productDetails.sellOffers[0].condition)
         assertEquals("1", productDetails.sellOffers[0].amount)
         assertEquals("1,40 €", productDetails.sellOffers[0].price)
-
     }
 
     @Test
@@ -76,14 +75,15 @@ class CardMarketContentParserTest {
         Assumptions.assumeTrue(file.exists(), "Ressource fehlt, Test wird übersprungen")
         val content = Files.readString(Paths.get(resourcePath))
 
-        val productDetails = parser.parseProductDetails(
-            content,
-            cmId = "Pikachu-MCD166",
-            genre = "Pokemon",
-            type = "Singles",
-            lang = "de",
-            setname = "McDonalds-Collection-2016",
-        )
+        val productDetails =
+            parser.parseProductDetails(
+                content,
+                cmId = "Pikachu-MCD166",
+                genre = "Pokemon",
+                type = "Singles",
+                lang = "de",
+                setname = "McDonalds-Collection-2016",
+            )
 
         assertEquals("Pikachu-MCD166", productDetails.cmId)
         assertEquals("Pokemon", productDetails.genre)
@@ -104,6 +104,5 @@ class CardMarketContentParserTest {
         assertEquals("Played", productDetails.sellOffers[0].condition)
         assertEquals("1", productDetails.sellOffers[0].amount)
         assertEquals("1,40 €", productDetails.sellOffers[0].price)
-
     }
 }

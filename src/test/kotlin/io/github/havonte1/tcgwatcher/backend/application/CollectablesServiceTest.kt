@@ -17,7 +17,6 @@ import org.junit.jupiter.api.Test
 import org.springframework.web.server.ResponseStatusException
 
 class CollectablesServiceTest {
-
     private val mockScraperPort: CardMarketScraperPort = mockk()
     private val mockSearchResultRepository: SearchResultRepository = mockk()
     private val mockProductRepository: ProductRepository = mockk()
@@ -26,11 +25,12 @@ class CollectablesServiceTest {
 
     @BeforeEach
     fun setUp() {
-        service = CollectablesService(
-            mockScraperPort,
-            mockSearchResultRepository,
-            productRepository = mockProductRepository
-        )
+        service =
+            CollectablesService(
+                mockScraperPort,
+                mockSearchResultRepository,
+                productRepository = mockProductRepository,
+            )
     }
 
     @Test
@@ -38,16 +38,17 @@ class CollectablesServiceTest {
         val query = "Pikachu"
         val locale = "de"
         val game = "Pokemon"
-        val products = listOf(
-            Product(
-                externalId = 1L,
-                cmId = "CM001",
-                names = mapOf("de" to "Pikachu"),
-                genre = "Pokemon",
-                type = "Singles",
-                price = "1,50 €"
+        val products =
+            listOf(
+                Product(
+                    externalId = 1L,
+                    cmId = "CM001",
+                    names = mapOf("de" to "Pikachu"),
+                    genre = "Pokemon",
+                    type = "Singles",
+                    price = "1,50 €",
+                ),
             )
-        )
 
         every { mockSearchResultRepository.findByQuery(query) } returns null
         coEvery { mockScraperPort.search(query, locale, game) } returns products
@@ -83,22 +84,24 @@ class CollectablesServiceTest {
         val lang = "de"
         val storedCmCode = "base1"
 
-        val existingProduct = Product(
-            externalId = 1L,
-            cmId = cmId,
-            genre = genre,
-            type = type,
-            set = ProductSet(setId = 1L, cmCode = storedCmCode)
-        )
+        val existingProduct =
+            Product(
+                externalId = 1L,
+                cmId = cmId,
+                genre = genre,
+                type = type,
+                set = ProductSet(setId = 1L, cmCode = storedCmCode),
+            )
 
-        val scrapedProduct = Product(
-            externalId = 1L,
-            cmId = cmId,
-            genre = genre,
-            type = type,
-            price = "10,00 €",
-            set = ProductSet(setId = 1L, cmCode = storedCmCode)
-        )
+        val scrapedProduct =
+            Product(
+                externalId = 1L,
+                cmId = cmId,
+                genre = genre,
+                type = type,
+                price = "10,00 €",
+                set = ProductSet(setId = 1L, cmCode = storedCmCode),
+            )
 
         every { mockProductRepository.findByCmId(cmId) } returns existingProduct
         coEvery {
@@ -107,14 +110,15 @@ class CollectablesServiceTest {
                 genre,
                 type,
                 lang,
-                storedCmCode
+                storedCmCode,
             )
         } returns scrapedProduct
         every { mockProductRepository.save(any()) } returns scrapedProduct
 
-        val result = runBlocking {
-            service.fetchProductDetails(cmId, genre, type, lang, "")
-        }
+        val result =
+            runBlocking {
+                service.fetchProductDetails(cmId, genre, type, lang, "")
+            }
 
         assertEquals(cmId, result?.cmId)
     }
@@ -128,11 +132,12 @@ class CollectablesServiceTest {
 
         every { mockProductRepository.findByCmId(cmId) } returns null
 
-        val exception = assertThrows(ResponseStatusException::class.java) {
-            runBlocking {
-                service.fetchProductDetails(cmId, genre, type, lang, "")
+        val exception =
+            assertThrows(ResponseStatusException::class.java) {
+                runBlocking {
+                    service.fetchProductDetails(cmId, genre, type, lang, "")
+                }
             }
-        }
 
         assertEquals(400, exception.statusCode.value())
         assertEquals("no setname provided", exception.reason)
@@ -145,21 +150,23 @@ class CollectablesServiceTest {
         val type = "Singles"
         val lang = "de"
 
-        val existingProduct = Product(
-            externalId = 2L,
-            cmId = cmId,
-            genre = genre,
-            type = type,
-            set = null
-        )
+        val existingProduct =
+            Product(
+                externalId = 2L,
+                cmId = cmId,
+                genre = genre,
+                type = type,
+                set = null,
+            )
 
         every { mockProductRepository.findByCmId(cmId) } returns existingProduct
 
-        val exception = assertThrows(ResponseStatusException::class.java) {
-            runBlocking {
-                service.fetchProductDetails(cmId, genre, type, lang, "")
+        val exception =
+            assertThrows(ResponseStatusException::class.java) {
+                runBlocking {
+                    service.fetchProductDetails(cmId, genre, type, lang, "")
+                }
             }
-        }
 
         assertEquals(400, exception.statusCode.value())
         assertEquals("no setname provided", exception.reason)

@@ -19,19 +19,19 @@ import java.nio.file.Paths
  * mocking and any network calls.
  */
 class CardMarketScraperAdapterTest {
-
     @Test
     fun `search returns one product built from HTML`() {
         val resourcePath = "src/test/resources/pikachu_gallery_30.html"
 
         val file = File(resourcePath)
         Assumptions.assumeTrue(file.exists(), "Ressource fehlt, Test wird übersprungen")
+
         // Use a simple test implementation of CardMarketWebFetcherPort that reads the HTML file.
         class TestCardMarketWebFetcher : CardMarketWebFetcherPort {
             override fun fetch(
                 searchString: String,
                 locale: String,
-                game: String
+                game: String,
             ): Result<String> = Result.success(Files.readString(Paths.get(resourcePath)))
 
             override fun fetchDetails(
@@ -39,11 +39,8 @@ class CardMarketScraperAdapterTest {
                 genre: String,
                 type: String,
                 lang: String,
-                setname: String
-            ): Result<String> {
-                return Result.failure(UnsupportedOperationException("Not implemented"))
-            }
-
+                setname: String,
+            ): Result<String> = Result.failure(UnsupportedOperationException("Not implemented"))
         }
 
         val testFetcher = TestCardMarketWebFetcher()
@@ -51,13 +48,14 @@ class CardMarketScraperAdapterTest {
 
         // ----- Execute the adapter -----
 
-        val result: List<Product> = runBlocking {
-            adapter.search(
-                "Pikachu",
-                locale = "de",
-                game = "Pokemon"
-            )
-        }
+        val result: List<Product> =
+            runBlocking {
+                adapter.search(
+                    "Pikachu",
+                    locale = "de",
+                    game = "Pokemon",
+                )
+            }
 
         // ----- Verify -----
         assertEquals(30, result.size, "Exactly one product should be parsed")

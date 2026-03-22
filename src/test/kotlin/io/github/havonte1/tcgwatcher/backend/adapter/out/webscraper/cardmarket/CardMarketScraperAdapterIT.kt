@@ -31,9 +31,7 @@ import org.testcontainers.postgresql.PostgreSQLContainer
 @Disabled("only for internal testing")
 @Testcontainers
 @Tag("integration")
-
 class CardMarketScraperAdapterIT {
-
     @Autowired
     private lateinit var scraper: CardMarketScraperPort
 
@@ -44,9 +42,10 @@ class CardMarketScraperAdapterIT {
             try {
                 Playwright.create().use {
                     it.chromium().launch(
-                        BrowserType.LaunchOptions()
+                        BrowserType
+                            .LaunchOptions()
                             .setHeadless(false)
-                            .setArgs(listOf("--disable-blink-features=AutomationControlled"))
+                            .setArgs(listOf("--disable-blink-features=AutomationControlled")),
                     )
                 }
             } catch (_: Exception) {

@@ -12,5 +12,5 @@ data class SearchResult(
     val query: String,
     val products: List<Product> = emptyList(),
     /** Timestamp when this result was cached */
-    val cachedAt: Instant? = null
+    val cachedAt: Instant? = null,
 )

@@ -1,0 +1,18 @@
+plugins {
+    id("org.springframework.boot") version "4.0.2"
+    id("io.spring.dependency-management") version "1.1.6"
+    kotlin("jvm") version "2.2.20"
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation("de.codecentric:spring-boot-admin-starter-server:4.0.2")
+    implementation("org.springframework.boot:spring-boot-starter-webmvc")
+}
+
+springBoot {
+    mainClass.set("io.github.havonte1.tcgwatcher.backend.admin.AdminServerApplicationKt")
+}

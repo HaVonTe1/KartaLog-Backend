@@ -5,26 +5,21 @@ WORKDIR /build
 
 COPY gradle gradle/
 COPY gradlew .
-COPY build.gradle.kts settings.gradle.kts ./
+COPY admin-server/build.gradle.kts  ./
 
 RUN --mount=type=cache,target=/root/.gradle ./gradlew --version --no-daemon
 
-COPY src src/
-COPY contract contract/
+COPY admin-server/src src/
 
 RUN --mount=type=cache,target=/root/.gradle ./gradlew bootJar -x test --no-daemon
 
-FROM eclipse-temurin:24-jre-alpine
-
-RUN apk add --no-cache nodejs npm chromium
+FROM eclipse-temurin:17-jre-alpine
 
 WORKDIR /app
 
 COPY --from=builder /build/build/libs/*.jar app.jar
 
-ENV PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=0
-
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
     CMD wget --no-verbose --tries=1 --spider http://localhost:8080/actuator/health || exit 1
 
-ENTRYPOINT ["java", "-Dplaywright.nodejs.path=/usr/bin/node", "-Dplaywright.browser.validate.hostDependencies=false", "-XX:+UseContainerSupport", "-XX:MaxRAMPercentage=75.0", "-jar", "/app/app.jar"]
+ENTRYPOINT ["java", "-XX:+UseContainerSupport", "-XX:MaxRAMPercentage=75.0", "-jar", "/app/app.jar"]

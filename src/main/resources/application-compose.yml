@@ -6,12 +6,21 @@ management:
   endpoints:
     web:
       exposure:
-        include: health,info
+        include: health,info,metrics,prometheus
   endpoint:
     health:
       show-details: always
-
+      probes:
+        enabled: true
 spring:
+  boot:
+    admin:
+      client:
+        url: http://admin-server:8080
+        instance:
+          name: TCGWatcher-Backend
+          management-url: http://app:8081
+          service-base-url: http://app:8080
   datasource:
     url: jdbc:postgresql://postgres:5432/tcgwatcherdb
     username: watcher_app

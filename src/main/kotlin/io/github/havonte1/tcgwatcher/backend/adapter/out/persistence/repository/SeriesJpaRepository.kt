@@ -8,6 +8,7 @@ import org.springframework.stereotype.Repository
 @Repository
 interface SeriesJpaRepository : JpaRepository<SeriesEntity, Long> {
     fun findBySourceId(sourceId: String): SeriesEntity?
+
     fun existsBySourceId(sourceId: String): Boolean
 
     @Query("SELECT CASE WHEN COUNT(s) > 0 THEN true ELSE false END FROM SeriesEntity s WHERE s.sourceId IS NOT NULL")

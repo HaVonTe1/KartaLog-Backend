@@ -11,14 +11,14 @@ import java.util.concurrent.TimeUnit
 @Configuration
 @EnableCaching
 class CacheConfig {
-
     @Bean
     fun cacheManager(): CacheManager {
         val cacheManager = CaffeineCacheManager()
         cacheManager.setCaffeine(
-            Caffeine.newBuilder()
+            Caffeine
+                .newBuilder()
                 .expireAfterWrite(1, TimeUnit.HOURS)
-                .maximumSize(1000)
+                .maximumSize(1000),
         )
         return cacheManager
     }

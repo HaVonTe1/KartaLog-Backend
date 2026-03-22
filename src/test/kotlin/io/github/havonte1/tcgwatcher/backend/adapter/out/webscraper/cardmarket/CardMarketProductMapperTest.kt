@@ -5,23 +5,23 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 class CardMarketProductMapperTest {
-
     private val mapper = CardMarketProductMapper()
 
     @Test
     fun `toProducts maps SearchResultsPageDto correctly`() {
         val nameDto = NameDto(value = "Pikachu", languageCode = "en")
-        val item = CardmarketProductGallaryItemDto(
-            name = nameDto,
-            code = "12345",
-            genre = "Pokemon",
-            type = "Single",
-            cmId = "/pokemon/product/singles/setx/12345",
-            cmLink = "https://www.cardmarket.com/en/pokemon/product/singles/setx/12345",
-            imgLink = "https://images.cardmarket.com/12345.jpg",
-            price = "10,00 €",
-            priceTrend = "up"
-        )
+        val item =
+            CardmarketProductGallaryItemDto(
+                name = nameDto,
+                code = "12345",
+                genre = "Pokemon",
+                type = "Single",
+                cmId = "/pokemon/product/singles/setx/12345",
+                cmLink = "https://www.cardmarket.com/en/pokemon/product/singles/setx/12345",
+                imgLink = "https://images.cardmarket.com/12345.jpg",
+                price = "10,00 €",
+                priceTrend = "up",
+            )
         val pageDto = SearchResultsPageDto(results = listOf(item), page = 1, totalPages = 1)
 
         val products = mapper.toProducts(pageDto)
@@ -45,40 +45,44 @@ class CardMarketProductMapperTest {
 
     @Test
     fun `toProductDetails maps CardmarketProductDetailsDto correctly`() {
-
-        val detailsDto = CardmarketProductDetailsDto(
-            name = NameDto(
-                value = "Rama",
-                languageCode = "de",
-                i18n = "RamaLama"
-            ),
-            type = "Singles",
-            genre = "Pokemon",
-            code = CodeType(valid = true, value = "bla"),
-            cmId = "Pikachu-V1-EVS049",
-            imageUrl = "https://images.cardmarket.com/12345.jpg",
-            rarity = "Promo",
-            set = SetDto(
-                name = "KRababel",
-                code = "kradfb"
-            ),
-            price = "1,40 €",
-            priceTrend = PriceTrendType(
-                value = "1,23 €",
-                valid = true
-            ) ,
-            sellOffers = listOf(
-                CardmarketSellOfferDto(
-                    sellerName = "Jürgen",
-                    sellerLocation = "Deutschland",
-                    productLanguage = "Deutsch",
-                    condition = "Played",
-                    amount = "1",
-                    price = "1,23 €",
-                    special = ""
-                )
+        val detailsDto =
+            CardmarketProductDetailsDto(
+                name =
+                    NameDto(
+                        value = "Rama",
+                        languageCode = "de",
+                        i18n = "RamaLama",
+                    ),
+                type = "Singles",
+                genre = "Pokemon",
+                code = CodeType(valid = true, value = "bla"),
+                cmId = "Pikachu-V1-EVS049",
+                imageUrl = "https://images.cardmarket.com/12345.jpg",
+                rarity = "Promo",
+                set =
+                    SetDto(
+                        name = "KRababel",
+                        code = "kradfb",
+                    ),
+                price = "1,40 €",
+                priceTrend =
+                    PriceTrendType(
+                        value = "1,23 €",
+                        valid = true,
+                    ),
+                sellOffers =
+                    listOf(
+                        CardmarketSellOfferDto(
+                            sellerName = "Jürgen",
+                            sellerLocation = "Deutschland",
+                            productLanguage = "Deutsch",
+                            condition = "Played",
+                            amount = "1",
+                            price = "1,23 €",
+                            special = "",
+                        ),
+                    ),
             )
-        )
         val product = mapper.toProductDetails(detailsDto)
 
         assertEquals("Pikachu-V1-EVS049", product.cmId)
@@ -105,7 +109,5 @@ class CardMarketProductMapperTest {
         assertEquals("1", sellOffer.amount)
         assertEquals("1,23 €", sellOffer.price)
         assertEquals("", sellOffer.special)
-
-
     }
 }

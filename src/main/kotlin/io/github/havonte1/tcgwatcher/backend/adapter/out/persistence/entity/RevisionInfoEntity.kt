@@ -9,7 +9,6 @@ import jakarta.persistence.Table
 import org.hibernate.envers.RevisionEntity
 import org.hibernate.envers.RevisionNumber
 import org.hibernate.envers.RevisionTimestamp
-import java.time.Instant
 
 /**
  * Custom revision entity for Envers audit tracking.
@@ -25,10 +24,9 @@ class RevisionInfoEntity(
     @RevisionNumber
     @Column(name = "rev", nullable = false, updatable = false)
     var rev: Long = 0,
-
     @RevisionTimestamp
     @Column(name = "revtstmp", nullable = false, updatable = false)
-    var revtstmp: Long = System.currentTimeMillis()
+    var revtstmp: Long = System.currentTimeMillis(),
 ) : java.io.Serializable {
     companion object {
         private const val serialVersionUID: Long = 1L

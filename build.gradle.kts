@@ -2,16 +2,23 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     id("org.openapi.generator") version "7.19.0"
-    kotlin("jvm") version "2.2.21"
-    kotlin("plugin.spring") version "2.2.21"
+    kotlin("jvm") version "2.2.20"
+    kotlin("plugin.spring") version "2.2.20"
     id("org.springframework.boot") version "4.0.2"
     id("io.spring.dependency-management") version "1.1.6"
+    id("org.jlleitschuh.gradle.ktlint") version "12.1.2"
+    id("dev.detekt") version "2.0.0-alpha.1"
 }
 
 openApiGenerate {
     generatorName.set("kotlin-spring")
     inputSpec.set("$rootDir/contract/openapi.yaml")
-    outputDir.set(layout.buildDirectory.asFile.get().resolve("generated/").path)
+    outputDir.set(
+        layout.buildDirectory.asFile
+            .get()
+            .resolve("generated/")
+            .path,
+    )
     apiPackage.set("io.github.havonte1.tcgwatcher.backend.adapter.inbound.rest.api")
     modelPackage.set("io.github.havonte1.tcgwatcher.backend.adapter.inbound.rest.model")
     configOptions.set(
@@ -22,8 +29,8 @@ openApiGenerate {
             "reactive" to "true",
             "declarativeInterfaceReactiveMode" to "coroutines",
             "useFlowForArrayReturnType" to "false",
-            "skipDefaultInterface" to "true"
-        )
+            "skipDefaultInterface" to "true",
+        ),
     )
 }
 
@@ -46,23 +53,24 @@ tasks.named<Test>("test") {
     }
 }
 
-val integrationTest = tasks.register<Test>("integrationTest") {
-    description = "Runs integration tests."
-    group = "verification"
-    // Use the same test classes and classpath as the standard test task
-    testClassesDirs = tasks.named<Test>("test").get().testClassesDirs
-    classpath = tasks.named<Test>("test").get().classpath
+val integrationTest =
+    tasks.register<Test>("integrationTest") {
+        description = "Runs integration tests."
+        group = "verification"
+        // Use the same test classes and classpath as the standard test task
+        testClassesDirs = tasks.named<Test>("test").get().testClassesDirs
+        classpath = tasks.named<Test>("test").get().classpath
 
-    useJUnitPlatform {
-        includeTags("integration")
-    }
+        useJUnitPlatform {
+            includeTags("integration")
+        }
 
-    testLogging {
-        events("passed", "skipped", "failed")
-        showStandardStreams = true
-        exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
+        testLogging {
+            events("passed", "skipped", "failed")
+            showStandardStreams = true
+            exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
+        }
     }
-}
 
 tasks.check { dependsOn(integrationTest) }
 
@@ -70,7 +78,11 @@ kotlin {
     jvmToolchain(17)
     sourceSets {
         main {
-            kotlin.srcDir(layout.buildDirectory.asFile.get().resolve("generated/src/main/kotlin"))
+            kotlin.srcDir(
+                layout.buildDirectory.asFile
+                    .get()
+                    .resolve("generated/src/main/kotlin"),
+            )
         }
     }
 }
@@ -90,6 +102,32 @@ repositories {
     mavenCentral()
 }
 
+detekt {
+    buildUponDefaultConfig = true
+    allRules = false
+}
+
+ktlint {
+    version.set("1.5.0")
+    android.set(false)
+    filter {
+        exclude("**/generated/**")
+        exclude("**/build/generated/**")
+    }
+}
+
+tasks.named("runKtlintCheckOverMainSourceSet") {
+    enabled = false
+}
+
+tasks.named("runKtlintFormatOverMainSourceSet") {
+    enabled = false
+}
+
+tasks.named("runKtlintFormatOverKotlinScripts") {
+    dependsOn("openApiGenerate")
+}
+
 val resilience4jVersion = "2.3.0"
 
 dependencies {
@@ -102,6 +140,7 @@ dependencies {
     implementation("org.hibernate.orm:hibernate-envers")
     implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("org.springframework.boot:spring-boot-starter-aop:4.0.0-M2")
+    implementation("de.codecentric:spring-boot-admin-starter-client:4.0.2")
     implementation("org.springframework.boot:spring-boot-starter-liquibase")
     implementation("org.springframework.boot:spring-boot-starter-restclient")
     implementation("org.springframework.boot:spring-boot-starter-validation")

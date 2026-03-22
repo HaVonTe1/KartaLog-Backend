@@ -8,9 +8,7 @@ data class Product(
     val externalId: Long,
     /** Source ID from SQLite quicksearch database */
     val sourceId: String? = null,
-
     val set: ProductSet? = null,
-
     val series: ProductSeries? = null,
     /** Rarity string as provided by the source (e.g., "Rare", "Ultra Rare") */
     val rarity: String? = null,
@@ -20,7 +18,6 @@ data class Product(
     val updatedAt: Instant? = null,
     /** Map of locale code to translated product name */
     val names: Map<String, String> = emptyMap(),
-
     /** Code value with validity flag */
     val codeInfo: StringWithValidity? = null,
     /** Genre of the product */
@@ -36,12 +33,12 @@ data class Product(
     /** Price trend with validity flag */
     val priceTrendInfo: StringWithValidity? = null,
     /** List of sell offers for this product */
-    val sellOffers: List<SellOffer>? = null
+    val sellOffers: List<SellOffer>? = null,
 )
 
 data class StringWithValidity(
     val value: String? = null,
-    val valid: Boolean? = null
+    val valid: Boolean? = null,
 )
 
 data class SellOffer(
@@ -51,14 +48,12 @@ data class SellOffer(
     val special: String,
     val condition: String,
     val amount: String,
-    val price: String
+    val price: String,
 )
 
 data class ProductSet(
     val setId: Long,
-
     val cmCode: String,
-
     val names: Map<String, String> = emptyMap(),
 )
 

@@ -16,7 +16,7 @@ class ProductRepositoryAdapter(
     private val jpaRepository: ProductJpaRepository,
     private val sellOfferJpaRepository: SellOfferJpaRepository,
     private val productSetJpaRepository: ProductSetJpaRepository,
-    private val mapper: ProductMapper
+    private val mapper: ProductMapper,
 ) : ProductRepository {
     override fun deleteAll() {
         jpaRepository.deleteAll()
@@ -30,22 +30,24 @@ class ProductRepositoryAdapter(
         val existingSets = productSetJpaRepository.findByCmProductCode(cmSetCode)
         logger.debug { "Existing sets for $cmSetCode: ${existingSets.size}" }
 
-        val productSetEntity = if (existingSets.isNotEmpty()) {
-            existingSets.first()
-        } else {
-            val newSet = ProductSetEntity(cmProductCode = cmSetCode)
-            logger.debug { "Creating new ProductSetEntity with cmCode: $cmSetCode" }
-            val nameTranslationEntity = NameTranslationEntity(
-                productSet = newSet,
-                languageCode = "de",
-                name = product.set?.names["de"] ?: "dummy"
-            )
-            newSet.nameTranslations.add(nameTranslationEntity)
-            val saved = productSetJpaRepository.save(newSet)
-            productSetJpaRepository.flush()
-            logger.debug { "Saved new ProductSetEntity with id: ${saved.id}" }
-            saved
-        }
+        val productSetEntity =
+            if (existingSets.isNotEmpty()) {
+                existingSets.first()
+            } else {
+                val newSet = ProductSetEntity(cmProductCode = cmSetCode)
+                logger.debug { "Creating new ProductSetEntity with cmCode: $cmSetCode" }
+                val nameTranslationEntity =
+                    NameTranslationEntity(
+                        productSet = newSet,
+                        languageCode = "de",
+                        name = product.set?.names["de"] ?: "dummy",
+                    )
+                newSet.nameTranslations.add(nameTranslationEntity)
+                val saved = productSetJpaRepository.save(newSet)
+                productSetJpaRepository.flush()
+                logger.debug { "Saved new ProductSetEntity with id: ${saved.id}" }
+                saved
+            }
 
         logger.debug { "Using ProductSetEntity with id: ${productSetEntity.id} for product" }
 
@@ -71,35 +73,39 @@ class ProductRepositoryAdapter(
         val newCmCodes = uniqueCmCodes.filter { it !in existingSetMap.keys }
         logger.debug { "Need to create ${newCmCodes.size} new sets: $newCmCodes" }
 
-        val newSets = newCmCodes.map { cmCode ->
-            val product = products.first { it.set?.cmCode == cmCode }
-            val productSetEntity = ProductSetEntity(cmProductCode = cmCode)
-            val nameTranslationEntity = NameTranslationEntity(
-                productSet = productSetEntity,
-                languageCode = "de",
-                name = product.set?.names["de"] ?: "dummy"
-            )
-            productSetEntity.nameTranslations.add(nameTranslationEntity)
-            productSetEntity
-        }
+        val newSets =
+            newCmCodes.map { cmCode ->
+                val product = products.first { it.set?.cmCode == cmCode }
+                val productSetEntity = ProductSetEntity(cmProductCode = cmCode)
+                val nameTranslationEntity =
+                    NameTranslationEntity(
+                        productSet = productSetEntity,
+                        languageCode = "de",
+                        name = product.set?.names["de"] ?: "dummy",
+                    )
+                productSetEntity.nameTranslations.add(nameTranslationEntity)
+                productSetEntity
+            }
 
-        val savedNewSets = if (newSets.isNotEmpty()) {
-            val saved = productSetJpaRepository.saveAll(newSets)
-            productSetJpaRepository.flush()
-            logger.debug { "Saved ${saved.size} new ProductSetEntities with ids: ${saved.map { it.id }}" }
-            saved
-        } else {
-            emptyList()
-        }
+        val savedNewSets =
+            if (newSets.isNotEmpty()) {
+                val saved = productSetJpaRepository.saveAll(newSets)
+                productSetJpaRepository.flush()
+                logger.debug { "Saved ${saved.size} new ProductSetEntities with ids: ${saved.map { it.id }}" }
+                saved
+            } else {
+                emptyList()
+            }
 
         val allSetMap = (existingSets + savedNewSets).associateBy { it.cmProductCode }
 
-        val entities = products.map { product ->
-            val cmCode = product.set?.cmCode ?: "dummy"
-            val productSetEntity = allSetMap[cmCode]!!
-            logger.debug { "Mapping product ${product.externalId} with ProductSetEntity id: ${productSetEntity.id}" }
-            mapper.toEntity(product, productSetEntity)
-        }
+        val entities =
+            products.map { product ->
+                val cmCode = product.set?.cmCode ?: "dummy"
+                val productSetEntity = allSetMap[cmCode]!!
+                logger.debug { "Mapping product ${product.externalId} with ProductSetEntity id: ${productSetEntity.id}" }
+                mapper.toEntity(product, productSetEntity)
+            }
 
         entities.forEach { entity ->
             logger.debug { "ProductEntity setId before save: ${entity.setId}" }
@@ -112,16 +118,13 @@ class ProductRepositoryAdapter(
     }
 
     @Transactional(readOnly = true)
-    override fun findById(id: Long): Product? =
-        jpaRepository.findById(id).orElse(null)?.let { mapper.toDomain(it) }
+    override fun findById(id: Long): Product? = jpaRepository.findById(id).orElse(null)?.let { mapper.toDomain(it) }
 
     @Transactional(readOnly = true)
-    override fun findByExternalId(externalId: Long): Product? =
-        jpaRepository.findByExternalId(externalId)?.let { mapper.toDomain(it) }
+    override fun findByExternalId(externalId: Long): Product? = jpaRepository.findByExternalId(externalId)?.let { mapper.toDomain(it) }
 
     @Transactional(readOnly = true)
-    override fun findAll(): List<Product> =
-        jpaRepository.findAll().map { mapper.toDomain(it) }
+    override fun findAll(): List<Product> = jpaRepository.findAll().map { mapper.toDomain(it) }
 
     @Transactional
     override fun delete(product: Product) {
@@ -129,12 +132,10 @@ class ProductRepositoryAdapter(
             jpaRepository.findById(product.id).ifPresent { jpaRepository.delete(it) }
         }
     }
+
     @Transactional(readOnly = true)
-    override fun findByCmId(
-        cmId: String,
-    ): Product? {
+    override fun findByCmId(cmId: String): Product? {
         val entity = jpaRepository.findByCmId(cmId)
         return entity?.let { mapper.toDomain(it) }
     }
-
 }

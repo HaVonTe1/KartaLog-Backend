@@ -18,12 +18,14 @@ class CollectablesService(
     private val searchResultRepository: SearchResultRepository,
     private val productRepository: ProductRepository,
 ) : SearchUseCase {
-
     private val logger = KotlinLogging.logger {}
 
-
     @Cacheable("listCache")
-    override suspend fun search(searchString: String, locale: String, game: String): List<Product> {
+    override suspend fun search(
+        searchString: String,
+        locale: String,
+        game: String,
+    ): List<Product> {
         logger.debug { "Searching for collectables with query='$searchString'" }
 
         val scraped: List<Product> =
@@ -48,19 +50,20 @@ class CollectablesService(
         genre: String,
         type: String,
         lang: String,
-        setname: String
+        setname: String,
     ): Product? {
         logger.info { "Fetching product details for cmId=$cmId" }
 
         val existingProduct = productRepository.findByCmId(cmId)
 
-        val actualSetName = setname.ifBlank {
-            if (existingProduct != null && !existingProduct.set?.cmCode.isNullOrBlank()) {
-                existingProduct.set.cmCode
-            } else {
-                throw ResponseStatusException(HttpStatus.BAD_REQUEST, "no setname provided")
+        val actualSetName =
+            setname.ifBlank {
+                if (existingProduct != null && !existingProduct.set?.cmCode.isNullOrBlank()) {
+                    existingProduct.set.cmCode
+                } else {
+                    throw ResponseStatusException(HttpStatus.BAD_REQUEST, "no setname provided")
+                }
             }
-        }
 
         if (existingProduct != null) {
             val newProduct = scraperPort.fetchProductDetails(cmId, genre, type, lang, actualSetName)
@@ -83,15 +86,14 @@ class CollectablesService(
         return existingProduct
     }
 
-    override suspend fun getSearchCachedAt(searchString: String): Instant? {
-        return searchResultRepository.findByQuery(searchString)?.cachedAt
-    }
+    override suspend fun getSearchCachedAt(searchString: String): Instant? = searchResultRepository.findByQuery(searchString)?.cachedAt
 
-    override suspend fun getProductUpdatedAt(cmId: String): Instant? {
-        return productRepository.findByCmId(cmId)?.updatedAt
-    }
+    override suspend fun getProductUpdatedAt(cmId: String): Instant? = productRepository.findByCmId(cmId)?.updatedAt
 
-    private fun hasChanges(oldProduct: Product, newProduct: Product): Boolean {
+    private fun hasChanges(
+        oldProduct: Product,
+        newProduct: Product,
+    ): Boolean {
         if (oldProduct.price != newProduct.price) return true
 
         val oldSellOffersMap = oldProduct.sellOffers?.associate { it.sellerName to it } ?: emptyMap()

@@ -9,16 +9,16 @@ import io.github.havonte1.tcgwatcher.backend.adapter.out.persistence.repository.
 import io.github.havonte1.tcgwatcher.backend.adapter.out.persistence.repository.ProductSetJpaRepository
 import io.github.havonte1.tcgwatcher.backend.adapter.out.persistence.repository.SeriesJpaRepository
 import io.github.oshai.kotlinlogging.KotlinLogging
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.ApplicationArguments
 import org.springframework.boot.ApplicationRunner
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.core.annotation.Order
 import org.springframework.stereotype.Component
-import org.springframework.beans.factory.annotation.Value
-import java.sql.Connection
-import java.sql.DriverManager
 import java.io.BufferedReader
 import java.io.InputStreamReader
+import java.sql.Connection
+import java.sql.DriverManager
 
 @Component
 @Order(Int.MAX_VALUE)
@@ -27,9 +27,8 @@ class QuicksearchImportRunner(
     private val seriesJpaRepository: SeriesJpaRepository,
     private val productSetJpaRepository: ProductSetJpaRepository,
     private val productJpaRepository: ProductJpaRepository,
-    private val nameTranslationJpaRepository: NameTranslationJpaRepository
+    private val nameTranslationJpaRepository: NameTranslationJpaRepository,
 ) : ApplicationRunner {
-
     private val logger = KotlinLogging.logger {}
 
     override fun run(args: ApplicationArguments) {
@@ -60,15 +59,15 @@ class QuicksearchImportRunner(
         }
     }
 
-
     @Value("\${app.data.import.sqlite.path:quicksearch.db}")
     private lateinit var sqlitePath: String
 
     private fun getSqliteConnection(): Connection {
         // Load database from classpath resources
-        val resource = javaClass.classLoader.getResource(sqlitePath)
-            ?: throw IllegalArgumentException("Database file not found on classpath: $sqlitePath")
-        
+        val resource =
+            javaClass.classLoader.getResource(sqlitePath)
+                ?: throw IllegalArgumentException("Database file not found on classpath: $sqlitePath")
+
         val dbPath = resource.toURI().path
         logger.info { "Opening SQLite database at: $dbPath" }
         return DriverManager.getConnection("jdbc:sqlite:$dbPath")
@@ -76,11 +75,14 @@ class QuicksearchImportRunner(
 
     private fun importSeries(conn: Connection) {
         logger.info { "Importing series from SQLite" }
-        val stmt = conn.prepareStatement("""
-            SELECT id, name_de, name_en, name_fr
-            FROM qs_pokemon_series
-            WHERE name_de IS NOT NULL AND name_en IS NOT NULL AND name_fr IS NOT NULL
-        """.trimIndent())
+        val stmt =
+            conn.prepareStatement(
+                """
+                SELECT id, name_de, name_en, name_fr
+                FROM qs_pokemon_series
+                WHERE name_de IS NOT NULL AND name_en IS NOT NULL AND name_fr IS NOT NULL
+                """.trimIndent(),
+            )
 
         val rs = stmt.executeQuery()
         var count = 0
@@ -93,21 +95,27 @@ class QuicksearchImportRunner(
             val series = SeriesEntity(sourceId = sourceId)
             val saved = seriesJpaRepository.save(series)
 
-            nameTranslationJpaRepository.save(NameTranslationEntity(
-                languageCode = "de",
-                name = nameDe,
-                series = saved
-            ))
-            nameTranslationJpaRepository.save(NameTranslationEntity(
-                languageCode = "en",
-                name = nameEn,
-                series = saved
-            ))
-            nameTranslationJpaRepository.save(NameTranslationEntity(
-                languageCode = "fr",
-                name = nameFr,
-                series = saved
-            ))
+            nameTranslationJpaRepository.save(
+                NameTranslationEntity(
+                    languageCode = "de",
+                    name = nameDe,
+                    series = saved,
+                ),
+            )
+            nameTranslationJpaRepository.save(
+                NameTranslationEntity(
+                    languageCode = "en",
+                    name = nameEn,
+                    series = saved,
+                ),
+            )
+            nameTranslationJpaRepository.save(
+                NameTranslationEntity(
+                    languageCode = "fr",
+                    name = nameFr,
+                    series = saved,
+                ),
+            )
 
             count++
         }
@@ -116,20 +124,26 @@ class QuicksearchImportRunner(
         stmt.close()
     }
 
-    private fun buildSeriesMap(): Map<String, Long> {
-        return seriesJpaRepository.findAll()
+    private fun buildSeriesMap(): Map<String, Long> =
+        seriesJpaRepository
+            .findAll()
             .filter { it.sourceId != null }
             .associate { it.sourceId!! to it.id!! }
-    }
 
-    private fun importSets(conn: Connection, seriesMap: Map<String, Long>) {
+    private fun importSets(
+        conn: Connection,
+        seriesMap: Map<String, Long>,
+    ) {
         // Existing import from SQLite (unchanged)
         logger.info { "Importing sets from SQLite" }
-        val stmt = conn.prepareStatement("""
-            SELECT id, abbreviation, cm_product_id, code, name_de, name_en, name_fr, official, tcgp_id, total, series_id
-            FROM qs_pokemon_sets
-            WHERE name_de IS NOT NULL AND name_en IS NOT NULL AND name_fr IS NOT NULL AND code IS NOT NULL
-        """.trimIndent())
+        val stmt =
+            conn.prepareStatement(
+                """
+                SELECT id, abbreviation, cm_product_id, code, name_de, name_en, name_fr, official, tcgp_id, total, series_id
+                FROM qs_pokemon_sets
+                WHERE name_de IS NOT NULL AND name_en IS NOT NULL AND name_fr IS NOT NULL AND code IS NOT NULL
+                """.trimIndent(),
+            )
 
         val rs = stmt.executeQuery()
         var count = 0
@@ -154,33 +168,40 @@ class QuicksearchImportRunner(
 
             val seriesEntity = seriesJpaRepository.findById(seriesId).orElse(null)
 
-            val productSet = ProductSetEntity(
-                sourceId = sourceId,
-                abbreviation = abbreviation,
-                cmProductId = cmProductId,
-                code = code,
-                official = official,
-                tcgpId = tcgpId,
-                total = total,
-                series = seriesEntity
-            )
+            val productSet =
+                ProductSetEntity(
+                    sourceId = sourceId,
+                    abbreviation = abbreviation,
+                    cmProductId = cmProductId,
+                    code = code,
+                    official = official,
+                    tcgpId = tcgpId,
+                    total = total,
+                    series = seriesEntity,
+                )
             val saved = productSetJpaRepository.save(productSet)
 
-            nameTranslationJpaRepository.save(NameTranslationEntity(
-                languageCode = "de",
-                name = nameDe,
-                productSet = saved
-            ))
-            nameTranslationJpaRepository.save(NameTranslationEntity(
-                languageCode = "en",
-                name = nameEn,
-                productSet = saved
-            ))
-            nameTranslationJpaRepository.save(NameTranslationEntity(
-                languageCode = "fr",
-                name = nameFr,
-                productSet = saved
-            ))
+            nameTranslationJpaRepository.save(
+                NameTranslationEntity(
+                    languageCode = "de",
+                    name = nameDe,
+                    productSet = saved,
+                ),
+            )
+            nameTranslationJpaRepository.save(
+                NameTranslationEntity(
+                    languageCode = "en",
+                    name = nameEn,
+                    productSet = saved,
+                ),
+            )
+            nameTranslationJpaRepository.save(
+                NameTranslationEntity(
+                    languageCode = "fr",
+                    name = nameFr,
+                    productSet = saved,
+                ),
+            )
 
             count++
         }
@@ -191,8 +212,9 @@ class QuicksearchImportRunner(
 
     private fun importSetsFromCsv() {
         logger.info { "Importing sets from CSV" }
-        val resource = javaClass.classLoader.getResource("import/sets.csv")
-            ?: throw IllegalArgumentException("CSV file not found on classpath: sets.csv")
+        val resource =
+            javaClass.classLoader.getResource("import/sets.csv")
+                ?: throw IllegalArgumentException("CSV file not found on classpath: sets.csv")
         val reader = BufferedReader(InputStreamReader(resource.openStream()))
         // Skip header line
         var line = reader.readLine()
@@ -207,33 +229,40 @@ class QuicksearchImportRunner(
             val nameEn = parts[2]
             val nameFr = parts[3]
             val code = parts[4]
-            val productSet = ProductSetEntity(
-                sourceId = null,
-                abbreviation = null,
-                cmProductId = id,
-                cmProductCode = null,
-                code = code,
-                official = null,
-                tcgpId = null,
-                total = null,
-                series = null
-            )
+            val productSet =
+                ProductSetEntity(
+                    sourceId = null,
+                    abbreviation = null,
+                    cmProductId = id,
+                    cmProductCode = null,
+                    code = code,
+                    official = null,
+                    tcgpId = null,
+                    total = null,
+                    series = null,
+                )
             val saved = productSetJpaRepository.save(productSet)
-            nameTranslationJpaRepository.save(NameTranslationEntity(
-                languageCode = "de",
-                name = nameDe,
-                productSet = saved
-            ))
-            nameTranslationJpaRepository.save(NameTranslationEntity(
-                languageCode = "en",
-                name = nameEn,
-                productSet = saved
-            ))
-            nameTranslationJpaRepository.save(NameTranslationEntity(
-                languageCode = "fr",
-                name = nameFr,
-                productSet = saved
-            ))
+            nameTranslationJpaRepository.save(
+                NameTranslationEntity(
+                    languageCode = "de",
+                    name = nameDe,
+                    productSet = saved,
+                ),
+            )
+            nameTranslationJpaRepository.save(
+                NameTranslationEntity(
+                    languageCode = "en",
+                    name = nameEn,
+                    productSet = saved,
+                ),
+            )
+            nameTranslationJpaRepository.save(
+                NameTranslationEntity(
+                    languageCode = "fr",
+                    name = nameFr,
+                    productSet = saved,
+                ),
+            )
             count++
         }
         logger.info { "Imported $count sets with translations from CSV" }
@@ -243,18 +272,25 @@ class QuicksearchImportRunner(
     private fun buildSetsMap(): Map<String, Long> {
         // existing sets map after CSV import
 
-        return productSetJpaRepository.findAll()
+        return productSetJpaRepository
+            .findAll()
             .filter { it.sourceId != null }
             .associate { it.sourceId!! to it.id!! }
     }
 
-    private fun importCards(conn: Connection, setsMap: Map<String, Long>) {
+    private fun importCards(
+        conn: Connection,
+        setsMap: Map<String, Long>,
+    ) {
         logger.info { "Importing cards from SQLite" }
-        val stmt = conn.prepareStatement("""
-            SELECT id, cm_page_id, cm_product_id, code, name_de, name_en, name_fr, set_id, tcgp_id
-            FROM qs_pokemon_cards
-            WHERE name_de IS NOT NULL AND name_en IS NOT NULL AND name_fr IS NOT NULL AND code IS NOT NULL
-        """.trimIndent())
+        val stmt =
+            conn.prepareStatement(
+                """
+                SELECT id, cm_page_id, cm_product_id, code, name_de, name_en, name_fr, set_id, tcgp_id
+                FROM qs_pokemon_cards
+                WHERE name_de IS NOT NULL AND name_en IS NOT NULL AND name_fr IS NOT NULL AND code IS NOT NULL
+                """.trimIndent(),
+            )
 
         val rs = stmt.executeQuery()
         var count = 0
@@ -276,45 +312,52 @@ class QuicksearchImportRunner(
             }
 
             val externalId = cmProductId?.toLongOrNull()
-            if(externalId == null) {
+            if (externalId == null) {
                 logger.warn { "Skipping card $sourceId: external_id not found for product_id=$externalId" }
                 continue
             }
 
             val productSetEntity = productSetJpaRepository.findById(setId).orElse(null)
 
-            val product = ProductEntity(
-                externalId = externalId,
-                sourceId = sourceId,
-                cmId = cmPageId,
-                setId = setId,
-                codeInfo = code,
-                genre = "Pokemon",
-                type = "Singles",
-                productSet = productSetEntity
-            )
+            val product =
+                ProductEntity(
+                    externalId = externalId,
+                    sourceId = sourceId,
+                    cmId = cmPageId,
+                    setId = setId,
+                    codeInfo = code,
+                    genre = "Pokemon",
+                    type = "Singles",
+                    productSet = productSetEntity,
+                )
 
-            if(productJpaRepository.existsByExternalId(externalId)) {
+            if (productJpaRepository.existsByExternalId(externalId)) {
                 logger.warn { "Product already exists for external_id=$externalId" }
                 continue
             }
             val saved = productJpaRepository.save(product)
 
-            nameTranslationJpaRepository.save(NameTranslationEntity(
-                languageCode = "de",
-                name = nameDe,
-                product = saved
-            ))
-            nameTranslationJpaRepository.save(NameTranslationEntity(
-                languageCode = "en",
-                name = nameEn,
-                product = saved
-            ))
-            nameTranslationJpaRepository.save(NameTranslationEntity(
-                languageCode = "fr",
-                name = nameFr,
-                product = saved
-            ))
+            nameTranslationJpaRepository.save(
+                NameTranslationEntity(
+                    languageCode = "de",
+                    name = nameDe,
+                    product = saved,
+                ),
+            )
+            nameTranslationJpaRepository.save(
+                NameTranslationEntity(
+                    languageCode = "en",
+                    name = nameEn,
+                    product = saved,
+                ),
+            )
+            nameTranslationJpaRepository.save(
+                NameTranslationEntity(
+                    languageCode = "fr",
+                    name = nameFr,
+                    product = saved,
+                ),
+            )
 
             count++
         }

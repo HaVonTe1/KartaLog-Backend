@@ -13,23 +13,23 @@ import org.springframework.stereotype.Component
 class CardMarketScraperAdapter(
     private val webFetcher: CardMarketWebFetcherPort,
     private val contentParser: CardMarketContentParser = CardMarketContentParser(),
-    private val mapper: CardMarketProductMapper = CardMarketProductMapper()
-) :
-    CardMarketScraperPort {
+    private val mapper: CardMarketProductMapper = CardMarketProductMapper(),
+) : CardMarketScraperPort {
     private val logger = KotlinLogging.logger {}
 
     override suspend fun search(
         searchString: String,
         locale: String,
-        game: String
+        game: String,
     ): List<Product> {
         logger.info { "Scraping CardMarket for $searchString" }
 
         val fetchResult = webFetcher.fetch(searchString, locale, game)
-        val content = fetchResult.getOrElse {
-            logger.warn { "Failed to fetch CardMarket page: ${it.message}" }
-            return emptyList()
-        }
+        val content =
+            fetchResult.getOrElse {
+                logger.warn { "Failed to fetch CardMarket page: ${it.message}" }
+                return emptyList()
+            }
         val result = contentParser.parseGalaryPage(content)
         return mapper.toProducts(result)
     }
@@ -39,18 +39,18 @@ class CardMarketScraperAdapter(
         genre: String,
         type: String,
         lang: String,
-        setname: String
+        setname: String,
     ): Product? {
         logger.info { "Fetching product details for $cmId" }
 
         val fetchResult = webFetcher.fetchDetails(cmId, genre, type, lang, setname)
-        val content = fetchResult.getOrElse {
-            logger.warn { "Failed to fetch CardMarket detail page: ${it.message}" }
-            return null
-        }
+        val content =
+            fetchResult.getOrElse {
+                logger.warn { "Failed to fetch CardMarket detail page: ${it.message}" }
+                return null
+            }
 
         val detailsDto = contentParser.parseProductDetails(content, cmId, genre, type, lang, setname)
         return mapper.toProductDetails(detailsDto)
     }
-
 }

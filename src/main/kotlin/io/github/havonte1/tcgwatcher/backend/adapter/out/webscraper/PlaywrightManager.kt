@@ -14,32 +14,33 @@ class PlaywrightManager(
     @Value("\${playwright.executable-path:}") private val executablePath: String?,
 ) {
     private val logger = KotlinLogging.logger {}
-    private val options = BrowserType.LaunchOptions().apply {
-        setHeadless(true)
-        if (!this@PlaywrightManager.executablePath.isNullOrBlank()) {
-            setExecutablePath(Paths.get(this@PlaywrightManager.executablePath))
-        }
-        setArgs(
-            listOf(
-                "--no-sandbox",
-                "--disable-setuid-sandbox",
-                "--disable-gpu",
-                "--disable-dev-shm-usage",
-                "--disable-software-rasterizer",
-                "--disable-accelerated-2d-canvas",
-                "--no-first-run",
-                "--no-zygote",
-                "--disable-background-networking",
-                "--disable-default-apps",
-                "--disable-extensions",
-                "--disable-sync",
-                "--disable-translate",
-                "--metrics-recording-only",
-                "--mute-audio",
-                "--headless=new"
+    private val options =
+        BrowserType.LaunchOptions().apply {
+            setHeadless(true)
+            if (!this@PlaywrightManager.executablePath.isNullOrBlank()) {
+                setExecutablePath(Paths.get(this@PlaywrightManager.executablePath))
+            }
+            setArgs(
+                listOf(
+                    "--no-sandbox",
+                    "--disable-setuid-sandbox",
+                    "--disable-gpu",
+                    "--disable-dev-shm-usage",
+                    "--disable-software-rasterizer",
+                    "--disable-accelerated-2d-canvas",
+                    "--no-first-run",
+                    "--no-zygote",
+                    "--disable-background-networking",
+                    "--disable-default-apps",
+                    "--disable-extensions",
+                    "--disable-sync",
+                    "--disable-translate",
+                    "--metrics-recording-only",
+                    "--mute-audio",
+                    "--headless=new",
+                ),
             )
-        )
-    }
+        }
 
     private var playwrightInstance: Playwright? = null
     private var browserInstance: Browser? = null

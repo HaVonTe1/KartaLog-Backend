@@ -25,27 +25,22 @@ class NameTranslationEntity(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long = 0,
-
     // Parent product (original use case)
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_id")
     var product: ProductEntity? = null,
-
     // Optional parent series – reuses the same table for i18n
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "series_id")
     var series: SeriesEntity? = null,
-
     // Optional parent product set – reuses the same table for i18n
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "set_id")
     var productSet: ProductSetEntity? = null,
-
     @Column(name = "language_code", nullable = false)
     val languageCode: String,
-
     @Column(name = "name", nullable = false)
-    var name: String
+    var name: String,
 ) : Serializable {
     // JPA requires a no‑arg constructor
     constructor() : this(0, null, null, null, "", "")
