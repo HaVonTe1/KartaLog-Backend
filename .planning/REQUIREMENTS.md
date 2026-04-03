@@ -73,37 +73,37 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| SEARCH-01 | Phase 1 | Pending |
-| SEARCH-02 | Phase 1 | Pending |
-| SEARCH-03 | Phase 1 | Pending |
-| SEARCH-04 | Phase 1 | Pending |
-| SEARCH-05 | Phase 1 | Pending |
-| SEARCH-06 | Phase 1 | Pending |
-| SEARCH-07 | Phase 1 | Pending |
-| SEARCH-08 | Phase 1 | Pending |
-| SEARCH-09 | Phase 1 | Pending |
-| SEARCH-10 | Phase 1 | Pending |
-| SEARCH-11 | Phase 1 | Pending |
-| SEARCH-12 | Phase 1 | Pending |
-| SEARCH-13 | Phase 1 | Pending |
-| DETAIL-01 | Phase 1 | Pending |
-| DETAIL-02 | Phase 1 | Pending |
-| DETAIL-03 | Phase 1 | Pending |
-| DETAIL-04 | Phase 1 | Pending |
-| DETAIL-05 | Phase 1 | Pending |
-| API-01 | Phase 1 | Pending |
-| API-02 | Phase 1 | Pending |
-| API-03 | Phase 1 | Pending |
-| API-04 | Phase 1 | Pending |
-| API-05 | Phase 1 | Pending |
-| API-06 | Phase 1 | Pending |
 | SCRAP-01 | Phase 1 | Pending |
 | SCRAP-02 | Phase 1 | Pending |
 | SCRAP-03 | Phase 1 | Pending |
+| SEARCH-01 | Phase 2 | Pending |
+| SEARCH-02 | Phase 2 | Pending |
+| SEARCH-03 | Phase 2 | Pending |
+| SEARCH-04 | Phase 2 | Pending |
+| SEARCH-05 | Phase 2 | Pending |
+| SEARCH-06 | Phase 2 | Pending |
+| SEARCH-07 | Phase 2 | Pending |
+| SEARCH-08 | Phase 2 | Pending |
+| SEARCH-09 | Phase 2 | Pending |
+| SEARCH-10 | Phase 2 | Pending |
+| SEARCH-11 | Phase 2 | Pending |
+| SEARCH-12 | Phase 2 | Pending |
+| SEARCH-13 | Phase 2 | Pending |
+| DETAIL-01 | Phase 3 | Pending |
+| DETAIL-02 | Phase 3 | Pending |
+| DETAIL-03 | Phase 3 | Pending |
+| DETAIL-04 | Phase 3 | Pending |
+| DETAIL-05 | Phase 3 | Pending |
+| API-01 | Phase 4 | Pending |
+| API-02 | Phase 4 | Pending |
+| API-03 | Phase 4 | Pending |
+| API-04 | Phase 4 | Pending |
+| API-05 | Phase 4 | Pending |
+| API-06 | Phase 4 | Pending |
 
 **Coverage:**
-- v1 requirements: 28 total
-- Mapped to phases: 28
+- v1 requirements: 27 total
+- Mapped to phases: 27
 - Unmapped: 0 ✓
 
 ---
