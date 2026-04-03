@@ -25,6 +25,17 @@ spring:
         jdbc:
           batch_size: 50
         order_updates: true
+  boot:
+    admin:
+      client:
+        url: http://localhost:9090
+        instance:
+          name: TCGWatcher-Backend
+          management-url: http://localhost:8081/actuator
+          health-url: http://localhost:8081/actuator/health
+          service-base-url: http://localhost:8080
+          auto-registration: true
+          auto-deregistration: true
 
 resilience4j:
   circuitbreaker:
@@ -55,6 +66,16 @@ resilience4j:
           - java.io.IOException
         ignore-exceptions:
           - jakarta.ws.rs.NotFoundException
+management:
+  server:
+    port: 8081
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus,loggers,env,heapdump,threaddump
+  endpoint:
+    health:
+      show-details: always
 logging:
   level:
     io.github.havonte1: info
