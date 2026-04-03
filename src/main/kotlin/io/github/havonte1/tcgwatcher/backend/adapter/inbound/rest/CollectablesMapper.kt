@@ -1,51 +1,47 @@
 package io.github.havonte1.tcgwatcher.backend.adapter.inbound.rest
 
+import io.github.havonte1.tcgwatcher.backend.adapter.inbound.rest.model.LanguagePricingDTO
+import io.github.havonte1.tcgwatcher.backend.adapter.inbound.rest.model.ProductAttributeDTO
 import io.github.havonte1.tcgwatcher.backend.adapter.inbound.rest.model.ProductDTO
 import io.github.havonte1.tcgwatcher.backend.adapter.inbound.rest.model.ProductDetailsDTO
 import io.github.havonte1.tcgwatcher.backend.adapter.inbound.rest.model.SellOfferDTO
+import io.github.havonte1.tcgwatcher.backend.config.GenreConfig
+import io.github.havonte1.tcgwatcher.backend.domain.model.Locale
 import io.github.havonte1.tcgwatcher.backend.domain.model.Product
 import java.net.URI
 import java.net.URLEncoder
+import java.nio.charset.StandardCharsets
 
 object CollectablesMapper {
     fun toDto(
         product: Product,
-        locale: String,
     ): ProductDTO =
         ProductDTO(
             externalId = product.externalId,
             cmId = product.cmId ?: "",
-            genre = product.genre,
-            type = product.type,
-            setName = product.set?.names[locale],
+            genre = product.genre.name,
+            type = product.type.cmIdentifier,
             setCode = product.set?.cmCode,
             seriesId = product.series?.seriesId,
-            seriesName = product.series?.names?.get(locale),
             rarity = product.rarity,
             code = product.codeInfo?.value,
-            codeValid = product.codeInfo?.valid,
             price = product.price ?: "",
-            priceTrend = product.priceTrendInfo?.value ?: "",
             imageUrl = product.imgLink?.let { URI.create(it) },
         )
 
     fun toDetailDto(
         product: Product,
-        locale: String,
+        locale: Locale,
     ): ProductDetailsDTO =
         ProductDetailsDTO(
             externalId = product.externalId,
             cmId = product.cmId ?: "",
-            genre = product.genre,
-            type = product.type,
+            genre = product.genre.identifier,
+            type = product.type.cmIdentifier,
             detailsUrl =
-                listOfNotNull(
-                    product.genre,
-                    "product",
-                    product.type,
-                    product.set?.cmCode,
-                    product.cmId,
-                ).joinToString("/") { URLEncoder.encode(it, "UTF-8") }.let { URI.create(it) },
+                "${GenreConfig.buildDetailsUrlBase(product.genre, locale, product.type)}/${product.set?.cmCode}/${product.cmId}"
+                    .let { URLEncoder.encode(it, StandardCharsets.UTF_8) }
+                    .let { URI.create(it) },
             price = product.price ?: "",
             setName = product.set?.names[locale],
             setCode = product.set?.cmCode,
@@ -68,5 +64,24 @@ object CollectablesMapper {
                         price = sellOffer.price,
                     )
                 },
+            languagePricing =
+                product.languagePricing.map { lp ->
+                    LanguagePricingDTO(
+                        locale = lp.locale.code,
+                        price = lp.price,
+                        priceTrend = lp.priceTrend,
+                        priceTrendValid = lp.priceTrendValid,
+                    )
+                },
+            productAttributes =
+                product.productAttributes.map { pa ->
+                    ProductAttributeDTO(
+                        attributeName = pa.attributeName,
+                        value = pa.value,
+                        attributeType = pa.attributeType.name,
+                    )
+                },
+            releaseDate = product.releaseDate,
+            cardNumber = product.cardNumber,
         )
 }

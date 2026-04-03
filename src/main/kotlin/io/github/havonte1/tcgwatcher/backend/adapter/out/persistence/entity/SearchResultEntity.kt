@@ -24,8 +24,12 @@ class SearchResultEntity(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long? = null,
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false, unique = false)
     val query: String,
+    @Column(nullable = false, unique = false)
+    val language: String,
+    @Column(nullable = false, unique = false)
+    val genre: String,
     @Column(name = "cached_at")
     val cachedAt: Instant? = null,
     @ManyToMany(
@@ -41,7 +45,7 @@ class SearchResultEntity(
     val products: MutableSet<ProductEntity> = mutableSetOf(),
 ) : java.io.Serializable {
     // JPA requires a no‑arg constructor
-    constructor() : this(0, "", Instant.now())
+    constructor() : this(0, "", "", "", Instant.now())
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

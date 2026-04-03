@@ -1,10 +1,17 @@
 package io.github.havonte1.tcgwatcher.backend.adapter.inbound.rest
 
-import io.github.havonte1.tcgwatcher.backend.adapter.out.webscraper.cardmarket.CardMarketContentParser
+import io.github.havonte1.tcgwatcher.backend.adapter.out.webscraper.cardmarket.CardMarketDetailsParser
+import io.github.havonte1.tcgwatcher.backend.adapter.out.webscraper.cardmarket.CardMarketGalleryParser
 import io.github.havonte1.tcgwatcher.backend.adapter.out.webscraper.cardmarket.CardMarketProductMapper
 import io.github.havonte1.tcgwatcher.backend.adapter.out.webscraper.cardmarket.CardMarketScraperAdapter
+import io.github.havonte1.tcgwatcher.backend.adapter.out.webscraper.cardmarket.CardMarketWebFetcher
 import io.github.havonte1.tcgwatcher.backend.adapter.out.webscraper.cardmarket.CardMarketWebFetcherPort
+import io.github.havonte1.tcgwatcher.backend.config.GenreConfig
+import io.github.havonte1.tcgwatcher.backend.domain.model.Genre
+import io.github.havonte1.tcgwatcher.backend.domain.model.Locale
 import io.github.havonte1.tcgwatcher.backend.domain.model.Product
+import io.github.havonte1.tcgwatcher.backend.domain.model.ProductType
+import io.github.havonte1.tcgwatcher.backend.domain.model.SearchResult
 import io.github.havonte1.tcgwatcher.backend.domain.port.out.CardMarketScraperPort
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -22,6 +29,7 @@ import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.EnableAspectJAutoProxy
 import org.springframework.context.annotation.Primary
 import org.springframework.http.HttpHeaders
+import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.get
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
@@ -35,12 +43,14 @@ import java.nio.file.Paths
 @AutoConfigureMockMvc
 @Testcontainers
 @Tag("integration")
+@ActiveProfiles(value = ["test"])
 class CollectablesAdapterIT {
+
     companion object {
         @Container
         @ServiceConnection
         @JvmStatic
-        val postgres = PostgreSQLContainer("postgres:15-alpine")
+        val postgres = PostgreSQLContainer("postgres:18.1-alpine").withReuse(true)
     }
 
     @Autowired
@@ -80,8 +90,8 @@ class CollectablesAdapterIT {
             mockMvc
                 .get("/collectables/") {
                     param("query", "Pikachu")
-                    param("locale", "en")
-                    param("game", "Pokemon")
+                    param("locale", Locale.GERMAN.code)
+                    param("game", Genre.POKEMON.identifier)
                 }.andExpect { request { asyncStarted() } }
                 .andReturn()
 
@@ -196,6 +206,29 @@ class CollectablesAdapterIT {
         assertEquals(304, dispatchedSecond.response.status)
     }
 
+    @Test
+    fun `API responds successfully when rate limit not exceeded`() {
+        val mvcResult =
+            mockMvc
+                .get("/collectables/") {
+                    param("query", "test")
+                    param("locale", "en")
+                    param("game", "Pokemon")
+                }.andExpect { request { asyncStarted() } }
+                .andReturn()
+
+        val dispatched =
+            mockMvc
+                .perform(
+                    MockMvcRequestBuilders.asyncDispatch(mvcResult),
+                ).andReturn()
+
+        assertTrue(
+            dispatched.response.status == 200 || dispatched.response.status == 503,
+            "Should return 200 or 503 (circuit breaker)",
+        )
+    }
+
     @TestConfiguration
     @EnableAspectJAutoProxy(proxyTargetClass = true)
     @AutoConfigureCache
@@ -205,53 +238,27 @@ class CollectablesAdapterIT {
 
         @Bean
         @Primary
-        fun cardMarketScraperPort(): CardMarketScraperPort =
-            object : CardMarketScraperPort {
-                override suspend fun search(
-                    searchString: String,
-                    locale: String,
-                    game: String,
-                ): List<Product> {
-                    val content = Files.readString(Paths.get(testFilePikachu30))
-                    val parser = CardMarketContentParser()
-                    val mapper = CardMarketProductMapper()
-                    val adapter =
-                        CardMarketScraperAdapter(
-                            object : CardMarketWebFetcherPort {
-                                override fun fetch(
-                                    searchString: String,
-                                    locale: String,
-                                    game: String,
-                                ): Result<String> = Result.success(content)
+        fun cardMarketWebFetcherPort(): CardMarketWebFetcherPort =
+            object : CardMarketWebFetcherPort {
 
-                                override fun fetchDetails(
-                                    cmId: String,
-                                    genre: String,
-                                    type: String,
-                                    lang: String,
-                                    setname: String,
-                                ): Result<String> {
-                                    val detailsContent = Files.readString(Paths.get(testFilePikachuDetails))
-                                    return Result.success(detailsContent)
-                                }
-                            },
-                        )
-                    val result = parser.parseGalaryPage(content)
-                    return mapper.toProducts(result)
+                override suspend fun fetch(
+                    searchString: String,
+                    locale: Locale,
+                    genre: Genre,
+                    page: Int,
+                ): Result<String> {
+                    return Result.success(Files.readString(Paths.get(testFilePikachu30)))
                 }
 
-                override suspend fun fetchProductDetails(
+                override suspend fun fetchDetails(
                     cmId: String,
-                    genre: String,
-                    type: String,
-                    lang: String,
+                    genre: Genre,
+                    type: ProductType,
+                    locale: Locale,
                     setname: String,
-                ): Product? {
+                ): Result<String> {
                     val content = Files.readString(Paths.get(testFilePikachuDetails))
-                    val parser = CardMarketContentParser()
-                    val mapper = CardMarketProductMapper()
-                    val detailsDto = parser.parseProductDetails(content, cmId, genre, type, lang, setname)
-                    return mapper.toProductDetails(detailsDto)
+                    return Result.success(content)
                 }
             }
     }

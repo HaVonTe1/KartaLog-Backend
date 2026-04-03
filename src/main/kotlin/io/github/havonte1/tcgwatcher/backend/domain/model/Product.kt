@@ -17,13 +17,13 @@ data class Product(
     /** Last update timestamp */
     val updatedAt: Instant? = null,
     /** Map of locale code to translated product name */
-    val names: Map<String, String> = emptyMap(),
+    val names: Map<Locale, String> = emptyMap(),
     /** Code value with validity flag */
     val codeInfo: StringWithValidity? = null,
     /** Genre of the product */
-    val genre: String = "",
+    val genre: Genre,
     /** Type of the product */
-    val type: String = "",
+    val type: ProductType,
     /** CardMarket identifier as string */
     val cmId: String? = null,
     /** Image link from CardMarket */
@@ -34,6 +34,14 @@ data class Product(
     val priceTrendInfo: StringWithValidity? = null,
     /** List of sell offers for this product */
     val sellOffers: List<SellOffer>? = null,
+    /** Language-specific pricing for all CardMarket languages */
+    val languagePricing: List<LanguagePricing> = emptyList(),
+    /** Additional product attributes from CardMarket */
+    val productAttributes: List<ProductAttribute> = emptyList(),
+    /** Release date from CardMarket */
+    val releaseDate: String? = null,
+    /** Card number in set from CardMarket */
+    val cardNumber: String? = null,
 )
 
 data class StringWithValidity(
@@ -54,10 +62,10 @@ data class SellOffer(
 data class ProductSet(
     val setId: Long,
     val cmCode: String,
-    val names: Map<String, String> = emptyMap(),
+    val names: Map<Locale, String> = emptyMap(),
 )
 
 data class ProductSeries(
     val seriesId: Long,
-    val names: Map<String, String> = emptyMap(),
+    val names: Map<Locale, String> = emptyMap(),
 )

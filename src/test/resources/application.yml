@@ -1,0 +1,18 @@
+spring:
+  main:
+    lazy-initialization: true
+  jpa:
+    show-sql: false
+    properties:
+      hibernate:
+        envers:
+          audit_strategy: org.hibernate.envers.strategy.ValidityAuditStrategy
+  liquibase:
+    enabled: true
+    change-log: classpath:db/changelog/db.changelog-master.xml
+    contexts: test
+
+logging:
+  level:
+    org.springframework.boot.test: INFO
+    org.testcontainers: INFO

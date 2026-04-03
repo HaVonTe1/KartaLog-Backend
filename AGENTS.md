@@ -1,164 +1,53 @@
 # AGENTS.md – Repository Guidelines
 
-## Project Overview
-- **Languages:** Kotlin (JVM 17) + Java (legacy)
-- **Build System:** Gradle Kotlin DSL, single-module
-- **Package Structure:** `domain`, `application`, `adapter/inbound`, `adapter/out`
-- **Testing:** JUnit 5 with Testcontainers (PostgreSQL) for integration tests
-- **Static Analysis:** Detekt, Ktlint
-- **API Generation:** OpenAPI Generator (kotlin-spring) from `contract/openapi.yaml`
-- **Key Tech Stack:**
-  - Spring Boot 4.0.2 with WebMVC
-  - Spring Data JPA + Hibernate Envers (auditing)
-  - Liquibase (database migrations)
-  - Playwright + Jsoup (web scraping)
-  - Kotlin Coroutines + Reactor integration
-  - Resilience4j (circuit breakers)
-- **Important:** DO NOT ADD ANY COMMENTS! No JavaDoc. No inline Comments. Nothing.
+## Quick Start
+- **Build:** `./gradlew build`
+- **Full check (unit + integration):** `./gradlew check`
+- **Build without tests (fast lint):** `./gradlew build -x test`
+- **Run unit tests only:** `./gradlew test --exclude-tags integration`
+- **Run integration tests only:** `./gradlew integrationTest`
+- **Single test class:** `./gradlew test --tests "io.github.havonte1.tcgwatcher.backend.<package>.<TestClass>"`
+- **Single test method:** `./gradlew test --tests "ClassName.\`method description\`"`
+- **Lint + format:** `./gradlew detekt ktlintFormat`
+- **Codegen (OpenAPI):** `./gradlew compileKotlin` (triggers `openApiGenerate` first)
+- **Coverage report:** `./gradlew test jacocoTestReport`
+- **Parallel build:** `./gradlew build -T 1C`
+- **Run app:** `./gradlew bootRun` → `http://localhost:8080`, Swagger at `/swagger-ui.html`
 
-## Build & Test Commands
+## Architecture
+- **Pattern:** Hexagonal — `domain` (pure models + port interfaces) → `application` (use-case services) → `adapter/inbound` (REST controllers) → `adapter/out` (persistence + webscraper implementations)
+- **Entry point:** `TcgWatcherApplication.kt`
+- **API-first:** `contract/openapi.yaml` → OpenAPI Generator (kotlin-spring, coroutines mode) → `build/generated/src/main/kotlin/`. Controllers in `adapter/inbound/rest/` implement generated interfaces. **Do not edit generated code.**
+- **Database:** PostgreSQL (runtime) + SQLite (embedded, for quicksearch import). Liquibase migrations in `src/main/resources/db/changelog/`. Hibernate Envers for entity auditing.
+- **Scraping:** Playwright (Chromium) + Jsoup → `adapter/out/webscraper/`. Coroutines-based (`suspend` functions). Resilience4j circuit breaker (50% failure threshold, 60-call sliding window, 30s open) + retry (3 attempts, 10s base, 2x backoff). `NotFoundException` is ignored by circuit breaker.
+- **Caching:** Caffeine (1h expiry, 1000 max entries) + HTTP ETag/If-None-Match.
+- **Actuator:** Separate management port 8081 (`/actuator/health`, `/actuator/metrics`, `/actuator/prometheus`). Spring Boot Admin at `http://localhost:9090`.
 
-| Action | Command |
-|--------|---------|
-| Clean | `./gradlew clean` |
-| Build | `./gradlew build` |
-| Build (skip tests) | `./gradlew build -x test` |
-| Run all tests | `./gradlew test` |
-| Detekt lint | `./gradlew detekt` |
-| Ktlint format | `./gradlew ktlintFormat` |
-| JaCoCo coverage | `./gradlew test jacocoTestReport` |
-| Parallel build | `./gradlew build -T 1C` |
+## Critical Constraints
+- **NO COMMENTS:** No JavaDoc, no KDoc, no inline comments. Strict rule (enforced by Detekt `ForbiddenComment`). Exception: `TODO` must reference an issue key.
+- **Null-safety:** Prefer non-nullable types. Use `Result<T>` for expected failures; `throw` for unexpected.
+- **WebMVC, not WebFlux:** Despite reactive OpenAPI config, the runtime is Spring WebMVC.
+- **Import ordering:** Third-party imports first, blank line, then project imports. Alphabetical within each group. No wildcards (Detekt `WildcardImport` active).
 
-**Test Configuration:** JUnit 5 with Testcontainers for integration tests. Show standard streams and full exceptions in test output (configured in `build.gradle.kts`). Use `./gradlew test --tests "ClassName" --info` for verbose test debugging.
+## Testing
+- **Mocking:** `mockk` only.
+- **Unit tests:** `src/test/kotlin/`, exclude `integration` and `e2e` JUnit tags.
+- **Integration tests:** `*IT` classes, include `integration` tag. Use `@SpringBootTest` + Testcontainers (PostgreSQL via Testcontainers).
+- **Naming:** Backtick descriptions preferred: `` `search returns one product` ``. Test classes: `ClassNameTest` (unit), `ClassNameIT` (integration).
+- **Async tests:** Wrap `suspend` function calls in `runBlocking`.
+- **Fixtures:** HTML snapshots in `src/test/resources/` (e.g., `pikachu_gallery_30.html`).
+- **Verbose debugging:** Append `--info` or `-i` to any Gradle command.
 
-## Running a Single Test
+## Workflow
+- **Branching:** `feature/<ticket-id>-description` or `bugfix/<ticket-id>-description`.
+- **Commits:** Atomic, prefixed `fix:`, `feat:`, `refactor:`.
+- **Final check:** Always run `./gradlew detekt ktlintFormat` before finishing.
+- **Edit tool:** Use `filePath` parameter (not `path`).
+- **GSD workflow:** For planned work, use `/gsd:quick`, `/gsd:debug`, or `/gsd:execute-phase` before making repo edits.
 
-```bash
-# Run entire test class (use fully-qualified name)
-./gradlew test --tests "io.github.havonte1.tcgwatcher.backend.adapter.out.webscraper.CardMarketScraperAdapterTest"
-
-# Run single test method
-./gradlew test --tests "CardMarketScraperAdapterTest.search returns one product built from HTML"
-
-# Run integration tests only (classes ending with IT)
-./gradlew test --tests "*IT"
-```
-
-Use `-i` for verbose output when debugging flaky tests.
-
-## Code Style Guidelines
-
-### Imports
-- No wildcard imports
-- Order: third-party imports first, blank line, then project imports
-- Alphabetical within each group
-
-### Formatting
-- 4-space indentation (no tabs)
-- Max line length: 120 characters
-- No trailing whitespace
-- K&R brace style
-- Files end with single newline
-
-### Naming Conventions
-| Element | Convention |
-|--------|------------|
-| Package | `lowercase.dotted` |
-| Class/Interface | `PascalCase` |
-| Function/Method | `camelCase` |
-| Variable | `camelCase` |
-| Constant | `UPPER_SNAKE_CASE` |
-| Test class | `MyClassTest` |
-| Test method | `shouldDoSomethingWhenCondition` or backtick descriptions |
-| Integration test | `MyClassIT` |
-
-### Types & Null-Safety
-- Prefer non-nullable types
-- Use `?.let {}` or explicit null checks for nullable values
-- `data class` for DTOs, `sealed class` for algebraic types
-- Prefer `Result<T>` for recoverable failures
-- Use `suspend` functions for async operations (coroutines)
-
-### Error Handling
-- Use `Result<T>` for expected failures; `throw` for unexpected
-- Log via `io.github.oshai.kotlinlogging.KotlinLogging`
-- Never swallow exceptions
-- For JPA entities, use `@PrePersist` and `@PreUpdate` lifecycle callbacks for timestamp management
-
-### Documentation
-- KDoc for public APIs (`@param`, `@return`, `@throws`)
-- `TODO` comments must reference an issue key
-
-## Kotlin Idioms
-- Prefer `val` over `var`
-- Use scoped functions (`apply`, `run`, `also`, `let`)
-- Companion object for constants (`const val`)
-- Coroutines for async (already configured in project)
-- Use `suspend` functions for async operations
-- `typealias` for complex generic signatures
-
-## Project Structure
-```
-src/main/kotlin/io/github/havonte1/tcgwatcher/backend/
-├── config/           # Spring configuration classes
-├── domain/           # Domain models and port interfaces
-├── application/      # Use cases and services
-├── adapter/inbound/  # REST controllers, mappers
-└── adapter/out/      # Persistence, webscraper implementations
-```
-
-## Testing Conventions
-- Unit tests: `src/test/kotlin/` with `mockk` for mocking
-- Integration tests: Use `@SpringBootTest` and Testcontainers
-- Test method names: descriptive with backticks (e.g., `` `search returns one product` ``)
-- Use `runBlocking` for testing suspend functions
-- Place test fixtures in `src/test/resources/`
-- Use `Assumptions.assumeTrue()` to skip tests when fixtures are missing
-
-## Key Dependencies
-- Spring Boot 4.0.2 with WebMVC
-- Playwright 1.58.0 for web scraping
-- kotlinx-coroutines 1.8.1 for async
-- Kotlin-logging (`io.github.oshai:kotlin-logging-jvm:7.0.14`)
-- MockK 1.13.12 for mocking in tests
-- Testcontainers for integration tests
-- Hibernate Envers for auditing
-- Liquibase for database migrations
-- Resilience4j 2.3.0 for circuit breakers
-
-## Git Conventions
-- Feature branches: `feature/<ticket-id>-description`
-- Bugfix branches: `bugfix/<ticket-id>-description`
-- Atomic commits with concise messages prefixed by intent (`fix:`, `feat:`, `refactor:`)
-- No amend after push unless explicitly requested
-
-## CI/CD Tips
-- Fast lint check on PRs: `./gradlew build -x test`
-- Full test suite on pushes to `main`: `./gradlew test`
-- Fail on any lint error: `./gradlew detekt ktlintFormat`
-
-## Cursor / Copilot Rules
-`CLAUDE.md` present in project root with detailed guidance for Claude Code. If `.cursorrules` or `.github/copilot-instructions.md` added, copy rules here.
-
-## OpenAPI Code Generation
-- Generated from `contract/openapi.yaml` using `openapi-generator` (kotlin-spring)
-- Output: `build/generated/src/main/kotlin/`
-- Configured with reactive coroutines mode and Spring Boot 3 compatibility
-- Run `./gradlew compileKotlin` to regenerate after API changes
-
-## Agent Workflow Tips
-- Read files before editing
-- Run relevant tests after changes
-- Do NOT auto-commit without explicit request
-- Run lint before finalizing: `./gradlew detekt ktlintFormat`
-- Use `./gradlew -T 1C` for parallel execution
-
-## Spring Boot Specifics
-- Web layer uses WebMVC (not WebFlux) despite reactive config in OpenAPI generator
-- JPA entities use lifecycle callbacks (`@PrePersist`, `@PreUpdate`) for timestamp management
-- Database schema managed by Liquibase, history tracked by Hibernate Envers
-- Configuration via `application.yml` and `application-{profile}.yml` files
-
-## Important Code Generation Notes
-- DO NOT WRITE COMMENTS! No JavaDoc. No inline Comments. Nothing.
-- When using the `edit` tool, remember the right parameter is `filePath` NOT `path`.
+## Config & Ops
+- **Detekt config:** `config/detekt/detekt.yml`. Baselines: `detekt-baseline*.xml`.
+- **Docker Compose:** `deployment/compose.yml` — profiles: `local` (postgres), `deployment` (full stack: app, nginx, admin-server, postgres, ofelia).
+- **Docker build:** `deployment/Dockerfile` — multi-stage, JDK 17 build → JRE 24 runtime. Chromium + Node.js installed in runtime image.
+- **Env vars:** `.env` file (gitignored). Required vars: `WATCHER_READONLY_PWD`, `POSTGRES_PASSWORD`, `MIGRATION_PWD`, `WATCHER_MIG_PWD`, `WATCHER_APP_PWD`, `APPLICATION_PWD`.
+- **CI:** Self-hosted runner, runs `./gradlew check` on push/PR to `main`.

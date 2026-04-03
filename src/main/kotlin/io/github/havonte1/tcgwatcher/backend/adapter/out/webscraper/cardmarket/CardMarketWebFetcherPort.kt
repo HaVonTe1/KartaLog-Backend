@@ -1,17 +1,22 @@
 package io.github.havonte1.tcgwatcher.backend.adapter.out.webscraper.cardmarket
 
+import io.github.havonte1.tcgwatcher.backend.domain.model.Genre
+import io.github.havonte1.tcgwatcher.backend.domain.model.Locale
+import io.github.havonte1.tcgwatcher.backend.domain.model.ProductType
+
 interface CardMarketWebFetcherPort {
-    fun fetch(
+    suspend fun fetch(
         searchString: String,
-        locale: String,
-        game: String,
+        locale: Locale,
+        genre: Genre,
+        page: Int,
     ): Result<String>
 
-    fun fetchDetails(
+    suspend fun fetchDetails(
         cmId: String,
-        genre: String,
-        type: String,
-        lang: String,
+        genre: Genre,
+        type: ProductType,
+        locale: Locale,
         setname: String,
     ): Result<String>
 }

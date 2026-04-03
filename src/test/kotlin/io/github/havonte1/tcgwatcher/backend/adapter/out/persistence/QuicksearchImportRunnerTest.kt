@@ -12,6 +12,7 @@ import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection
 import org.springframework.test.annotation.DirtiesContext
 import org.springframework.test.context.ActiveProfiles
+import org.springframework.test.context.TestPropertySource
 import org.testcontainers.junit.jupiter.Container
 import org.testcontainers.junit.jupiter.Testcontainers
 import org.testcontainers.postgresql.PostgreSQLContainer
@@ -21,13 +22,14 @@ import kotlin.jvm.JvmStatic
 @Testcontainers
 @Tag("integration")
 @ActiveProfiles("test")
+@TestPropertySource(properties = ["app.data.import.enabled=true"])
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 class QuicksearchImportRunnerTest {
     companion object {
         @Container
         @ServiceConnection
         @JvmStatic
-        val postgres = PostgreSQLContainer("postgres:15-alpine")
+        val postgres = PostgreSQLContainer("postgres:18.1-alpine").withReuse(true)
     }
 
     @Autowired

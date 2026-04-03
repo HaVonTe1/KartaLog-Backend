@@ -12,6 +12,8 @@ import java.nio.file.Paths
 @Component
 class PlaywrightManager(
     @Value("\${playwright.executable-path:}") private val executablePath: String?,
+    @Value("\${playwright.context-pool-size:3}") private val poolSize: Int,
+    @Value("\${playwright.max-concurrent-requests:3}") private val maxConcurrent: Int,
 ) {
     private val logger = KotlinLogging.logger {}
     private val options =
@@ -42,8 +44,16 @@ class PlaywrightManager(
             )
         }
 
+    private companion object {
+        private const val BERLIN_LAT = 52.5200
+        private const val BERLIN_LONG = 13.4050
+        private const val DEFAULT_USER_AGENT =
+            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36"
+    }
+
     private var playwrightInstance: Playwright? = null
     private var browserInstance: Browser? = null
+    private var contextPool: BrowserContextPool? = null
     private var initialized = false
 
     val playwright: Playwright
@@ -63,9 +73,26 @@ class PlaywrightManager(
             return browserInstance!!
         }
 
+    fun getContextPool(): BrowserContextPool {
+        if (contextPool == null) {
+            contextPool = BrowserContextPool(browser, poolSize, maxConcurrent) { br ->
+                br.newContext(createContextOptions())
+            }
+        }
+        return contextPool!!
+    }
+
+    private fun createContextOptions(): Browser.NewContextOptions =
+        Browser
+            .NewContextOptions()
+            .setGeolocation(BERLIN_LAT, BERLIN_LONG)
+            .setPermissions(listOf("geolocation"))
+            .setUserAgent(DEFAULT_USER_AGENT)
+
     @PreDestroy
     fun shutdown() {
         logger.info { "Shutting down Playwright..." }
+        contextPool?.close()
         if (initialized) {
             try {
                 browserInstance?.close()

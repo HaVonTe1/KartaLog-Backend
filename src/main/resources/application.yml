@@ -1,3 +1,5 @@
+server:
+  port: 8083
 spring:
   application:
     name: TCGWatcher-Backend
@@ -11,6 +13,8 @@ spring:
       start:
         skip: if_running
   liquibase:
+    enabled: true
+    change-log: classpath:db/changelog/db.changelog-master.xml
     parameters:
       watcher_readonly.password: ${WATCHER_READONLY_PWD}
       watcher_mig.password: ${WATCHER_MIG_PWD}
@@ -28,14 +32,12 @@ spring:
   boot:
     admin:
       client:
-        url: http://localhost:9090
+        enabled: true
+        uri: http://localhost:9090
         instance:
-          name: TCGWatcher-Backend
-          management-url: http://localhost:8081/actuator
-          health-url: http://localhost:8081/actuator/health
-          service-base-url: http://localhost:8080
-          auto-registration: true
-          auto-deregistration: true
+          service-base-url: http://localhost:8083
+          management-url: http://localhost:8080/actuator
+          management-port: 8081
 
 resilience4j:
   circuitbreaker:
@@ -53,6 +55,14 @@ resilience4j:
         # ignore-exceptions does not work - seems to be a bug in resilience4j - see io.github.havonte1.tcgwatcher.backend.config.Resilience4jConfig
         # ignore-exceptions:
         #  - jakarta.ws.rs.NotFoundException
+  ratelimiter:
+    instances:
+      apiRateLimiter:
+        limit-for-period: 10
+        limit-refresh-period: 1s
+        timeout-duration: 0s
+        register-health-indicator: true
+        event-consumer-buffer: 100
   retry:
     instances:
       cardMarketRetry:
@@ -68,7 +78,7 @@ resilience4j:
           - jakarta.ws.rs.NotFoundException
 management:
   server:
-    port: 8081
+    port: 8084
   endpoints:
     web:
       exposure:
@@ -78,7 +88,7 @@ management:
       show-details: always
 logging:
   level:
-    io.github.havonte1: info
+    io.github.havonte1: debug
 
 #playwright:
 #  executable-path: /var/lib/snapd/snap/bin/chromium

@@ -7,9 +7,12 @@ import org.springframework.context.annotation.Configuration
 
 @Configuration
 class Resilience4jConfig {
+
     @Bean
     fun cardMarketCircuitBreakerCustomizer(): CircuitBreakerConfigCustomizer =
         CircuitBreakerConfigCustomizer.of("cardMarketCircuitBreaker") { builder ->
-            builder.ignoreExceptions(NotFoundException::class.java)
+            builder
+                .ignoreExceptions(NotFoundException::class.java)
         }
+
 }

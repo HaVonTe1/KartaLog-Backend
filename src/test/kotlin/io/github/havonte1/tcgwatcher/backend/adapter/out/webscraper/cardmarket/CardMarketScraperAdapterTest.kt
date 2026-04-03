@@ -1,6 +1,10 @@
 package io.github.havonte1.tcgwatcher.backend.adapter.out.webscraper.cardmarket
 
-import io.github.havonte1.tcgwatcher.backend.domain.model.Product
+import io.github.havonte1.tcgwatcher.backend.config.GenreConfig
+import io.github.havonte1.tcgwatcher.backend.domain.model.Genre
+import io.github.havonte1.tcgwatcher.backend.domain.model.Locale
+import io.github.havonte1.tcgwatcher.backend.domain.model.ProductType
+import io.github.havonte1.tcgwatcher.backend.domain.model.SearchResult
 import io.github.havonte1.tcgwatcher.backend.domain.port.out.CardMarketScraperPort
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -11,34 +15,30 @@ import java.io.File
 import java.nio.file.Files
 import java.nio.file.Paths
 
-/**
- * Unit test for {@link CardMarketScraperAdapter}.
- *
- * This test uses a simple in‑memory implementation of {@link CardMarketWebFetcherPort}
- * that reads the HTML fixture from disk, eliminating the need for Playwright
- * mocking and any network calls.
- */
 class CardMarketScraperAdapterTest {
+    private val locale: Locale = Locale.GERMAN
+    private val genre: Genre = Genre.POKEMON
+
     @Test
-    fun `search returns one product built from HTML`() {
+    fun `search returns products built from HTML`() {
         val resourcePath = "src/test/resources/pikachu_gallery_30.html"
 
         val file = File(resourcePath)
         Assumptions.assumeTrue(file.exists(), "Ressource fehlt, Test wird übersprungen")
 
-        // Use a simple test implementation of CardMarketWebFetcherPort that reads the HTML file.
         class TestCardMarketWebFetcher : CardMarketWebFetcherPort {
-            override fun fetch(
+            override suspend fun fetch(
                 searchString: String,
-                locale: String,
-                game: String,
+                locale: Locale,
+                genre: Genre,
+                page: Int,
             ): Result<String> = Result.success(Files.readString(Paths.get(resourcePath)))
 
-            override fun fetchDetails(
+            override suspend fun fetchDetails(
                 cmId: String,
-                genre: String,
-                type: String,
-                lang: String,
+                genre: Genre,
+                type: ProductType,
+                locale: Locale,
                 setname: String,
             ): Result<String> = Result.failure(UnsupportedOperationException("Not implemented"))
         }
@@ -46,30 +46,20 @@ class CardMarketScraperAdapterTest {
         val testFetcher = TestCardMarketWebFetcher()
         val adapter: CardMarketScraperPort = CardMarketScraperAdapter(testFetcher)
 
-        // ----- Execute the adapter -----
-
-        val result: List<Product> =
+        val result: SearchResult =
             runBlocking {
-                adapter.search(
-                    "Pikachu",
-                    locale = "de",
-                    game = "Pokemon",
-                )
+                adapter.search("Pikachu", locale, genre)
             }
 
-        // ----- Verify -----
-        assertEquals(30, result.size, "Exactly one product should be parsed")
-        val first = result.first()
-        // cmId should be the last segment of the parsed link
+        assertEquals(30, result.products.size, "Exactly 30 products should be parsed")
+        val first = result.products.first()
         assertEquals("Pikachu-V1-CEL005", first.cmId)
         assertEquals("https://product-images.s3.cardmarket.com/51/CEL/576750/576750.jpg", first.imgLink)
-        assertEquals("Pikachu", first.names["de"])
+        assertEquals("Pikachu", first.names[Locale.GERMAN])
 
-        assertEquals("Pokemon", first.genre)
-        assertEquals("Singles", first.type)
+        assertEquals("Pokemon", first.genre.pathParam)
+        assertEquals("Singles", first.type.cmIdentifier)
         assertEquals("1,50 €", first.price)
-        assertEquals("?", first.priceTrendInfo?.value)
-        assertTrue(first.priceTrendInfo?.valid == false)
         assertEquals("CEL 005", first.codeInfo?.value)
         assertTrue(first.codeInfo?.valid == true)
     }

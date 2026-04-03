@@ -1,0 +1,7 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues/>
+  <CurrentIssues>
+    <ID>LongMethod:CardMarketWebFetcherIT.kt:CardMarketWebFetcherIT$@Test fun `check state of circuit breaker, ratelimiter and retry when fetching stuff under various conditions`()</ID>
+  </CurrentIssues>
+</SmellBaseline>

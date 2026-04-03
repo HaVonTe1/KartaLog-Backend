@@ -5,6 +5,7 @@ import io.github.havonte1.tcgwatcher.backend.adapter.out.persistence.entity.Prod
 import io.github.havonte1.tcgwatcher.backend.adapter.out.persistence.entity.ProductSetEntity
 import io.github.havonte1.tcgwatcher.backend.adapter.out.persistence.mapper.ProductMapper
 import io.github.havonte1.tcgwatcher.backend.adapter.out.persistence.mapper.SearchResultMapper
+import io.github.havonte1.tcgwatcher.backend.domain.model.Genre
 import io.github.havonte1.tcgwatcher.backend.domain.model.Product
 import io.github.havonte1.tcgwatcher.backend.domain.model.SearchResult
 import io.github.havonte1.tcgwatcher.backend.domain.port.out.SearchResultRepository
@@ -12,29 +13,39 @@ import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional
 import java.time.Instant
 
-/**
- * JPA implementation of the [SearchResultRepository] outbound port.
- */
 @Component
 class SearchResultRepositoryAdapter(
-    private val jpaRepository: SearchResultJpaRepository,
+    private val searchResultJpaRepository: SearchResultJpaRepository,
     private val productJpaRepository: ProductJpaRepository,
     private val productSetJpaRepository: ProductSetJpaRepository,
     private val seriesJpaRepository: SeriesJpaRepository,
     private val searchResultMapper: SearchResultMapper,
     private val productMapper: ProductMapper,
 ) : SearchResultRepository {
+
     @Transactional(readOnly = true)
-    override fun findByQuery(query: String): SearchResult? = jpaRepository.findByQuery(query)?.let { searchResultMapper.toDomain(it) }
+    override fun getCachedAtByQueryLocaleAndGenre(query: String, language: String, genre: String): Instant? {
+        return searchResultJpaRepository.findCachedAtByQueryAndLanguageAndGenre(query, language, genre)
+    }
+
+    @Transactional(readOnly = true)
+    override fun findByQueryLocaleAndGenre(
+        query: String,
+        language: String,
+        genre: String
+    ): SearchResult? {
+        return searchResultJpaRepository
+            .findByQueryAndLanguageAndGenre(query, language, genre)?.let { searchResultMapper.toDomain(it) }
+    }
 
     @Transactional
     override fun save(searchResult: SearchResult): SearchResult {
-        val entity = searchResultMapper.toEntityWithoutProducts(searchResult)
+        val searchResultEntity = searchResultMapper.toEntityWithoutProducts(searchResult)
         // Upsert related products and obtain managed entities
         val managedProducts = upsertProducts(searchResult.products)
-        entity.products.clear()
-        entity.products.addAll(managedProducts)
-        val saved = jpaRepository.save(entity)
+        searchResultEntity.products.clear()
+        searchResultEntity.products.addAll(managedProducts)
+        val saved = searchResultJpaRepository.save(searchResultEntity)
         return searchResultMapper.toDomain(saved)
     }
 
@@ -67,7 +78,7 @@ class SearchResultRepositoryAdapter(
                     val nameTranslationEntity =
                         NameTranslationEntity(
                             productSet = productSetEntity,
-                            languageCode = lang,
+                            languageCode = lang.code,
                             name = name,
                         )
                     productSetEntity.nameTranslations.add(nameTranslationEntity)
@@ -102,7 +113,7 @@ class SearchResultRepositoryAdapter(
                             NameTranslationEntity(
                                 id = 0,
                                 productSet = productSetEntity,
-                                languageCode = lang,
+                                languageCode = lang.code,
                                 name = name,
                             )
                         productSetEntity.nameTranslations.add(nameTranslationEntity)
@@ -123,12 +134,12 @@ class SearchResultRepositoryAdapter(
     ) {
         val existingLocales = entity.nameTranslations.associate { it.languageCode to it }
         product.names.forEach { (locale, name) ->
-            if (existingLocales.containsKey(locale)) {
-                existingLocales[locale]!!.name = name
+            if (existingLocales.containsKey(locale.code)) {
+                existingLocales[locale.code]!!.name = name
             } else {
                 val translation =
                     NameTranslationEntity(
-                        languageCode = locale,
+                        languageCode = locale.code,
                         name = name,
                     )
                 entity.nameTranslations.add(translation)
@@ -158,8 +169,8 @@ class SearchResultRepositoryAdapter(
 
     @Transactional
     override fun deleteAll() {
-        jpaRepository.deleteAll()
+        searchResultJpaRepository.deleteAll()
     }
 
-    override fun countByQuery(query: String): Int = jpaRepository.countByQuery(query)
+    override fun countByQuery(query: String): Int = searchResultJpaRepository.countByQuery(query)
 }

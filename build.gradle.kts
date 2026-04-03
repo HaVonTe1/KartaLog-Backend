@@ -6,7 +6,7 @@ plugins {
     kotlin("plugin.spring") version "2.2.20"
     id("org.springframework.boot") version "4.0.2"
     id("io.spring.dependency-management") version "1.1.6"
-    id("org.jlleitschuh.gradle.ktlint") version "12.1.2"
+    id("org.jlleitschuh.gradle.ktlint") version "14.2.0"
     id("dev.detekt") version "2.0.0-alpha.1"
 }
 
@@ -108,12 +108,16 @@ detekt {
 }
 
 ktlint {
-    version.set("1.5.0")
+    version.set("1.8.0")
     android.set(false)
-    filter {
-        exclude("**/generated/**")
-        exclude("**/build/generated/**")
-    }
+    outputToConsole.set(true)
+//    disabledRules.set(setOf(
+//        import-ordering
+//    ))
+//    filter {
+//        exclude(Regex.generate)
+//        exclude(Regex.build/generated)
+//    }
 }
 
 tasks.named("runKtlintCheckOverMainSourceSet") {

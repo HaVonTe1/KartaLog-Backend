@@ -1,0 +1,22 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues/>
+  <CurrentIssues>
+    <ID>HasPlatformType:CardMarketScraperAdapterIT.kt:CardMarketScraperAdapterIT.TestConfig$@ServiceConnection @Bean fun postgres()</ID>
+    <ID>HasPlatformType:CardMarketWebFetcherIT.kt:CardMarketWebFetcherIT.TestConfig$@ServiceConnection @Bean fun postgres()</ID>
+    <ID>HasPlatformType:CollectablesAdapterIT.kt:CollectablesAdapterIT.Companion$@Container @ServiceConnection @JvmStatic val postgres = PostgreSQLContainer("postgres:18.1-alpine").withReuse(true)</ID>
+    <ID>HasPlatformType:CollectablesServiceIT.kt:CollectablesServiceIT.Companion$@Container @ServiceConnection @JvmStatic val postgres = PostgreSQLContainer("postgres:18.1-alpine").withReuse(true)</ID>
+    <ID>HasPlatformType:QuicksearchImportRunnerTest.kt:QuicksearchImportRunnerTest.Companion$@Container @ServiceConnection @JvmStatic val postgres = PostgreSQLContainer("postgres:18.1-alpine").withReuse(true)</ID>
+    <ID>InjectDispatcher:CardMarketWebFetcherIT.kt:CardMarketWebFetcherIT$Default</ID>
+    <ID>LongMethod:CardMarketWebFetcherIT.kt:CardMarketWebFetcherIT$@Test fun `check state of circuit breaker, ratelimiter and retry when fetching stuff under various conditions`()</ID>
+    <ID>UnusedPrivateProperty:CardMarketScraperAdapterIT.kt:CardMarketScraperAdapterIT$@Autowired private lateinit var wiremockServer: WireMockServer</ID>
+    <ID>UnusedPrivateProperty:CollectablesAdapterIT.kt:CollectablesAdapterIT$private val game: Genre = GenreConfig.GENRES.keys.first { it.name.lowercase() == "pokemon" }</ID>
+    <ID>UnusedPrivateProperty:CollectablesAdapterIT.kt:CollectablesAdapterIT$private val locale: Locale = Locale.GERMAN</ID>
+    <ID>UseOrEmpty:CollectablesAdapterIT.kt:CollectablesAdapterIT$dispatchedFirst.response.getHeader(HttpHeaders.ETAG) ?: ""</ID>
+    <ID>VarCouldBeVal:CardMarketScraperAdapterIT.kt:CardMarketScraperAdapterIT$@Autowired private lateinit var scraper: CardMarketScraperAdapter</ID>
+    <ID>VarCouldBeVal:CardMarketScraperAdapterIT.kt:CardMarketScraperAdapterIT$@Autowired private lateinit var wiremockServer: WireMockServer</ID>
+    <ID>VarCouldBeVal:CardMarketWebFetcherIT.kt:CardMarketWebFetcherIT$@Autowired private lateinit var circuitBreakerRegistry: CircuitBreakerRegistry</ID>
+    <ID>VarCouldBeVal:CardMarketWebFetcherIT.kt:CardMarketWebFetcherIT$@Autowired private lateinit var fetcher: CardMarketWebFetcherPort</ID>
+    <ID>VarCouldBeVal:CardMarketWebFetcherIT.kt:CardMarketWebFetcherIT$@Autowired private lateinit var retryRegistry: RetryRegistry</ID>
+  </CurrentIssues>
+</SmellBaseline>
