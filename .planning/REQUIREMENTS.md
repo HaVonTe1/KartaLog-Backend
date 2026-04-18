@@ -54,6 +54,10 @@
 - [ ] **API-04**: REST API provides alert management endpoints
 - [ ] **API-05**: OpenAPI spec documents all endpoints
 
+### Series Data
+
+- [ ] **SERIES-01**: ProductDTO includes seriesId and seriesName from CardMarket scraping
+
 ## v2 Requirements (Deferred)
 
 - [ ] **GRAPH-01**: GraphQL API for flexible queries

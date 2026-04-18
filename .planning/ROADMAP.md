@@ -87,13 +87,13 @@
 
 ### Phase 4: Add series data to ProductDTO
 
-**Goal:** [To be planned]
-**Requirements**: TBD
-**Depends on:** Phase 3
-**Plans:** 0 plans
+**Goal:** Add series data (seriesId, seriesName) to the API response from CardMarket scraping
+**Requirements**: SERIES-01
+**Depends on:** Phase 1
+**Plans:** 1 plan
 
 Plans:
-- [ ] TBD (run /gsd:plan-phase 4 to break down)
+- [x] 04-01-PLAN.md — Add series data to ProductDTO
 
 ---
 
