@@ -132,6 +132,11 @@ class ProductMapper {
                     Locale.fromId(it.languageCode) to
                             it.name
                 },
+            seriesId = entity.series?.id,
+            seriesNames =
+                entity.series?.nameTranslations?.associate {
+                    Locale.fromId(it.languageCode) to it.name
+                } ?: emptyMap(),
         )
     }
 

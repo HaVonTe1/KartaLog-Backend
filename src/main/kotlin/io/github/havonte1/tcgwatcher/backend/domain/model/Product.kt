@@ -63,6 +63,8 @@ data class ProductSet(
     val setId: Long,
     val cmCode: String,
     val names: Map<Locale, String> = emptyMap(),
+    val seriesId: Long? = null,
+    val seriesNames: Map<Locale, String> = emptyMap(),
 )
 
 data class ProductSeries(
