@@ -13,9 +13,10 @@
 
 | Phase | Status | Progress |
 |-------|--------|----------|
-| 1. Authentication & Authorization | Not started | 0% |
+| 1. Authentication & Authorization | ✓ Complete | 100% |
 | 2. Multi-Source Aggregation | Not started | 0% |
 | 3. Alerts & Notifications | Not started | 0% |
+| 4. Add series data to ProductDTO | Not started | 0% |
 
 ## Performance Metrics
 
@@ -35,6 +36,10 @@
 - Phase structure derived from natural requirement dependencies
 - Auth first: other features depend on user identity
 - Alerts last: need price data stable before monitoring
+
+### Roadmap Evolution
+
+- Phase 4 added: Add series data to ProductDTO
 
 ### Blockers
 
