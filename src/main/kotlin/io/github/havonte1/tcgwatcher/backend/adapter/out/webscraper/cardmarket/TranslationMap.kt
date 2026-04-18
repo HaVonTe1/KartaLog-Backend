@@ -32,6 +32,7 @@ data class Labels(
     val releaseDateLabel: String,
     val priceLabel: String,
     val priceTrendLabel: String,
+    val seriesLabel: String,
 )
 
 val DEFAULT_TRANSLATION_MAP = TranslationMap(
@@ -41,6 +42,7 @@ val DEFAULT_TRANSLATION_MAP = TranslationMap(
         releaseDateLabel = "Erschienen",
         priceLabel = "ab",
         priceTrendLabel = "Preis-Trend",
+        seriesLabel = "Serie",
     ),
     en = Labels(
         paginationOf = "of",
@@ -48,6 +50,7 @@ val DEFAULT_TRANSLATION_MAP = TranslationMap(
         releaseDateLabel = "Released",
         priceLabel = "from",
         priceTrendLabel = "Price Trend",
+        seriesLabel = "Series",
     ),
     fr = Labels(
         paginationOf = "de",
@@ -55,6 +58,7 @@ val DEFAULT_TRANSLATION_MAP = TranslationMap(
         releaseDateLabel = "Sorti",
         priceLabel = "à partir de",
         priceTrendLabel = "Tendance de prix",
+        seriesLabel = "Série",
     ),
     it = Labels(
         paginationOf = "di",
@@ -62,6 +66,7 @@ val DEFAULT_TRANSLATION_MAP = TranslationMap(
         releaseDateLabel = "Rilasciato",
         priceLabel = "da",
         priceTrendLabel = "Trend prezzo",
+        seriesLabel = "Serie",
     ),
     es = Labels(
         paginationOf = "de",
@@ -69,6 +74,7 @@ val DEFAULT_TRANSLATION_MAP = TranslationMap(
         releaseDateLabel = "Lanzado",
         priceLabel = "desde",
         priceTrendLabel = "Tendencia de precio",
+        seriesLabel = "Serie",
     ),
     pt = Labels(
         paginationOf = "de",
@@ -76,6 +82,7 @@ val DEFAULT_TRANSLATION_MAP = TranslationMap(
         releaseDateLabel = "Lançado",
         priceLabel = "a partir de",
         priceTrendLabel = "Tendência de preço",
+        seriesLabel = "Série",
     ),
     nl = Labels(
         paginationOf = "van",
@@ -83,6 +90,7 @@ val DEFAULT_TRANSLATION_MAP = TranslationMap(
         releaseDateLabel = "Uitgebracht",
         priceLabel = "vanaf",
         priceTrendLabel = "Prijs trend",
+        seriesLabel = "Serie",
     ),
     pl = Labels(
         paginationOf = "z",
@@ -90,5 +98,6 @@ val DEFAULT_TRANSLATION_MAP = TranslationMap(
         releaseDateLabel = "Wydany",
         priceLabel = "od",
         priceTrendLabel = "Trend ceny",
+        seriesLabel = "Seria",
     ),
 )

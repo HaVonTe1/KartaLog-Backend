@@ -4,6 +4,7 @@ import io.github.havonte1.tcgwatcher.backend.domain.model.LanguagePricing
 import io.github.havonte1.tcgwatcher.backend.domain.model.Product
 import io.github.havonte1.tcgwatcher.backend.domain.model.ProductAttribute
 import io.github.havonte1.tcgwatcher.backend.domain.model.ProductAttributeType
+import io.github.havonte1.tcgwatcher.backend.domain.model.ProductSeries
 import io.github.havonte1.tcgwatcher.backend.domain.model.ProductSet
 import io.github.havonte1.tcgwatcher.backend.domain.model.SellOffer
 import io.github.havonte1.tcgwatcher.backend.domain.model.StringWithValidity
@@ -103,6 +104,12 @@ class CardMarketProductMapper {
             },
             releaseDate = detailsDto.releaseDate.ifEmpty { null },
             cardNumber = detailsDto.cardNumber.ifEmpty { null },
+            series = if (detailsDto.seriesId != null && detailsDto.seriesName != null) {
+                ProductSeries(
+                    seriesId = detailsDto.seriesId,
+                    names = mapOf(detailsDto.name.locale to detailsDto.seriesName)
+                )
+            } else null,
         )
     }
 

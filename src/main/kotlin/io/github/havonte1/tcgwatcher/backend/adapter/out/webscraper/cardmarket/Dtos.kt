@@ -81,6 +81,8 @@ data class CardmarketProductDetailsDto(
     val productAttributes: List<ProductAttributeDto> = emptyList(),
     val releaseDate: String = "",
     val cardNumber: String = "",
+    val seriesId: Long? = null,
+    val seriesName: String? = null,
 )
 
 data class CardmarketLanguagePricingDto(
