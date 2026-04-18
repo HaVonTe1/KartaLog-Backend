@@ -12,8 +12,8 @@ Complete the TCGWatcher Backend from working PoC to production-ready v1.0. The j
 
 Decimal phases appear between their surrounding integers in numeric order.
 
-- [ ] **Phase 1: Scraper Foundation** - Multi-language scraper with genre-configurable interfaces
-- [ ] **Phase 1.5: Series Data** - Extend ProductDTO with series information from CardMarket (INSERTED)
+- [x] **Phase 1: Scraper Foundation** - Multi-language scraper with genre-configurable interfaces
+- [x] **Phase 1.5: Series Data** - Extend ProductDTO with series information from CardMarket (INSERTED)
 - [ ] **Phase 2: Search Completion** - Full CardMarket search with all filters, sorts, and pagination
 - [ ] **Phase 3: Details Completion** - Complete product details with all languages and attributes
 - [ ] **Phase 4: API Infrastructure** - Production-ready API with rate limiting, resilience, and monitoring
@@ -38,17 +38,7 @@ Decimal phases appear between their surrounding integers in numeric order.
   1. Search results include seriesId and seriesName for each product
   2. Product details include seriesId and seriesName
   3. Series data is populated from CardMarket pages during scraping
-**Plans**: 5 plans
-
-### Phase 1.5: Series Data (INSERTED)
-**Goal**: Extend ProductDTO with series information from CardMarket scraping
-**Depends on**: Phase 1
-**Requirements**: SCRAP-02, SCRAP-03
-**Success Criteria** (what must be TRUE):
-  1. Search results include seriesId and seriesName for each product
-  2. Product details include seriesId and seriesName
-  3. Series data is populated from CardMarket pages during scraping
-**Plans**: 1 plan
+**Status**: COMPLETE (2026-04-18)
 
 ### Phase 2: Search Completion
 **Goal**: Users can search Pokémon products with all CardMarket filters, sort options, and pagination
