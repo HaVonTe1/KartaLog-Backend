@@ -93,7 +93,7 @@ Phases execute in numeric order: 1 → 1.5 → 2 → 3 → 4
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Scraper Foundation | 0/0 | Not started | - |
-| 1.5 Series Data | 0/0 | Not started | - |
+| 1.5 Series Data | 1/1 | Complete | 2026-04-18 |
 | 2. Search Completion | 0/0 | Not started | - |
 | 3. Details Completion | 0/0 | Not started | - |
 | 4. API Infrastructure | 0/0 | Not started | - |
