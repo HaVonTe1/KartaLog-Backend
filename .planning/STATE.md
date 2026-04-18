@@ -25,7 +25,7 @@ See: .planning/PROJECT.md (updated 2026-04-03)
 
 ## Current Position
 
-Phase: 1 of 4 (Scraper Foundation)
+Phase: 1.5 of 5 (Series Data)
 Plan: 0 of 0 in current phase
 Status: Ready to plan
 Last activity: 2026-04-03 — Roadmap created

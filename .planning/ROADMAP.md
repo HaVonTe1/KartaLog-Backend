@@ -13,6 +13,7 @@ Complete the TCGWatcher Backend from working PoC to production-ready v1.0. The j
 Decimal phases appear between their surrounding integers in numeric order.
 
 - [ ] **Phase 1: Scraper Foundation** - Multi-language scraper with genre-configurable interfaces
+- [ ] **Phase 1.5: Series Data** - Extend ProductDTO with series information from CardMarket (INSERTED)
 - [ ] **Phase 2: Search Completion** - Full CardMarket search with all filters, sorts, and pagination
 - [ ] **Phase 3: Details Completion** - Complete product details with all languages and attributes
 - [ ] **Phase 4: API Infrastructure** - Production-ready API with rate limiting, resilience, and monitoring
@@ -28,6 +29,26 @@ Decimal phases appear between their surrounding integers in numeric order.
   2. Scraper correctly parses product data in all CardMarket languages (not just German)
   3. Scraper interfaces are structured so adding a new genre (Yu-Gi-Oh, MTG) requires no changes to core scraping logic
 **Plans**: TBD
+
+### Phase 1.5: Series Data (INSERTED)
+**Goal**: Extend ProductDTO with series information from CardMarket scraping
+**Depends on**: Phase 1
+**Requirements**: SCRAP-02, SCRAP-03
+**Success Criteria** (what must be TRUE):
+  1. Search results include seriesId and seriesName for each product
+  2. Product details include seriesId and seriesName
+  3. Series data is populated from CardMarket pages during scraping
+**Plans**: 5 plans
+
+### Phase 1.5: Series Data (INSERTED)
+**Goal**: Extend ProductDTO with series information from CardMarket scraping
+**Depends on**: Phase 1
+**Requirements**: SCRAP-02, SCRAP-03
+**Success Criteria** (what must be TRUE):
+  1. Search results include seriesId and seriesName for each product
+  2. Product details include seriesId and seriesName
+  3. Series data is populated from CardMarket pages during scraping
+**Plans**: 1 plan
 
 ### Phase 2: Search Completion
 **Goal**: Users can search Pokémon products with all CardMarket filters, sort options, and pagination
@@ -67,11 +88,12 @@ Decimal phases appear between their surrounding integers in numeric order.
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 → 2 → 3 → 4
+Phases execute in numeric order: 1 → 1.5 → 2 → 3 → 4
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Scraper Foundation | 0/0 | Not started | - |
+| 1.5 Series Data | 0/0 | Not started | - |
 | 2. Search Completion | 0/0 | Not started | - |
 | 3. Details Completion | 0/0 | Not started | - |
 | 4. API Infrastructure | 0/0 | Not started | - |
