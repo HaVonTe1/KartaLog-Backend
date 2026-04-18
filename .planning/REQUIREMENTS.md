@@ -1,111 +1,87 @@
-# Requirements: TCGWatcher Backend
+# Requirements
 
-**Defined:** 2026-04-03
-**Core Value:** Accurate, fast search and product detail retrieval for TCG cards — if the search doesn't return the right products with correct pricing, nothing else matters.
+**Project:** TCGWatcher-Backend
+**Version:** 1.0
 
 ## v1 Requirements
 
-### Search
+### Authentication
 
-- [ ] **SEARCH-01**: User can search Pokémon products on CardMarket by free-text query
-- [ ] **SEARCH-02**: User can filter search results by language (all CardMarket languages)
-- [ ] **SEARCH-03**: User can filter search results by price range (min/max)
-- [ ] **SEARCH-04**: User can filter search results by condition
-- [ ] **SEARCH-05**: User can filter search results by availability
-- [ ] **SEARCH-06**: User can filter search results by all CardMarket-supported filter parameters
-- [ ] **SEARCH-07**: User can sort search results by price (asc/desc)
-- [ ] **SEARCH-08**: User can sort search results by name (asc/desc)
-- [ ] **SEARCH-09**: User can sort search results by release date (asc/desc)
-- [ ] **SEARCH-10**: User can sort search results by relevance
-- [ ] **SEARCH-11**: User can sort search results by all CardMarket-supported sort options
-- [ ] **SEARCH-12**: Search results are paginated with offset-based pagination (page/limit)
-- [ ] **SEARCH-13**: Search response includes total count and pagination metadata
+- [ ] **AUTH-01**: User can register with email and password
+- [ ] **AUTH-02**: User can log in and receive JWT access token (15-60 min expiry)
+- [ ] **AUTH-03**: User can request refresh token to extend session
+- [ ] **AUTH-04**: User can log out (invalidate refresh token)
+- [ ] **AUTH-05**: User roles can be assigned (USER, ADMIN)
+- [ ] **AUTH-06**: Secured endpoints enforce JWT authentication
+- [ ] **AUTH-07**: Role-based authorization restricts admin-only actions
+
+### Multi-Source
+
+- [ ] **SRC-01**: Card search returns results from CardMarket (existing)
+- [ ] **SRC-02**: Card search returns results from TCGPlayer (North America)
+- [ ] **SRC-03**: Price data is normalized to common format in adapter layer
+- [ ] **SRC-04**: Source-specific fields stored alongside normalized data
+- [ ] **SRC-05**: Source registry tracks available scrapers and their status
 
 ### Product Details
 
-- [x] **DETAIL-01**: User can retrieve detailed information for a specific Pokémon product by cmId
-- [x] **DETAIL-02**: Product details include language-specific pricing and data
-- [x] **DETAIL-03**: Product details include all sell offers with language information
-- [x] **DETAIL-04**: Product details include all CardMarket-supported product attributes
-- [x] **DETAIL-05**: Product details response includes ETag for conditional requests
+- [ ] **DET-01**: Product details include current price per condition (NM, LP, MP, HP, DM)
+- [ ] **DET-02**: Product details include availability status per seller
+- [ ] **DET-03**: Product details include price history (24h, 7d, 30d changes)
+- [ ] **DET-04**: Product details cached with ETag support (existing)
 
-### API Infrastructure
+### Alerts
 
-- [ ] **API-01**: All endpoints return data directly (no envelope wrapper)
-- [ ] **API-02**: Pagination metadata returned in response headers
-- [ ] **API-03**: API is publicly accessible without authentication
-- [ ] **API-04**: Server-side rate limiting protects CardMarket scraper from overuse
-- [ ] **API-05**: Circuit breaker provides fallback behavior when CardMarket is unavailable
-- [ ] **API-06**: Spring Boot Admin monitors scraper health and API status
+- [ ] **ALERT-01**: User can create price alert for specific card
+- [ ] **ALERT-02**: User can set threshold (above/below target price)
+- [ ] **ALERT-03**: User receives email notification when alert triggers
+- [ ] **ALERT-04**: User can list their active alerts
+- [ ] **ALERT-05**: User can delete/update alerts
+- [ ] **ALERT-06**: Alert evaluation runs on scheduled basis (not during user request)
 
-### Scraper Architecture
+### Notifications
 
-- [x] **SCRAP-01**: Scraper interfaces are designed to be configurable per genre (Pokémon, Yu-Gi-Oh, MTG)
-- [x] **SCRAP-02**: CardMarket scraper supports all Pokémon product pages
-- [x] **SCRAP-03**: Scraper handles all CardMarket languages for search and details
+- [ ] **NOTIF-01**: Email notifications sent via SMTP or provider API
+- [ ] **NOTIF-02**: Telegram webhook notifications supported
+- [ ] **NOTIF-03**: Discord webhook notifications supported
+- [ ] **NOTIF-04**: Notification delivery is async (non-blocking)
 
-## v2 Requirements
+### API
 
-### Yu-Gi-Oh Support
+- [ ] **API-01**: REST API provides search endpoint (existing)
+- [ ] **API-02**: REST API provides product details endpoint (existing)
+- [ ] **API-03**: REST API provides auth endpoints (/auth/register, /auth/login, /auth/refresh)
+- [ ] **API-04**: REST API provides alert management endpoints
+- [ ] **API-05**: OpenAPI spec documents all endpoints
 
-- **YGO-01**: User can search Yu-Gi-Oh products on CardMarket
-- **YGO-02**: User can retrieve Yu-Gi-Oh product details
-- **YGO-03**: All v1 search filters and sort options work for Yu-Gi-Oh
+## v2 Requirements (Deferred)
 
-### Magic: The Gathering Support
-
-- **MTG-01**: User can search MTG products on CardMarket
-- **MTG-02**: User can retrieve MTG product details
-- **MTG-03**: All v1 search filters and sort options work for MTG
+- [ ] **GRAPH-01**: GraphQL API for flexible queries
+- [ ] **HIST-01**: Price history stored as daily snapshots
+- [ ] **GRADED-01**: Graded card pricing (PSA/BGS/CGC)
+- [ ] **COLLECT-01**: User collection tracking
+- [ ] **WS-01**: Real-time WebSocket updates
 
 ## Out of Scope
 
-| Feature | Reason |
-|---------|--------|
-| User accounts / authentication | Public API, no user-specific features needed |
-| Price history / trend analysis | Pass through CardMarket data only, no local enrichment |
-| Other marketplaces (TCGPlayer, etc.) | CardMarket is the sole source |
-| Cursor-based pagination | Offset-based is sufficient and CardMarket compatible |
-| Client-side rate limiting | Server-side only to protect scraper |
-| Multi-source scraping in v1 | CardMarket only initially, other sources added per genre later |
+- **Frontend UI** — separate project
+- **Mobile app** — separate project
+- **OAuth2 integration** — unnecessary complexity for read-only API
+- **Payment processing** — not applicable
+- **Real-time streaming** — polling sufficient for v1
 
 ## Traceability
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| SCRAP-01 | Phase 1 | Complete |
-| SCRAP-02 | Phase 1 | Complete |
-| SCRAP-03 | Phase 1 | Complete |
-| SEARCH-01 | Phase 2 | Pending |
-| SEARCH-02 | Phase 2 | Pending |
-| SEARCH-03 | Phase 2 | Pending |
-| SEARCH-04 | Phase 2 | Pending |
-| SEARCH-05 | Phase 2 | Pending |
-| SEARCH-06 | Phase 2 | Pending |
-| SEARCH-07 | Phase 2 | Pending |
-| SEARCH-08 | Phase 2 | Pending |
-| SEARCH-09 | Phase 2 | Pending |
-| SEARCH-10 | Phase 2 | Pending |
-| SEARCH-11 | Phase 2 | Pending |
-| SEARCH-12 | Phase 2 | Pending |
-| SEARCH-13 | Phase 2 | Pending |
-| DETAIL-01 | Phase 3 | Complete |
-| DETAIL-02 | Phase 3 | Complete |
-| DETAIL-03 | Phase 3 | Complete |
-| DETAIL-04 | Phase 3 | Complete |
-| DETAIL-05 | Phase 3 | Complete |
-| API-01 | Phase 4 | Pending |
-| API-02 | Phase 4 | Pending |
-| API-03 | Phase 4 | Pending |
-| API-04 | Phase 4 | Pending |
-| API-05 | Phase 4 | Pending |
-| API-06 | Phase 4 | Pending |
-
-**Coverage:**
-- v1 requirements: 27 total
-- Mapped to phases: 27
-- Unmapped: 0 ✓
+| AUTH-01 through AUTH-07 | 1 | Pending |
+| SRC-01 through SRC-05 | 2 | Pending |
+| DET-01 through DET-04 | 2 | Pending |
+| ALERT-01 through ALERT-06 | 3 | Pending |
+| NOTIF-01 through NOTIF-04 | 3 | Pending |
+| API-01 through API-05 | 1-3 | Pending |
 
 ---
-*Requirements defined: 2026-04-03*
-*Last updated: 2026-04-03 after initial definition*
+
+*Requirements defined: 2026-04-18*
+*Generated from research and ecosystem analysis*
