@@ -9,7 +9,7 @@
 - [x] **Phase 1: Authentication & Authorization** - User registration, JWT auth, role-based access ✓
 - [ ] **Phase 2: Multi-Source Aggregation** - Additional TCG sources, normalized pricing, product details
 - [ ] **Phase 3: Alerts & Notifications** - Price alerts, threshold monitoring, multi-channel notifications
-- [ ] **Phase 4: Add series data to ProductDTO** - Add series data to ProductDTO
+- [x] **Phase 4: Add series data to ProductDTO** - Add series data to ProductDTO ✓
 
 ## Phase Details
 
@@ -84,6 +84,7 @@
 | 1. Authentication & Authorization | 1/1 | ✓ Complete | 2026-04-18 |
 | 2. Multi-Source Aggregation | 0/1 | Not started | - |
 | 3. Alerts & Notifications | 0/1 | Not started | - |
+| 4. Add series data to ProductDTO | 1/1 | ✓ Complete | 2026-04-18 |
 
 ### Phase 4: Add series data to ProductDTO
 
