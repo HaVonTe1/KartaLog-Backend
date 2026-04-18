@@ -163,7 +163,7 @@ class ProductMapper {
             externalId = entity.externalId,
             sourceId = entity.sourceId,
             set = toProductSet(entity.productSet),
-            series = toProductSeries(entity.series),
+            series = toProductSeries(entity.series) ?: toProductSeries(entity.productSet?.series),
             rarity = entity.rarity,
             createdAt = entity.createdAt,
             updatedAt = entity.updatedAt,
