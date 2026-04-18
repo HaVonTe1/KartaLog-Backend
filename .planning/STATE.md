@@ -1,7 +1,7 @@
 # State
 
 **Project:** TCGWatcher-Backend
-**Current Phase:** Pre-roadmap
+**Current Phase:** 1 - Authentication & Authorization
 
 ## Project Reference
 
