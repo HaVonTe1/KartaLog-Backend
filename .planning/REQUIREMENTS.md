@@ -74,12 +74,37 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| AUTH-01 through AUTH-07 | 1 | Pending |
-| SRC-01 through SRC-05 | 2 | Pending |
-| DET-01 through DET-04 | 2 | Pending |
-| ALERT-01 through ALERT-06 | 3 | Pending |
-| NOTIF-01 through NOTIF-04 | 3 | Pending |
-| API-01 through API-05 | 1-3 | Pending |
+| AUTH-01 | 1 | Pending |
+| AUTH-02 | 1 | Pending |
+| AUTH-03 | 1 | Pending |
+| AUTH-04 | 1 | Pending |
+| AUTH-05 | 1 | Pending |
+| AUTH-06 | 1 | Pending |
+| AUTH-07 | 1 | Pending |
+| SRC-01 | 2 | Pending |
+| SRC-02 | 2 | Pending |
+| SRC-03 | 2 | Pending |
+| SRC-04 | 2 | Pending |
+| SRC-05 | 2 | Pending |
+| DET-01 | 2 | Pending |
+| DET-02 | 2 | Pending |
+| DET-03 | 2 | Pending |
+| DET-04 | 2 | Pending |
+| ALERT-01 | 3 | Pending |
+| ALERT-02 | 3 | Pending |
+| ALERT-03 | 3 | Pending |
+| ALERT-04 | 3 | Pending |
+| ALERT-05 | 3 | Pending |
+| ALERT-06 | 3 | Pending |
+| NOTIF-01 | 3 | Pending |
+| NOTIF-02 | 3 | Pending |
+| NOTIF-03 | 3 | Pending |
+| NOTIF-04 | 3 | Pending |
+| API-01 | 2 | Pending |
+| API-02 | 2 | Pending |
+| API-03 | 1 | Pending |
+| API-04 | 3 | Pending |
+| API-05 | 3 | Pending |
 
 ---
 
