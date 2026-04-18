@@ -1,5 +1,6 @@
 package io.github.havonte1.tcgwatcher.backend.adapter.out.webscraper.cardmarket
 
+import io.github.havonte1.tcgwatcher.backend.config.CardMarketConstants
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
@@ -45,6 +46,12 @@ class CardMarketContentParser {
             val code = matchResult?.groupValues?.getOrNull(2)
             val intPriceTag = it.getElementsByTag("b")
             val intPrice = if (intPriceTag.isNotEmpty()) intPriceTag[0].text() else ""
+            val seriesId = parsedLink.seriesId ?: 0
+            val seriesName = parsedLink.set ?: ""
+            val series =
+                if (seriesId > 0 && seriesName.isNotEmpty()) {
+                    SeriesDto(seriesId, seriesName, parsedLink.language ?: "")
+                } else null
             val itemDto =
                 CardmarketProductGallaryItemDto(
                     name = NameDto(name ?: localName, parsedLink.language ?: "", localName),
@@ -56,6 +63,7 @@ class CardMarketContentParser {
                     imgLink = imageLink,
                     price = intPrice,
                     priceTrend = PriceTrendType("?", false),
+                    series = series,
                 )
             logger.debug { "Item: $itemDto" }
 
@@ -69,15 +77,19 @@ class CardMarketContentParser {
     private data class ParsedLink(
         val language: String?,
         val genre: String?,
+        val set: String?,
         val type: String?,
         val id: String?,
-    )
+    ) {
+        val seriesId: Long?
+            get() = set?.let { CardMarketConstants.SET_CODE_TO_SERIES_ID[it] }
+    }
 
     private fun parseLink(typePath: String?): ParsedLink {
         logger.debug { "Parsing Link: $typePath" }
 
         if (typePath == null || typePath.trim().isEmpty()) {
-            return ParsedLink(null, null, null, null)
+            return ParsedLink(null, null, null, null, null)
         }
 
         val parts = typePath.split('/')
@@ -94,10 +106,11 @@ class CardMarketContentParser {
         if (parts.size - startIdx < 4) {
             logger.debug { "Path does not have enough segments: $typePath" }
             return ParsedLink(
-                parts.getOrNull(startIdx),
-                parts.getOrNull(startIdx + 1),
-                parts.getOrNull(startIdx + 2),
-                typePath,
+                language = null,
+                genre = parts.getOrNull(startIdx),
+                set = null,
+                type = parts.getOrNull(startIdx + 1),
+                id = typePath,
             )
         }
 
@@ -109,10 +122,12 @@ class CardMarketContentParser {
             } else {
                 parts.getOrNull(startIdx + 2)
             }
+        val hasProducts =
+            parts.size > startIdx + 4 && parts[startIdx + 2] == "Products"
+        val set = if (hasProducts) parts.getOrNull(startIdx + 4) else null
 
-        // ID is everything after the language segment, including the leading slash
         val id = typePath.substringAfter(language)
-        val parsedLink = ParsedLink(language, genre, type, id)
+        val parsedLink = ParsedLink(language, genre, set, type, id)
         logger.debug { "Parsed Link: $parsedLink" }
         return parsedLink
     }

@@ -13,14 +13,14 @@ class CardMarketProductMapperTest {
         val item =
             CardmarketProductGallaryItemDto(
                 name = nameDto,
-                code = "12345",
+                code = CodeType("12345", true),
                 genre = "Pokemon",
                 type = "Single",
                 cmId = "/pokemon/product/singles/setx/12345",
                 cmLink = "https://www.cardmarket.com/en/pokemon/product/singles/setx/12345",
                 imgLink = "https://images.cardmarket.com/12345.jpg",
                 price = "10,00 €",
-                priceTrend = "up",
+                priceTrend = PriceTrendType("up", true),
             )
         val pageDto = SearchResultsPageDto(results = listOf(item), page = 1, totalPages = 1)
 

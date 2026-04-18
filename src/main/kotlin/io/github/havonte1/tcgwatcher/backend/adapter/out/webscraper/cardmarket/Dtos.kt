@@ -19,31 +19,7 @@ data class CardmarketProductGallaryItemDto(
     val price: String,
     val priceTrend: PriceTrendType,
     val series: SeriesDto? = null,
-) {
-    constructor(
-        name: NameDto,
-        code: String,
-        genre: String,
-        type: String,
-        cmId: String,
-        cmLink: String,
-        imgLink: String,
-        price: String,
-        priceTrend: String,
-        series: SeriesDto? = null,
-    ) : this(
-        name = name,
-        code = CodeType(code, code.isNotEmpty()),
-        type = type,
-        genre = genre,
-        cmId = cmId,
-        cmLink = cmLink,
-        imgLink = imgLink,
-        price = price,
-        priceTrend = PriceTrendType(priceTrend, priceTrend.isNotEmpty()),
-        series = series,
-    )
-}
+)
 
 data class CodeType(
     val value: String,
