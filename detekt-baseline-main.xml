@@ -1,0 +1,112 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues/>
+  <CurrentIssues>
+    <ID>EmptyClassBlock:ApiUtil.kt:ApiUtil${ }</ID>
+    <ID>EmptyClassBlock:ErrorResponse.kt:ErrorResponse${ }</ID>
+    <ID>EmptyClassBlock:LanguagePricingDTO.kt:LanguagePricingDTO${ }</ID>
+    <ID>EmptyClassBlock:ProductAttributeDTO.kt:ProductAttributeDTO${ }</ID>
+    <ID>EmptyClassBlock:ProductDTO.kt:ProductDTO${ }</ID>
+    <ID>EmptyClassBlock:ProductDetailsDTO.kt:ProductDetailsDTO${ }</ID>
+    <ID>EmptyClassBlock:SellOfferDTO.kt:SellOfferDTO${ }</ID>
+    <ID>EnumNaming:LocaleSchema.kt:LocaleSchema$de : LocaleSchema</ID>
+    <ID>EnumNaming:LocaleSchema.kt:LocaleSchema$en : LocaleSchema</ID>
+    <ID>EnumNaming:LocaleSchema.kt:LocaleSchema$es : LocaleSchema</ID>
+    <ID>EnumNaming:LocaleSchema.kt:LocaleSchema$fr : LocaleSchema</ID>
+    <ID>EnumNaming:LocaleSchema.kt:LocaleSchema$it : LocaleSchema</ID>
+    <ID>EnumNaming:LocaleSchema.kt:LocaleSchema$pl : LocaleSchema</ID>
+    <ID>EnumNaming:LocaleSchema.kt:LocaleSchema$pt : LocaleSchema</ID>
+    <ID>EnumNaming:LocaleSchema.kt:LocaleSchema$ru : LocaleSchema</ID>
+    <ID>ExplicitItLambdaParameter:GenreSchema.kt:GenreSchema.Companion${it -&gt; it.value == value}</ID>
+    <ID>ExplicitItLambdaParameter:LocaleSchema.kt:LocaleSchema.Companion${it -&gt; it.value == value}</ID>
+    <ID>ExplicitItLambdaParameter:ProductTypeSchema.kt:ProductTypeSchema.Companion${it -&gt; it.value == value}</ID>
+    <ID>ImplicitDefaultLocale:CardMarketWebFetcher.kt:CardMarketWebFetcher$String.format(pathPattern, locale.code)</ID>
+    <ID>ImplicitDefaultLocale:GenreConfig.kt:GenreConfig$String.format(it, locale.code, type.cmIdentifier)</ID>
+    <ID>LongParameterList:CardMarketDetailsParser.kt:CardMarketDetailsParser$( content: String, cmId: String, genre: Genre, type: ProductType, locale: Locale, translationMap: TranslationMap = DEFAULT_TRANSLATION_MAP, )</ID>
+    <ID>LongParameterList:CollectablesApi.kt:CollectablesApi$( @NotNull @Size(min=1,max=255) @Parameter(description = "Search query for collectable products (e.g., card name, set name)", required = true) @Valid @RequestParam(value = "query", required = true) query: kotlin.String, @Parameter(description = "Genre category (e.g., Pokemon, Magic, Yu-Gi-Oh)", schema = Schema(allowableValues = ["Pokemon", "YuGiOh", "Magic"], defaultValue = "Pokemon")) @Valid @RequestParam(value = "genre", required = false, defaultValue = "Pokemon") genre: GenreSchema, @Parameter(description = "Product type filter (e.g., Singles, Boosters, Boxes)", schema = Schema(allowableValues = ["Singles", "Boosters", "Booster-Boxes"], defaultValue = "Singles")) @Valid @RequestParam(value = "type", required = false, defaultValue = "Singles") type: ProductTypeSchema, @Parameter(description = "Locale for CardMarket results (e.g., de, en, fr, es)", schema = Schema(allowableValues = ["de", "en", "fr", "es", "it", "pt", "pl", "ru"], defaultValue = "de")) @Valid @RequestParam(value = "locale", required = false, defaultValue = "de") locale: LocaleSchema, @Parameter(description = "ETag from previous response (epoch seconds). Returns 304 if content hasn't changed.", `in` = ParameterIn.HEADER) @RequestHeader(value = "If-None-Match", required = false) ifNoneMatch: kotlin.String?, @Min(value=1)@Parameter(description = "Page number (1-based)", schema = Schema(defaultValue = "1")) @Valid @RequestParam(value = "page", required = false, defaultValue = "1") page: kotlin.Int, @Min(value=1) @Max(value=100) @Parameter(description = "Number of items per page (1-100)", schema = Schema(defaultValue = "20")) @Valid @RequestParam(value = "limit", required = false, defaultValue = "20") limit: kotlin.Int )</ID>
+    <ID>LongParameterList:CollectablesApi.kt:CollectablesApi$( @Parameter(description = "CardMarket product ID", required = true) @PathVariable("cmId") cmId: kotlin.String, @Parameter(description = "Genre category (e.g., Pokemon, Magic, Yu-Gi-Oh)", schema = Schema(allowableValues = ["Pokemon", "YuGiOh", "Magic"], defaultValue = "Pokemon")) @Valid @RequestParam(value = "genre", required = false, defaultValue = "Pokemon") genre: GenreSchema, @Parameter(description = "Product type filter (e.g., Singles, Boosters, Boxes)", schema = Schema(allowableValues = ["Singles", "Boosters", "Booster-Boxes"], defaultValue = "Singles")) @Valid @RequestParam(value = "type", required = false, defaultValue = "Singles") type: ProductTypeSchema, @Parameter(description = "Language for the product card (de, en, fr, es, it, pt, pl, ru)", schema = Schema(allowableValues = ["de", "en", "fr", "es", "it", "pt", "pl", "ru"], defaultValue = "de")) @Valid @RequestParam(value = "lang", required = false, defaultValue = "de") lang: LocaleSchema, @Parameter(description = "Set name to filter by. If omitted, the service will try to resolve it from the stored product data.", schema = Schema(defaultValue = "")) @Valid @RequestParam(value = "setname", required = false, defaultValue = "") setname: kotlin.String, @Parameter(description = "ETag from previous response (epoch seconds). Returns 304 if content hasn't changed.", `in` = ParameterIn.HEADER) @RequestHeader(value = "If-None-Match", required = false) ifNoneMatch: kotlin.String? )</ID>
+    <ID>LoopWithTooManyJumpStatements:QuicksearchImportRunner.kt:QuicksearchImportRunner$while</ID>
+    <ID>MagicNumber:CacheConfig.kt:CacheConfig$1000</ID>
+    <ID>MagicNumber:CardMarketProductMapper.kt:CardMarketProductMapper$5</ID>
+    <ID>MagicNumber:CardMarketWebFetcher.kt:CardMarketWebFetcher$20000.0</ID>
+    <ID>MagicNumber:CardMarketWebFetcher.kt:CardMarketWebFetcher$403</ID>
+    <ID>MagicNumber:CardMarketWebFetcher.kt:CardMarketWebFetcher$404</ID>
+    <ID>MagicNumber:QuicksearchImportRunner.kt:QuicksearchImportRunner$5</ID>
+    <ID>MapGetWithNotNullAssertionOperator:Genre.kt:Genre.Companion$map[key]!!</ID>
+    <ID>MapGetWithNotNullAssertionOperator:Locale.kt:Locale.Companion$map[code]!!</ID>
+    <ID>MapGetWithNotNullAssertionOperator:ProductRepositoryAdapter.kt:ProductRepositoryAdapter$allSetMap[cmCode]!!</ID>
+    <ID>MapGetWithNotNullAssertionOperator:ProductType.kt:ProductType.Companion$map[code]!!</ID>
+    <ID>MapGetWithNotNullAssertionOperator:SearchResultRepositoryAdapter.kt:SearchResultRepositoryAdapter$existingLocales[locale.code]!!</ID>
+    <ID>MaxLineLength:CollectablesApi.kt:CollectablesApi$@Min(value=1) @Max(value=100) @Parameter(description = "Number of items per page (1-100)", schema = Schema(defaultValue = "20")) @Valid @RequestParam(value = "limit", required = false, defaultValue = "20") limit: kotlin.Int</ID>
+    <ID>MaxLineLength:CollectablesApi.kt:CollectablesApi$@Min(value=1)@Parameter(description = "Page number (1-based)", schema = Schema(defaultValue = "1")) @Valid @RequestParam(value = "page", required = false, defaultValue = "1") page: kotlin.Int</ID>
+    <ID>MaxLineLength:CollectablesApi.kt:CollectablesApi$@NotNull @Size(min=1,max=255) @Parameter(description = "Search query for collectable products (e.g., card name, set name)", required = true) @Valid @RequestParam(value = "query", required = true) query: kotlin.String</ID>
+    <ID>MaxLineLength:CollectablesApi.kt:CollectablesApi$@Parameter(description = "ETag from previous response (epoch seconds). Returns 304 if content hasn't changed.", `in` = ParameterIn.HEADER) @RequestHeader(value = "If-None-Match", required = false) ifNoneMatch: kotlin.String?</ID>
+    <ID>MaxLineLength:CollectablesApi.kt:CollectablesApi$@Parameter(description = "Genre category (e.g., Pokemon, Magic, Yu-Gi-Oh)", schema = Schema(allowableValues = ["Pokemon", "YuGiOh", "Magic"], defaultValue = "Pokemon")) @Valid @RequestParam(value = "genre", required = false, defaultValue = "Pokemon") genre: GenreSchema</ID>
+    <ID>MaxLineLength:CollectablesApi.kt:CollectablesApi$@Parameter(description = "Language for the product card (de, en, fr, es, it, pt, pl, ru)", schema = Schema(allowableValues = ["de", "en", "fr", "es", "it", "pt", "pl", "ru"], defaultValue = "de")) @Valid @RequestParam(value = "lang", required = false, defaultValue = "de") lang: LocaleSchema</ID>
+    <ID>MaxLineLength:CollectablesApi.kt:CollectablesApi$@Parameter(description = "Locale for CardMarket results (e.g., de, en, fr, es)", schema = Schema(allowableValues = ["de", "en", "fr", "es", "it", "pt", "pl", "ru"], defaultValue = "de")) @Valid @RequestParam(value = "locale", required = false, defaultValue = "de") locale: LocaleSchema</ID>
+    <ID>MaxLineLength:CollectablesApi.kt:CollectablesApi$@Parameter(description = "Product type filter (e.g., Singles, Boosters, Boxes)", schema = Schema(allowableValues = ["Singles", "Boosters", "Booster-Boxes"], defaultValue = "Singles")) @Valid @RequestParam(value = "type", required = false, defaultValue = "Singles") type: ProductTypeSchema</ID>
+    <ID>MaxLineLength:CollectablesApi.kt:CollectablesApi$@Parameter(description = "Set name to filter by. If omitted, the service will try to resolve it from the stored product data.", schema = Schema(defaultValue = "")) @Valid @RequestParam(value = "setname", required = false, defaultValue = "") setname: kotlin.String</ID>
+    <ID>MaxLineLength:CollectablesApi.kt:CollectablesApi$ApiResponse(responseCode = "200", description = "Detailed product information including pricing and sell offers", content = [Content(schema = Schema(implementation = ProductDetailsDTO::class))])</ID>
+    <ID>MaxLineLength:CollectablesApi.kt:CollectablesApi$ApiResponse(responseCode = "200", description = "List of collectables matching the search criteria", content = [Content(array = ArraySchema(schema = Schema(implementation = ProductDTO::class)))])</ID>
+    <ID>MaxLineLength:CollectablesApi.kt:CollectablesApi$ApiResponse(responseCode = "400", description = "Bad request - invalid parameters", content = [Content(schema = Schema(implementation = ErrorResponse::class))])</ID>
+    <ID>MaxLineLength:CollectablesApi.kt:CollectablesApi$ApiResponse(responseCode = "400", description = "Bad request - invalid query parameters", content = [Content(schema = Schema(implementation = ErrorResponse::class))])</ID>
+    <ID>MaxLineLength:CollectablesApi.kt:CollectablesApi$ApiResponse(responseCode = "404", description = "Product not found on CardMarket", content = [Content(schema = Schema(implementation = ErrorResponse::class))])</ID>
+    <ID>MaxLineLength:CollectablesApi.kt:CollectablesApi$ApiResponse(responseCode = "429", description = "Too many requests - rate limit exceeded", content = [Content(schema = Schema(implementation = ErrorResponse::class))])</ID>
+    <ID>MaxLineLength:CollectablesApi.kt:CollectablesApi$ApiResponse(responseCode = "500", description = "Internal server error", content = [Content(schema = Schema(implementation = ErrorResponse::class))])</ID>
+    <ID>MaxLineLength:ProductDetailsDTO.kt:ProductDetailsDTO$@Schema(example = "https://www.cardmarket.com/en/Pokemon/Products/Singles/Charizard", required = true, description = "Direct link to product on CardMarket")</ID>
+    <ID>MaxLineLength:ProductEntity.kt:ProductEntity$fun compareTo(other: ProductEntity): Int</ID>
+    <ID>MaxLineLength:ProductRepositoryAdapter.kt:ProductRepositoryAdapter$logger.debug { "Mapping product ${product.externalId} with ProductSetEntity id: ${productSetEntity.id}" }</ID>
+    <ID>MaxLineLength:SearchResultRepositoryAdapter.kt:SearchResultRepositoryAdapter$override</ID>
+    <ID>ObjectLiteralToLambda:EnumConverterConfiguration.kt:EnumConverterConfiguration$object: Converter&lt;kotlin.String, GenreSchema&gt; { override fun convert(source: kotlin.String): GenreSchema = GenreSchema.forValue(source) }</ID>
+    <ID>ObjectLiteralToLambda:EnumConverterConfiguration.kt:EnumConverterConfiguration$object: Converter&lt;kotlin.String, LocaleSchema&gt; { override fun convert(source: kotlin.String): LocaleSchema = LocaleSchema.forValue(source) }</ID>
+    <ID>ObjectLiteralToLambda:EnumConverterConfiguration.kt:EnumConverterConfiguration$object: Converter&lt;kotlin.String, ProductTypeSchema&gt; { override fun convert(source: kotlin.String): ProductTypeSchema = ProductTypeSchema.forValue(source) }</ID>
+    <ID>ReturnCount:CollectablesService.kt:CollectablesService$private fun hasChanges( oldProduct: Product, newProduct: Product, ): Boolean</ID>
+    <ID>SerialVersionUIDInSerializableClass:NameTranslationEntity.kt:NameTranslationEntity : Serializable</ID>
+    <ID>SerialVersionUIDInSerializableClass:ProductSetEntity.kt:ProductSetEntity : Serializable</ID>
+    <ID>SerialVersionUIDInSerializableClass:SeriesEntity.kt:SeriesEntity : Serializable</ID>
+    <ID>SpreadOperator:TcgWatcherApplication.kt:(*args)</ID>
+    <ID>TooGenericExceptionCaught:QuicksearchImportRunner.kt:QuicksearchImportRunner$e: Exception</ID>
+    <ID>UnsafeCallOnNullableType:CardMarketWebFetcher.kt:CardMarketWebFetcher$genreConfigData!!</ID>
+    <ID>UnsafeCallOnNullableType:Genre.kt:Genre.Companion$map[key]!!</ID>
+    <ID>UnsafeCallOnNullableType:Locale.kt:Locale.Companion$map[code]!!</ID>
+    <ID>UnsafeCallOnNullableType:PlaywrightManager.kt:PlaywrightManager$browserInstance!!</ID>
+    <ID>UnsafeCallOnNullableType:PlaywrightManager.kt:PlaywrightManager$contextPool!!</ID>
+    <ID>UnsafeCallOnNullableType:PlaywrightManager.kt:PlaywrightManager$playwrightInstance!!</ID>
+    <ID>UnsafeCallOnNullableType:ProductRepositoryAdapter.kt:ProductRepositoryAdapter$allSetMap[cmCode]!!</ID>
+    <ID>UnsafeCallOnNullableType:ProductType.kt:ProductType.Companion$map[code]!!</ID>
+    <ID>UnsafeCallOnNullableType:QuicksearchImportRunner.kt:QuicksearchImportRunner$it.id!!</ID>
+    <ID>UnsafeCallOnNullableType:QuicksearchImportRunner.kt:QuicksearchImportRunner$it.sourceId!!</ID>
+    <ID>UnsafeCallOnNullableType:SearchResultRepositoryAdapter.kt:SearchResultRepositoryAdapter$existingLocales[locale.code]!!</ID>
+    <ID>UnusedParameter:CollectablesMapper.kt:CollectablesMapper$locale: Locale</ID>
+    <ID>UnusedPrivateProperty:SearchResultRepositoryAdapter.kt:SearchResultRepositoryAdapter$private val seriesJpaRepository: SeriesJpaRepository</ID>
+    <ID>UnusedVariable:CardMarketScraperAdapter.kt:CardMarketScraperAdapter$val totalCount = dto.totalPages * effectivePagination.limit</ID>
+    <ID>UnusedVariable:QuicksearchImportRunner.kt:QuicksearchImportRunner$val tcgpId = rs.getString("tcgp_id")</ID>
+    <ID>UseOrEmpty:CardMarketDetailsParser.kt:CardMarketDetailsParser$cardNumber ?: ""</ID>
+    <ID>UseOrEmpty:CardMarketDetailsParser.kt:CardMarketDetailsParser$cells.getOrNull(2)?.text()?.trim() ?: ""</ID>
+    <ID>UseOrEmpty:CardMarketDetailsParser.kt:CardMarketDetailsParser$frontImageTag?.attr("src") ?: ""</ID>
+    <ID>UseOrEmpty:CardMarketDetailsParser.kt:CardMarketDetailsParser$h1Tag?.ownText() ?: ""</ID>
+    <ID>UseOrEmpty:CardMarketDetailsParser.kt:CardMarketDetailsParser$matchResult?.groupValues?.getOrNull(2) ?: ""</ID>
+    <ID>UseOrEmpty:CardMarketDetailsParser.kt:CardMarketDetailsParser$releaseDate ?: ""</ID>
+    <ID>UseOrEmpty:CardMarketDetailsParser.kt:CardMarketDetailsParser$sellerLocationSanitized ?: ""</ID>
+    <ID>UseOrEmpty:CardMarketDetailsParser.kt:CardMarketDetailsParser$setLink?.substringAfterLast("/") ?: ""</ID>
+    <ID>UseOrEmpty:CardMarketGalleryParser.kt:CardMarketGalleryParser$code ?: ""</ID>
+    <ID>UseOrEmpty:CardMarketGalleryParser.kt:CardMarketGalleryParser$paginationDiv?.getElementsByTag("span") ?: emptyList()</ID>
+    <ID>UseOrEmpty:CardMarketGalleryParser.kt:CardMarketGalleryParser$parsedLink.id ?: ""</ID>
+    <ID>UseOrEmpty:CardMarketProductMapper.kt:CardMarketProductMapper$parsedLink.setCode ?: ""</ID>
+    <ID>UseOrEmpty:CollectablesMapper.kt:CollectablesMapper$product.cmId ?: ""</ID>
+    <ID>UseOrEmpty:CollectablesMapper.kt:CollectablesMapper$product.price ?: ""</ID>
+    <ID>UseOrEmpty:CollectablesMapper.kt:CollectablesMapper$product.priceTrendInfo?.value ?: ""</ID>
+    <ID>UseOrEmpty:CollectablesService.kt:CollectablesService$newProduct.sellOffers?.associate { it.sellerName to it } ?: emptyMap()</ID>
+    <ID>UseOrEmpty:CollectablesService.kt:CollectablesService$oldProduct.sellOffers?.associate { it.sellerName to it } ?: emptyMap()</ID>
+    <ID>UseOrEmpty:ProductMapper.kt:ProductMapper$entity.cmProductCode ?: ""</ID>
+    <ID>UseRequire:Genre.kt:Genre.Companion$throw IllegalArgumentException("Unknown Genre $id")</ID>
+    <ID>UseRequire:Locale.kt:Locale.Companion$throw IllegalArgumentException("Locale $code doesn't exist")</ID>
+    <ID>VarCouldBeVal:QuicksearchImportRunner.kt:QuicksearchImportRunner$@Value("\${app.data.import.sqlite.path:quicksearch.db}") private lateinit var sqlitePath: String</ID>
+    <ID>WildcardImport:CollectablesApi.kt:import io.swagger.v3.oas.annotations.*</ID>
+    <ID>WildcardImport:CollectablesApi.kt:import io.swagger.v3.oas.annotations.enums.*</ID>
+    <ID>WildcardImport:CollectablesApi.kt:import io.swagger.v3.oas.annotations.media.*</ID>
+    <ID>WildcardImport:CollectablesApi.kt:import io.swagger.v3.oas.annotations.responses.*</ID>
+    <ID>WildcardImport:CollectablesApi.kt:import io.swagger.v3.oas.annotations.security.*</ID>
+    <ID>WildcardImport:CollectablesApi.kt:import org.springframework.web.bind.annotation.*</ID>
+  </CurrentIssues>
+</SmellBaseline>

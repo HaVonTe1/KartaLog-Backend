@@ -6,12 +6,14 @@ import com.github.tomakehurst.wiremock.client.WireMock.aResponse
 import com.github.tomakehurst.wiremock.client.WireMock.exactly
 import com.github.tomakehurst.wiremock.client.WireMock.getRequestedFor
 import com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo
-import com.github.tomakehurst.wiremock.client.WireMock.verify
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration.options
 import eu.rekawek.toxiproxy.Proxy
 import eu.rekawek.toxiproxy.ToxiproxyClient
 import eu.rekawek.toxiproxy.model.ToxicDirection
 import io.github.havonte1.tcgwatcher.backend.config.CardMarketConfig
+import io.github.havonte1.tcgwatcher.backend.domain.model.Genre
+import io.github.havonte1.tcgwatcher.backend.domain.model.Locale
+import io.github.havonte1.tcgwatcher.backend.domain.model.ProductType
 import io.github.resilience4j.circuitbreaker.CircuitBreaker
 import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry
 import io.github.resilience4j.retry.Retry
@@ -39,6 +41,7 @@ import org.springframework.boot.testcontainers.service.connection.ServiceConnect
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.EnableAspectJAutoProxy
 import org.springframework.context.annotation.Primary
+import org.springframework.test.context.ActiveProfiles
 import org.testcontainers.junit.jupiter.Testcontainers
 import org.testcontainers.postgresql.PostgreSQLContainer
 import org.testcontainers.toxiproxy.ToxiproxyContainer
@@ -50,6 +53,7 @@ import java.nio.file.Paths
 @Testcontainers
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @Tag("e2e")
+@ActiveProfiles(value = ["test"])
 class CardMarketWebFetcherIT {
     @Autowired
     private lateinit var circuitBreakerRegistry: CircuitBreakerRegistry
@@ -102,7 +106,7 @@ class CardMarketWebFetcherIT {
         assertThat(retry.metrics.numberOfSuccessfulCallsWithRetryAttempt).isEqualTo(0)
 
         //  first call : should success
-        val result1 = runBlocking { fetcher.fetch("Pikachu", "de", "Pokemon") }
+        val result1 = runBlocking { fetcher.fetch("Pikachu", Locale.GERMAN, genre = Genre.POKEMON, 1) }
         Assertions.assertTrue(result1.isSuccess)
         val content = result1.getOrNull()
         Assertions.assertNotNull(content)
@@ -130,7 +134,7 @@ class CardMarketWebFetcherIT {
         //  second call : should fail
         val result2 =
             try {
-                runBlocking { fetcher.fetch("Pikachu", "de", "Pokemon") }
+                runBlocking { fetcher.fetch("Pikachu", Locale.GERMAN, Genre.POKEMON, 1) }
             } catch (e: Exception) {
                 // we catch the exception because the test would fail otherwise even if it was handled by the breaker and retyer like we hope for
                 logThrowable("No Bandwidth", e)
@@ -159,7 +163,15 @@ class CardMarketWebFetcherIT {
         // make a call when cloudflare decides to be an a*+hole again
         val result3 =
             try {
-                runBlocking { fetcher.fetchDetails("cloudflare", "Pokemon", "Singles", lang = "de", setname = "BaseSet") }
+                runBlocking {
+                    fetcher.fetchDetails(
+                        "cloudflare",
+                        Genre.POKEMON,
+                        ProductType.SINGLES,
+                        locale = Locale.GERMAN,
+                        setname = "BaseSet",
+                    )
+                }
             } catch (e: Exception) {
                 logThrowable("cloudflare", e)
                 Result.failure(e)
@@ -183,7 +195,15 @@ class CardMarketWebFetcherIT {
         // what if the client searches for unknown stuff
         val result4 =
             try {
-                runBlocking { fetcher.fetchDetails("unknown", "Pokemon", "Singles", lang = "de", setname = "BaseSet") }
+                runBlocking {
+                    fetcher.fetchDetails(
+                        "unknown",
+                        Genre.POKEMON,
+                        ProductType.SINGLES,
+                        Locale.GERMAN,
+                        setname = "BaseSet",
+                    )
+                }
             } catch (e: Exception) {
                 // the requst should fail and the exception be logged but i dont want the breaker to be open
                 // neither the retrier should do stupid things
@@ -199,7 +219,16 @@ class CardMarketWebFetcherIT {
         (0 until 10).forEach { i ->
             var result: Result<String>
             try {
-                result = runBlocking { fetcher.fetchDetails("unknown", "Pokemon", "Singles", lang = "de", setname = "BaseSet") }
+                result =
+                    runBlocking {
+                        fetcher.fetchDetails(
+                            "unknown",
+                            Genre.POKEMON,
+                            ProductType.SINGLES,
+                            locale = Locale.GERMAN,
+                            setname = "BaseSet",
+                        )
+                    }
             } catch (e: Exception) {
                 logThrowable("unknown-loop", e)
                 result = Result.failure(e)
@@ -232,7 +261,13 @@ class CardMarketWebFetcherIT {
                     var result: Result<String>
                     try {
                         result =
-                            fetcher.fetchDetails("cloudflare", "Pokemon", "Singles", lang = "de", setname = "BaseSet")
+                            fetcher.fetchDetails(
+                                "cloudflare",
+                                Genre.POKEMON,
+                                ProductType.SINGLES,
+                                Locale.GERMAN,
+                                setname = "BaseSet",
+                            )
                     } catch (e: Exception) {
                         logThrowable("unknown-loop", e)
                         result = Result.failure(e)
@@ -355,6 +390,7 @@ class CardMarketWebFetcherIT {
         ): Proxy {
             val toxiproxyClient = ToxiproxyClient(toxiproxyContainer.getHost(), toxiproxyContainer.getControlPort())
             val wmUpstream = "host.testcontainers.internal:${wireMockServer.port()}"
+
             return toxiproxyClient.createProxy("cm", "0.0.0.0:8666", wmUpstream)
         }
 
@@ -363,14 +399,14 @@ class CardMarketWebFetcherIT {
             val toxiproxyContainer =
                 ToxiproxyContainer(
                     DockerImageName.parse("shopify/toxiproxy:2.1.4"),
-                ).withAccessToHost(true)
+                ).withAccessToHost(true).withReuse(false)
             toxiproxyContainer.start()
             return toxiproxyContainer
         }
 
         @ServiceConnection
         @Bean
-        fun postgres() = PostgreSQLContainer("postgres:18.1-alpine")
+        fun postgres() = PostgreSQLContainer("postgres:18.1-alpine").withReuse(true)
 
         @Bean
         @Primary

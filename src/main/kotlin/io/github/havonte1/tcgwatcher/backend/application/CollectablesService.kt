@@ -1,6 +1,9 @@
 package io.github.havonte1.tcgwatcher.backend.application
 
+import io.github.havonte1.tcgwatcher.backend.domain.model.Genre
+import io.github.havonte1.tcgwatcher.backend.domain.model.Locale
 import io.github.havonte1.tcgwatcher.backend.domain.model.Product
+import io.github.havonte1.tcgwatcher.backend.domain.model.ProductType
 import io.github.havonte1.tcgwatcher.backend.domain.model.SearchResult
 import io.github.havonte1.tcgwatcher.backend.domain.port.out.CardMarketScraperPort
 import io.github.havonte1.tcgwatcher.backend.domain.port.out.ProductRepository
@@ -12,9 +15,11 @@ import org.springframework.stereotype.Service
 import org.springframework.web.server.ResponseStatusException
 import java.time.Instant
 
+private const val DEFAULT_PAGE_LIMIT = 30
+
 @Service
 class CollectablesService(
-    private val scraperPort: CardMarketScraperPort,
+    private val scraper: CardMarketScraperPort,
     private val searchResultRepository: SearchResultRepository,
     private val productRepository: ProductRepository,
 ) : SearchUseCase {
@@ -23,33 +28,47 @@ class CollectablesService(
     @Cacheable("listCache")
     override suspend fun search(
         searchString: String,
-        locale: String,
-        game: String,
-    ): List<Product> {
+        locale: Locale,
+        genre: Genre,
+    ): SearchResponse {
         logger.debug { "Searching for collectables with query='$searchString'" }
 
-        val scraped: List<Product> =
-            scraperPort.search(searchString, locale, game)
 
-        val existingResult = searchResultRepository.findByQuery(searchString)
-        if (existingResult != null) {
-            val updated = existingResult.copy(products = scraped, cachedAt = Instant.now())
-            searchResultRepository.save(updated)
+        val existingResult =
+            searchResultRepository.findByQueryLocaleAndGenre(
+                searchString, locale.code, genre.identifier)
+        val result =  if (existingResult != null) {
+            existingResult
         } else {
-            val searchResult = SearchResult(query = searchString, products = scraped, cachedAt = Instant.now())
-            searchResultRepository.save(searchResult)
+
+            val searchResult: SearchResult =
+                scraper.search(searchString, locale, genre)
+
+            val resultToSave = SearchResult(
+                query = searchString,
+                language = locale.code,
+                genre = genre.identifier,
+                products = searchResult.products,
+                cachedAt = Instant.now(),
+            )
+            val savedResult = searchResultRepository.save(resultToSave)
+            savedResult
         }
 
-        logger.debug { "Scrape completed and cached (${scraped.size} products) for query='$searchString'" }
-        return scraped
+        val productCount = result.products.size
+        logger.debug { "Scrape completed and cached ($productCount products) for query='$searchString'" }
+        return SearchResponse(
+            products = result.products,
+            cachedAt = result.cachedAt?: Instant.now()
+        )
     }
 
     @Cacheable("detailsCache")
     override suspend fun fetchProductDetails(
         cmId: String,
-        genre: String,
-        type: String,
-        lang: String,
+        genre: Genre,
+        type: ProductType,
+        locale: Locale,
         setname: String,
     ): Product? {
         logger.info { "Fetching product details for cmId=$cmId" }
@@ -66,7 +85,7 @@ class CollectablesService(
             }
 
         if (existingProduct != null) {
-            val newProduct = scraperPort.fetchProductDetails(cmId, genre, type, lang, actualSetName)
+            val newProduct = scraper.fetchProductDetails(cmId, genre, type, locale, actualSetName)
 
             if (newProduct != null && hasChanges(existingProduct, newProduct)) {
                 logger.debug { "Changes detected, updating product" }
@@ -76,7 +95,7 @@ class CollectablesService(
                 return existingProduct
             }
         } else {
-            val newProduct = scraperPort.fetchProductDetails(cmId, genre, type, lang, actualSetName)
+            val newProduct = scraper.fetchProductDetails(cmId, genre, type, locale, actualSetName)
             if (newProduct != null) {
                 logger.debug { "New product, persisting to database" }
                 return productRepository.save(newProduct)
@@ -86,15 +105,42 @@ class CollectablesService(
         return existingProduct
     }
 
-    override suspend fun getSearchCachedAt(searchString: String): Instant? = searchResultRepository.findByQuery(searchString)?.cachedAt
+    override suspend fun getSearchCachedAt(searchString: String, locale: Locale, genre: Genre): Instant? =
+        searchResultRepository.getCachedAtByQueryLocaleAndGenre(
+            query = searchString, language = locale.code, genre = genre.identifier)
 
-    override suspend fun getProductUpdatedAt(cmId: String): Instant? = productRepository.findByCmId(cmId)?.updatedAt
+    override suspend fun getProductUpdatedAt(cmId: String): Instant? =
+        productRepository.findByCmId(cmId)?.updatedAt
 
     private fun hasChanges(
         oldProduct: Product,
         newProduct: Product,
     ): Boolean {
         if (oldProduct.price != newProduct.price) return true
+        if (oldProduct.releaseDate != newProduct.releaseDate) return true
+        if (oldProduct.cardNumber != newProduct.cardNumber) return true
+
+        val oldLanguagePricing = oldProduct.languagePricing.associate { it.locale.code to it }
+        val newLanguagePricing = newProduct.languagePricing.associate { it.locale.code to it }
+        if (oldLanguagePricing.keys != newLanguagePricing.keys) return true
+        oldLanguagePricing.forEach { (_, oldPricing) ->
+            val newPricing = newLanguagePricing[oldPricing.locale.code]
+            val priceChanged = oldPricing.price != newPricing?.price
+            val trendChanged = oldPricing.priceTrend != newPricing?.priceTrend
+            if (newPricing == null || priceChanged || trendChanged) {
+                return true
+            }
+        }
+
+        val oldAttributes = oldProduct.productAttributes.associate { it.attributeName to it }
+        val newAttributes = newProduct.productAttributes.associate { it.attributeName to it }
+        if (oldAttributes.keys != newAttributes.keys) return true
+        oldAttributes.forEach { (_, oldAttr) ->
+            val newAttr = newAttributes[oldAttr.attributeName]
+            if (newAttr == null || oldAttr.value != newAttr.value) {
+                return true
+            }
+        }
 
         val oldSellOffersMap = oldProduct.sellOffers?.associate { it.sellerName to it } ?: emptyMap()
         val newSellOffersMap = newProduct.sellOffers?.associate { it.sellerName to it } ?: emptyMap()

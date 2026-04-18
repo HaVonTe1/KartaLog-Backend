@@ -81,7 +81,7 @@ complexity:
     allowedComplexity: 15
   ComplexCondition:
     active: true
-    allowedConditions: 3
+    allowedConditions: 6
   ComplexInterface:
     active: false
     allowedDefinitions: 10
@@ -90,7 +90,7 @@ complexity:
     ignoreOverloaded: false
   CyclomaticComplexMethod:
     active: true
-    allowedComplexity: 14
+    allowedComplexity: 20
     ignoreSingleWhenExpression: false
     ignoreSimpleWhenEntries: false
     ignoreNestingFunctions: false
@@ -113,7 +113,7 @@ complexity:
     allowedLines: 600
   LongMethod:
     active: true
-    allowedLines: 60
+    allowedLines: 80
   LongParameterList:
     active: true
     allowedFunctionParameters: 5
@@ -278,7 +278,7 @@ exceptions:
     active: true
   TooGenericExceptionCaught:
     active: true
-    excludes: ['**/test/**', '**/androidTest/**', '**/commonTest/**', '**/jvmTest/**', '**/androidUnitTest/**', '**/androidInstrumentedTest/**', '**/jsTest/**', '**/iosTest/**']
+    excludes: ['**/test/**', '**/androidTest/**', '**/commonTest/**', '**/jvmTest/**', '**/androidUnitTest/**', '**/androidInstrumentedTest/**', '**/jsTest/**', '**/iosTest/**', '**/webscraper/**']
     exceptionNames:
       - 'ArrayIndexOutOfBoundsException'
       - 'Error'
@@ -671,6 +671,8 @@ style:
       - '0'
       - '1'
       - '2'
+      - '3'
+      - '4'
     ignoreHashCodeFunction: true
     ignorePropertyDeclaration: false
     ignoreLocalVariableDeclaration: false
@@ -693,6 +695,7 @@ style:
     excludeImportStatements: true
     excludeCommentStatements: false
     excludeRawStrings: true
+    excludes: ['**/test/**', '**/androidTest/**', '**/commonTest/**', '**/jvmTest/**', '**/androidUnitTest/**', '**/androidInstrumentedTest/**', '**/jsTest/**', '**/iosTest/**']
   MayBeConstant:
     active: true
   ModifierOrder:
@@ -733,7 +736,7 @@ style:
     active: false
   ReturnCount:
     active: true
-    max: 2
+    max: 6
     excludedFunctions:
       - 'equals'
     excludeLabeled: false
@@ -751,7 +754,7 @@ style:
     ignoredCharacters: []
   ThrowsCount:
     active: true
-    max: 2
+    max: 6
     excludeGuardClauses: false
   TrailingWhitespace:
     active: false

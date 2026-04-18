@@ -1,15 +1,20 @@
 package io.github.havonte1.tcgwatcher.backend.adapter.out.webscraper.cardmarket
 
+import io.github.havonte1.tcgwatcher.backend.domain.model.Genre
+import io.github.havonte1.tcgwatcher.backend.domain.model.Locale
+import io.github.havonte1.tcgwatcher.backend.domain.model.ProductType
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Assumptions
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.fail
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.Paths
 
 class CardMarketContentParserTest {
-    private val parser = CardMarketContentParser()
+    private val galleryParser = CardMarketGalleryParser()
+    private val detailsParser = CardMarketDetailsParser()
 
     @Test
     fun `extractProductsFromHtml parses view‑source HTML correctly`() {
@@ -18,14 +23,22 @@ class CardMarketContentParserTest {
         val file = File(resourcePath)
         Assumptions.assumeTrue(file.exists(), "Ressource fehlt, Test wird übersprungen")
         val content = Files.readString(Paths.get(resourcePath))
-        val products = parser.parseGalaryPage(content, 1)
+        val result = galleryParser.parse(content, Locale.GERMAN, 1)
         // Expect at least one product parsed
-        assertTrue(products.results.isNotEmpty(), "No products were parsed")
-        assertEquals(30, products.results.size, "Should found 30 elements")
-        // Verify first product's externalId and imageUrl based on the sample HTML
-        val first = products.results.first()
-        assertEquals("/Pokemon/Products/Singles/Celebrations/Pikachu-V1-CEL005", first.cmId)
-        assertEquals("https://product-images.s3.cardmarket.com/51/CEL/576750/576750.jpg", first.imgLink)
+        result.fold(
+            onSuccess = {
+                val products = result.getOrThrow()
+                assertTrue(products.results.isNotEmpty(), "No products were parsed")
+                assertEquals(30, products.results.size, "Should found 30 elements")
+                // Verify first product's externalId and imageUrl based on the sample HTML
+                val first = products.results.first()
+                assertEquals("/Pokemon/Products/Singles/Celebrations/Pikachu-V1-CEL005", first.cmId)
+                assertEquals("https://product-images.s3.cardmarket.com/51/CEL/576750/576750.jpg", first.imgLink)
+            },
+            onFailure = {
+                fail { "Something went wrong!" }
+            },
+        )
     }
 
     @Test
@@ -36,21 +49,21 @@ class CardMarketContentParserTest {
         Assumptions.assumeTrue(file.exists(), "Ressource fehlt, Test wird übersprungen")
         val content = Files.readString(Paths.get(resourcePath))
 
-        val productDetails =
-            parser.parseProductDetails(
+        val result =
+            detailsParser.parse(
                 content,
                 cmId = "Pikachu-MCD166",
-                genre = "Pokemon",
-                type = "Singles",
-                lang = "de",
-                setname = "McDonalds-Collection-2016",
+                genre = Genre.POKEMON,
+                type = ProductType.SINGLES,
+                locale = Locale.GERMAN,
             )
 
+        val productDetails = result.getOrThrow()
         assertEquals("Pikachu-MCD166", productDetails.cmId)
-        assertEquals("Pokemon", productDetails.genre)
-        assertEquals("Singles", productDetails.type)
+        assertEquals("Pokemon", productDetails.genre.pathParam)
+        assertEquals("Singles", productDetails.type.cmIdentifier)
         assertEquals("Pikachu", productDetails.name.value)
-        assertEquals("de", productDetails.name.languageCode)
+        assertEquals("de", productDetails.name.locale.code)
         assertEquals("Pikachu-MCD166", productDetails.name.i18n)
         assertEquals("MCD16 6", productDetails.code.value)
         assertEquals("https://product-images.s3.cardmarket.com/51/MCD16/295142/295142.jpg", productDetails.imageUrl)
@@ -75,21 +88,20 @@ class CardMarketContentParserTest {
         Assumptions.assumeTrue(file.exists(), "Ressource fehlt, Test wird übersprungen")
         val content = Files.readString(Paths.get(resourcePath))
 
-        val productDetails =
-            parser.parseProductDetails(
+        val result =
+            detailsParser.parse(
                 content,
                 cmId = "Pikachu-MCD166",
-                genre = "Pokemon",
-                type = "Singles",
-                lang = "de",
-                setname = "McDonalds-Collection-2016",
+                genre = Genre.POKEMON,
+                type = ProductType.SINGLES,
+                locale = Locale.GERMAN,
             )
-
+        val productDetails = result.getOrThrow()
         assertEquals("Pikachu-MCD166", productDetails.cmId)
-        assertEquals("Pokemon", productDetails.genre)
-        assertEquals("Singles", productDetails.type)
+        assertEquals("Pokemon", productDetails.genre.pathParam)
+        assertEquals("Singles", productDetails.type.cmIdentifier)
         assertEquals("Pikachu", productDetails.name.value)
-        assertEquals("de", productDetails.name.languageCode)
+        assertEquals("de", productDetails.name.locale.code)
         assertEquals("Pikachu-MCD166", productDetails.name.i18n)
         assertEquals("MCD16 6", productDetails.code.value)
         assertEquals("https://product-images.s3.cardmarket.com/51/MCD16/295142/295142.jpg", productDetails.imageUrl)

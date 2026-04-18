@@ -53,6 +53,14 @@ data class ProductEntity(
     val priceTrend: String? = null,
     @Column(name = "price_trend_valid")
     val priceTrendValid: Boolean? = null,
+    @Column(name = "release_date")
+    val releaseDate: String? = null,
+    @Column(name = "card_number")
+    val cardNumber: String? = null,
+    @Column(name = "language_pricing", columnDefinition = "TEXT")
+    val languagePricing: String? = null,
+    @Column(name = "product_attributes", columnDefinition = "TEXT")
+    val productAttributes: String? = null,
     @NotAudited
     @Column(name = "created_at", nullable = false, updatable = false)
     var createdAt: Instant = Instant.now(),

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                  xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.8.xsd">
+
+  <changeSet author="gsd-agent" id="add-product-details-columns">
+    <addColumn schemaName="watcher" tableName="products">
+      <column name="release_date" type="VARCHAR(255)"/>
+      <column name="card_number" type="VARCHAR(255)"/>
+      <column name="language_pricing" type="TEXT"/>
+      <column name="product_attributes" type="TEXT"/>
+    </addColumn>
+  </changeSet>
+
+  <changeSet author="gsd-agent" id="add-product-details-aud-columns">
+    <addColumn schemaName="watcher" tableName="products_aud">
+      <column name="release_date" type="VARCHAR(255)"/>
+      <column name="card_number" type="VARCHAR(255)"/>
+      <column name="language_pricing" type="TEXT"/>
+      <column name="product_attributes" type="TEXT"/>
+    </addColumn>
+  </changeSet>
+
+</databaseChangeLog>

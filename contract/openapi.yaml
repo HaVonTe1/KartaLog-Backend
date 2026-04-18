@@ -5,12 +5,12 @@ info:
   description: |
     TCGWatcher API provides endpoints for searching and retrieving collectible card data from multiple sources.
     Currently integrates with CardMarket to fetch product information, pricing trends, and sell offers.
-    
+
     ## Features
     - Search and list collectable products with pagination
     - Retrieve detailed product information including current prices
     - Fetch sell offers from various sellers
-    
+
     ## Rate Limits
     Please be mindful of API usage to avoid rate limiting.
   contact:
@@ -40,64 +40,17 @@ paths:
         Supports HTTP caching via ETag/If-None-Match header.
       operationId: listCollectables
       parameters:
-        - name: query
-          in: query
-          description: Search query for collectable products (e.g., card name, set name)
-          required: true
-          schema:
-            type: string
-            minLength: 1
-            maxLength: 255
-            example: "Pikachu"
-        - name: genre
-          in: query
-          description: Genre filter (e.g., Pokemon, Magic, Yu-Gi-Oh)
-          required: false
-          schema:
-            type: string
-            default: Pokemon
-            example: Pokemon
-        - name: type
-          in: query
-          description: Product type filter (e.g., Singles, Boosters, Boxes)
-          required: false
-          schema:
-            type: string
-            default: Singles
-            example: Singles
-        - name: locale
-          in: query
-          description: Locale for CardMarket results (e.g., de, en, fr, es)
-          required: false
-          schema:
-            type: string
-            default: de
-            enum:
-              - de
-              - en
-              - fr
-              - es
-              - it
-              - pt
-              - pl
-              - ru
-            example: de
-        - name: If-None-Match
-          in: header
-          description: ETag from previous response (epoch seconds). Returns 304 if content hasn't changed.
-          required: false
-          schema:
-            type: string
-            example: "1742462400"
+        - $ref: '#/components/parameters/QueryParam'
+        - $ref: '#/components/parameters/GenreParam'
+        - $ref: '#/components/parameters/TypeParam'
+        - $ref: '#/components/parameters/LocaleParam'
+        - $ref: '#/components/parameters/IfNoneMatchHeader'
       responses:
         '200':
           description: List of collectables matching the search criteria
           headers:
             ETag:
-              description: Current ETag (epoch seconds). Send this as If-None-Match in subsequent requests.
-              schema:
-                type: string
-                example: "1742462400"
+              $ref: '#/components/headers/ETagHeader'
           content:
             application/json:
               schema:
@@ -108,10 +61,7 @@ paths:
           description: Not Modified - content unchanged, use cached response
           headers:
             ETag:
-              description: Current ETag (epoch seconds)
-              schema:
-                type: string
-                example: "1742462400"
+              $ref: '#/components/headers/ETagHeader'
         '400':
           description: Bad request - invalid query parameters
           content:
@@ -157,68 +107,17 @@ paths:
           schema:
             type: string
             example: "CM001"
-        - name: genre
-          in: query
-          description: Genre category (pokemon, magic, etc.)
-          required: false
-          schema:
-            type: string
-            default: pokemon
-            example: pokemon
-            enum:
-              - pokemon
-              - magic
-              - yugioh
-              - ffi
-        - name: type
-          in: query
-          description: Product type (Singles, Boosters, etc.)
-          required: false
-          schema:
-            type: string
-            default: Singles
-            example: Singles
-        - name: lang
-          in: query
-          description: Language for the product card (de, en, fr, es, it, pt, pl, ru)
-          required: false
-          schema:
-            type: string
-            default: de
-            example: de
-            enum:
-              - de
-              - en
-              - fr
-              - es
-              - it
-              - pt
-              - pl
-              - ru
-        - name: setname
-          in: query
-          description: Set name to filter by. If omitted, the service will try to resolve it from the stored product data.
-          required: false
-          schema:
-            type: string
-            default: ""
-            example: "Base Set"
-        - name: If-None-Match
-          in: header
-          description: ETag from previous response (epoch seconds). Returns 304 if content hasn't changed.
-          required: false
-          schema:
-            type: string
-            example: "1742462400"
+        - $ref: '#/components/parameters/GenreParam'
+        - $ref: '#/components/parameters/TypeParam'
+        - $ref: '#/components/parameters/LanguageParam'
+        - $ref: '#/components/parameters/SetNameParam'
+        - $ref: '#/components/parameters/IfNoneMatchHeader'
       responses:
         '200':
           description: Detailed product information including pricing and sell offers
           headers:
             ETag:
-              description: Current ETag (epoch seconds). Send this as If-None-Match in subsequent requests.
-              schema:
-                type: string
-                example: "1742462400"
+              $ref: '#/components/headers/ETagHeader'
           content:
             application/json:
               schema:
@@ -245,10 +144,7 @@ paths:
           description: Not Modified - content unchanged, use cached response
           headers:
             ETag:
-              description: Current ETag (epoch seconds)
-              schema:
-                type: string
-                example: "1742462400"
+              $ref: '#/components/headers/ETagHeader'
         '400':
           description: Bad request - invalid parameters
           content:
@@ -282,7 +178,92 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 components:
+  parameters:
+    QueryParam:
+      name: query
+      in: query
+      description: Search query for collectable products (e.g., card name, set name)
+      required: true
+      schema:
+        type: string
+        minLength: 1
+        maxLength: 255
+        example: "Pikachu"
+    GenreParam:
+      name: genre
+      in: query
+      description: Genre category (e.g., Pokemon, Magic, Yu-Gi-Oh)
+      required: false
+      schema:
+        $ref: '#/components/schemas/GenreSchema'
+    TypeParam:
+      name: type
+      in: query
+      description: Product type filter (e.g., Singles, Boosters, Boxes)
+      required: false
+      schema:
+        $ref: '#/components/schemas/ProductTypeSchema'
+    LocaleParam:
+      name: locale
+      in: query
+      description: Locale for CardMarket results (e.g., de, en, fr, es)
+      required: false
+      schema:
+        $ref: '#/components/schemas/LocaleSchema'
+    SetNameParam:
+      name: setname
+      in: query
+      description: Set name to filter by. If omitted, the service will try to resolve it from the stored product data.
+      required: false
+      schema:
+        type: string
+        default: ""
+        example: "Base Set"
+    LanguageParam:
+      name: lang
+      in: query
+      description: Language for the product card (de, en, fr, es, it, pt, pl, ru)
+      required: false
+      schema:
+        $ref: '#/components/schemas/LocaleSchema'
+    IfNoneMatchHeader:
+      name: If-None-Match
+      in: header
+      description: ETag from previous response (epoch seconds). Returns 304 if content hasn't changed.
+      required: false
+      schema:
+        type: string
+        example: "1742462400"
+  headers:
+    ETagHeader:
+      description: Current ETag (epoch seconds). Send this as If-None-Match in subsequent requests.
+      schema:
+        type: string
+        example: "1742462400"
   schemas:
+    GenreSchema:
+      type: string
+      enum: [Pokemon, YuGiOh, Magic]
+      default: Pokemon
+      example: Pokemon
+    ProductTypeSchema:
+      type: string
+      enum: [Singles, Boosters, Booster-Boxes]
+      default: Singles
+      example: Singles
+    LocaleSchema:
+      type: string
+      enum:
+        - de
+        - en
+        - fr
+        - es
+        - it
+        - pt
+        - pl
+        - ru
+      default: de
+      example: de
     ProductDTO:
       type: object
       description: Basic product information for list views
@@ -296,11 +277,6 @@ components:
           type: string
           description: CardMarket sanatized product name
           example: "Charizard-VSTAR-V1-BRS018"
-        setName:
-          type: string
-          nullable: true
-          description: Name of the product set/expansion
-          example: "Base Set"
         setCode:
           type: string
           nullable: true
@@ -312,11 +288,6 @@ components:
           nullable: true
           description: Series identifier
           example: 123
-        seriesName:
-          type: string
-          nullable: true
-          description: Name of the product series
-          example: "Base Series"
         genre:
           type: string
           description: Genre category
@@ -335,21 +306,11 @@ components:
           nullable: true
           description: Product code value
           example: "12345"
-        codeValid:
-          type: boolean
-          nullable: true
-          description: Code validity flag
-          example: true
         price:
           type: string
           nullable: true
           description: Current price
           example: "15.00"
-        priceTrend:
-          type: string
-          nullable: true
-          description: Price trend indicator (7‑day average)
-          example: "12.50"
         imageUrl:
           type: string
           format: uri
@@ -361,7 +322,6 @@ components:
         - cmId
         - genre
         - type
-
     ProductDetailsDTO:
       type: object
       description: Detailed product information including pricing and sell offers
@@ -443,6 +403,26 @@ components:
           description: List of available sell offers
           items:
             $ref: '#/components/schemas/SellOfferDTO'
+        languagePricing:
+          type: array
+          description: Language-specific pricing for all CardMarket languages
+          items:
+            $ref: '#/components/schemas/LanguagePricingDTO'
+        productAttributes:
+          type: array
+          description: Additional product attributes from CardMarket
+          items:
+            $ref: '#/components/schemas/ProductAttributeDTO'
+        releaseDate:
+          type: string
+          nullable: true
+          description: Release date from CardMarket
+          example: "2023-03-03"
+        cardNumber:
+          type: string
+          nullable: true
+          description: Card number in set
+          example: "049/197"
       required:
         - id
         - externalId
@@ -450,7 +430,6 @@ components:
         - type
         - detailsUrl
         - price
-
     SellOfferDTO:
       type: object
       description: Individual sell offer from a seller
@@ -490,8 +469,49 @@ components:
         - condition
         - amount
         - price
-
-
+    LanguagePricingDTO:
+      type: object
+      description: Language-specific pricing from CardMarket
+      properties:
+        locale:
+          type: string
+          description: Language code
+          example: "de"
+        price:
+          type: string
+          description: Lowest price for this language
+          example: "12.00"
+        priceTrend:
+          type: string
+          description: 7-day average price trend
+          example: "11.50"
+        priceTrendValid:
+          type: boolean
+          description: Whether price trend is valid
+          example: true
+      required:
+        - locale
+        - price
+    ProductAttributeDTO:
+      type: object
+      description: Additional product attribute from CardMarket
+      properties:
+        attributeName:
+          type: string
+          description: Name of the attribute
+          example: "rarity"
+        value:
+          type: string
+          description: The attribute value
+          example: "Rare Holo"
+        attributeType:
+          type: string
+          description: Type of attribute
+          example: "RARITY"
+      required:
+        - attributeName
+        - value
+        - attributeType
     ErrorResponse:
       type: object
       description: Standard error response format

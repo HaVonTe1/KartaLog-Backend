@@ -1,36 +1,52 @@
 package io.github.havonte1.tcgwatcher.backend.adapter.out.webscraper.cardmarket
 
+import io.github.havonte1.tcgwatcher.backend.domain.model.LanguagePricing
 import io.github.havonte1.tcgwatcher.backend.domain.model.Product
+import io.github.havonte1.tcgwatcher.backend.domain.model.ProductAttribute
+import io.github.havonte1.tcgwatcher.backend.domain.model.ProductAttributeType
 import io.github.havonte1.tcgwatcher.backend.domain.model.ProductSet
 import io.github.havonte1.tcgwatcher.backend.domain.model.SellOffer
 import io.github.havonte1.tcgwatcher.backend.domain.model.StringWithValidity
+import io.github.oshai.kotlinlogging.KotlinLogging
+import java.util.UUID
+import kotlin.random.Random
 
 class CardMarketProductMapper {
+    val rng = Random(System.currentTimeMillis())
+    val logger = KotlinLogging.logger {}
     fun toProducts(result: SearchResultsPageDto<CardmarketProductGallaryItemDto>): List<Product> =
-        result.results.map { item ->
+        result.results.map { dto ->
 
-            val parsedLink = parseLink(item.cmId)
+            val parsedLink = parseLink(dto.cmId)
 
-            // externalId should be the filename (without extension) of the imgLink, e.g.
-            // https://.../574073.jpg -> 574073
             val externalIdFromImg =
                 run {
-                    val lastSegment = item.imgLink.substringAfterLast('/')
-                    lastSegment.substringBeforeLast('.', lastSegment).toLongOrNull() ?: 0L
+                    val lastSegment = dto.imgLink.substringAfterLast('/')
+                    var lng = lastSegment.substringBeforeLast('.', lastSegment).toLongOrNull() ?: 0L
+
+                    //if there is no image available this results to 0 which cannot be handled now
+                    if(lng==0L) {
+                        logger.warn { "no img link found for $dto - generating random externalid" }
+                        lng = rng.nextLong()
+                    }
+                    lng
                 }
+
 
             Product(
                 externalId = externalIdFromImg,
                 set = ProductSet(setId = 0, cmCode = parsedLink.setCode ?: "", names = mapOf()),
                 rarity = null,
-                names = mapOf(item.name.languageCode to item.name.value),
-                codeInfo = StringWithValidity(item.code.value, item.code.valid),
-                genre = item.genre,
-                type = item.type,
+                names = mapOf(dto.name.locale to dto.name.value),
+                codeInfo = StringWithValidity(
+                    dto.code.value,
+                    dto.code.valid
+                ),
+                genre = dto.genre,
+                type = dto.type,
                 cmId = parsedLink.id,
-                imgLink = item.imgLink,
-                price = item.price,
-                priceTrendInfo = StringWithValidity(item.priceTrend.value, item.priceTrend.valid),
+                imgLink = dto.imgLink,
+                price = dto.price,
             )
         }
 
@@ -43,9 +59,13 @@ class CardMarketProductMapper {
 
         return Product(
             externalId = externalIdFromImg,
-            set = ProductSet(setId = 0, cmCode = detailsDto.set.code, names = mapOf(detailsDto.name.languageCode to detailsDto.set.name)),
+            set = ProductSet(
+                setId = 0,
+                cmCode = detailsDto.set.code,
+                names = mapOf(detailsDto.name.locale to detailsDto.set.name)
+            ),
             rarity = detailsDto.rarity,
-            names = mapOf(detailsDto.name.languageCode to detailsDto.name.value),
+            names = mapOf(detailsDto.name.locale to detailsDto.name.value),
             codeInfo = StringWithValidity(detailsDto.code.value, detailsDto.code.valid),
             genre = detailsDto.genre,
             type = detailsDto.type,
@@ -65,6 +85,24 @@ class CardMarketProductMapper {
                         price = sellOffer.price,
                     )
                 },
+            languagePricing = detailsDto.languagePricing.map { lp ->
+                LanguagePricing(
+                    locale = lp.locale,
+                    price = lp.price,
+                    priceTrend = lp.priceTrend,
+                    priceTrendValid = lp.priceTrendValid,
+                )
+            },
+            productAttributes = detailsDto.productAttributes.map { pa ->
+                ProductAttribute(
+                    attributeName = pa.attributeName,
+                    value = pa.value,
+                    attributeType = ProductAttributeType.entries.find { it.name == pa.attributeType }
+                        ?: ProductAttributeType.RARITY,
+                )
+            },
+            releaseDate = detailsDto.releaseDate.ifEmpty { null },
+            cardNumber = detailsDto.cardNumber.ifEmpty { null },
         )
     }
 
@@ -76,8 +114,6 @@ class CardMarketProductMapper {
     )
 
     private fun parseLink(cmId: String?): ParsedLink {
-        // cmId in DTO may be a URI like "/Pokemon/Products/Singles/Evolving-Skies/Pikachu-V1-EVS049";
-        // we  want the genre (Pokemon), the type (Singles) , the set (Evolving-Skies) and the  last segment (e.g. "Pikachu-V1-EVS049").
         if (cmId == null || cmId.trim().isEmpty()) {
             return ParsedLink(null, null, null, null)
         }

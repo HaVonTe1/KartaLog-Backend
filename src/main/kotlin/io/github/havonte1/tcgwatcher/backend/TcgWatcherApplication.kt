@@ -3,9 +3,6 @@ package io.github.havonte1.tcgwatcher.backend
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
 
-/**
- * Main entry point for the TCGWatcher Spring Boot application.
- */
 @SpringBootApplication
 class TcgWatcherApplication
 

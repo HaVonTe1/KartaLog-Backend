@@ -1,19 +1,23 @@
 package io.github.havonte1.tcgwatcher.backend.domain.port.out
 
+import io.github.havonte1.tcgwatcher.backend.domain.model.Locale
 import io.github.havonte1.tcgwatcher.backend.domain.model.Product
+import io.github.havonte1.tcgwatcher.backend.domain.model.Genre
+import io.github.havonte1.tcgwatcher.backend.domain.model.ProductType
+import io.github.havonte1.tcgwatcher.backend.domain.model.SearchResult
 
 interface CardMarketScraperPort {
     suspend fun search(
         searchString: String,
-        locale: String,
-        game: String,
-    ): List<Product>
+        locale: Locale,
+        genre: Genre,
+    ): SearchResult
 
     suspend fun fetchProductDetails(
         cmId: String,
-        genre: String,
-        type: String,
-        lang: String,
+        genre: Genre,
+        type: ProductType,
+        locale: Locale,
         setname: String,
     ): Product?
 }

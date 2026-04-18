@@ -5,9 +5,15 @@ import io.github.havonte1.tcgwatcher.backend.adapter.out.persistence.entity.Prod
 import io.github.havonte1.tcgwatcher.backend.adapter.out.persistence.entity.ProductSetEntity
 import io.github.havonte1.tcgwatcher.backend.adapter.out.persistence.entity.SellOfferEntity
 import io.github.havonte1.tcgwatcher.backend.adapter.out.persistence.entity.SeriesEntity
+import io.github.havonte1.tcgwatcher.backend.domain.model.Genre
+import io.github.havonte1.tcgwatcher.backend.domain.model.LanguagePricing
+import io.github.havonte1.tcgwatcher.backend.domain.model.Locale
 import io.github.havonte1.tcgwatcher.backend.domain.model.Product
-import io.github.havonte1.tcgwatcher.backend.domain.model.ProductSeries
+import io.github.havonte1.tcgwatcher.backend.domain.model.ProductAttribute
+import io.github.havonte1.tcgwatcher.backend.domain.model.ProductAttributeType
 import io.github.havonte1.tcgwatcher.backend.domain.model.ProductSet
+import io.github.havonte1.tcgwatcher.backend.domain.model.ProductSeries
+import io.github.havonte1.tcgwatcher.backend.domain.model.ProductType
 import io.github.havonte1.tcgwatcher.backend.domain.model.SellOffer
 import io.github.havonte1.tcgwatcher.backend.domain.model.StringWithValidity
 import org.springframework.stereotype.Component
@@ -29,21 +35,24 @@ class ProductMapper {
                 rarity = product.rarity,
                 codeInfo = product.codeInfo?.value,
                 codeInfoValid = product.codeInfo?.valid,
-                genre = product.genre,
-                type = product.type,
+                genre = product.genre.identifier,
+                type = product.type.cmIdentifier,
                 cmId = product.cmId,
                 imgLink = product.imgLink,
                 price = product.price,
                 priceTrend = product.priceTrendInfo?.value,
                 priceTrendValid = product.priceTrendInfo?.valid,
+                releaseDate = product.releaseDate,
+                cardNumber = product.cardNumber,
+                languagePricing = serializeLanguagePricing(product.languagePricing),
+                productAttributes = serializeProductAttributes(product.productAttributes),
             )
         product.names.forEach { (locale, name) ->
-            val sanitizedLocale = if (locale.length <= 5) locale else "?"
             val translation =
                 NameTranslationEntity(
                     id = 0,
                     product = entity,
-                    languageCode = sanitizedLocale,
+                    languageCode = locale.code,
                     name = name,
                 )
             entity.nameTranslations.add(translation)
@@ -66,6 +75,51 @@ class ProductMapper {
         return entity
     }
 
+    private fun serializeLanguagePricing(languagePricing: List<LanguagePricing>): String? {
+        if (languagePricing.isEmpty()) return null
+        return languagePricing.joinToString(";") {
+            "${it.locale.code}|${it.price}|${it.priceTrend}|${it.priceTrendValid}"
+        }
+    }
+
+    private fun deserializeLanguagePricing(data: String?): List<LanguagePricing> {
+        if (data.isNullOrBlank()) return emptyList()
+        return data.split(";").mapNotNull { entry ->
+            val parts = entry.split("|")
+            if (parts.size >= 4) {
+                val locale = Locale.entries.find { it.code == parts[0] }
+                if (locale != null) {
+                    LanguagePricing(
+                        locale = locale,
+                        price = parts[1],
+                        priceTrend = parts[2],
+                        priceTrendValid = parts[3].toBooleanStrictOrNull() ?: false,
+                    )
+                } else null
+            } else null
+        }
+    }
+
+    private fun serializeProductAttributes(attributes: List<ProductAttribute>): String? {
+        if (attributes.isEmpty()) return null
+        return attributes.joinToString(";") { "${it.attributeName}|${it.attributeType.name}|${it.value}" }
+    }
+
+    private fun deserializeProductAttributes(data: String?): List<ProductAttribute> {
+        if (data.isNullOrBlank()) return emptyList()
+        return data.split(";").mapNotNull { entry ->
+            val parts = entry.split("|")
+            if (parts.size >= 3) {
+                ProductAttribute(
+                    attributeName = parts[0],
+                    attributeType = ProductAttributeType.entries.find { it.name == parts[1] }
+                        ?: ProductAttributeType.RARITY,
+                    value = parts[2],
+                )
+            } else null
+        }
+    }
+
     fun toProductSet(entity: ProductSetEntity?): ProductSet? {
         if (entity == null || entity.id == null) {
             return null
@@ -75,8 +129,8 @@ class ProductMapper {
             cmCode = entity.cmProductCode ?: "",
             names =
                 entity.nameTranslations.associate {
-                    it.languageCode to
-                        it.name
+                    Locale.fromId(it.languageCode) to
+                            it.name
                 },
         )
     }
@@ -85,11 +139,13 @@ class ProductMapper {
         if (entity == null || entity.id == null) {
             return null
         }
-        return ProductSeries(seriesId = entity.id, names = entity.nameTranslations.associate { it.languageCode to it.name })
+        return ProductSeries(
+            seriesId = entity.id,
+            names = entity.nameTranslations.associate { Locale.valueOf(it.languageCode) to it.name })
     }
 
     fun toDomain(entity: ProductEntity): Product {
-        val namesMap = entity.nameTranslations.associate { it.languageCode to it.name }
+        val namesMap = entity.nameTranslations.associate { Locale.fromId(it.languageCode) to it.name }
         val sellOffers =
             entity.sellOffers.map { sellOffer ->
                 SellOffer(
@@ -113,8 +169,8 @@ class ProductMapper {
             updatedAt = entity.updatedAt,
             names = namesMap,
             codeInfo = if (entity.codeInfo != null) StringWithValidity(entity.codeInfo, entity.codeInfoValid) else null,
-            genre = entity.genre,
-            type = entity.type,
+            genre = Genre.fromId(entity.genre),
+            type = ProductType.fromId(entity.type),
             cmId = entity.cmId,
             imgLink = entity.imgLink,
             price = entity.price,
@@ -128,6 +184,10 @@ class ProductMapper {
                     null
                 },
             sellOffers = sellOffers,
+            languagePricing = deserializeLanguagePricing(entity.languagePricing),
+            productAttributes = deserializeProductAttributes(entity.productAttributes),
+            releaseDate = entity.releaseDate,
+            cardNumber = entity.cardNumber,
         )
     }
 }

@@ -18,6 +18,8 @@ class SearchResultMapper(
         return SearchResult(
             id = entity.id,
             query = entity.query,
+            language = entity.language,
+            genre = entity.genre,
             products = products,
             cachedAt = entity.cachedAt,
         )
@@ -27,6 +29,8 @@ class SearchResultMapper(
         SearchResultEntity(
             id = searchResult.id,
             query = searchResult.query,
+            language = searchResult.language,
+            genre = searchResult.genre,
             cachedAt = searchResult.cachedAt,
             products = mutableSetOf(),
         )
