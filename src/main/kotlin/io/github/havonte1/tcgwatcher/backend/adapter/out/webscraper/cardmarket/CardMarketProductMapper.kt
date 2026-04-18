@@ -1,6 +1,7 @@
 package io.github.havonte1.tcgwatcher.backend.adapter.out.webscraper.cardmarket
 
 import io.github.havonte1.tcgwatcher.backend.domain.model.Product
+import io.github.havonte1.tcgwatcher.backend.domain.model.ProductSeries
 import io.github.havonte1.tcgwatcher.backend.domain.model.ProductSet
 import io.github.havonte1.tcgwatcher.backend.domain.model.SellOffer
 import io.github.havonte1.tcgwatcher.backend.domain.model.StringWithValidity
@@ -22,6 +23,13 @@ class CardMarketProductMapper {
             Product(
                 externalId = externalIdFromImg,
                 set = ProductSet(setId = 0, cmCode = parsedLink.setCode ?: "", names = mapOf()),
+                series =
+                    item.series?.let {
+                        ProductSeries(
+                            seriesId = it.seriesId,
+                            names = mapOf(it.languageCode to it.name),
+                        )
+                    },
                 rarity = null,
                 names = mapOf(item.name.languageCode to item.name.value),
                 codeInfo = StringWithValidity(item.code.value, item.code.valid),
@@ -44,6 +52,13 @@ class CardMarketProductMapper {
         return Product(
             externalId = externalIdFromImg,
             set = ProductSet(setId = 0, cmCode = detailsDto.set.code, names = mapOf(detailsDto.name.languageCode to detailsDto.set.name)),
+            series =
+                detailsDto.series?.let {
+                    ProductSeries(
+                        seriesId = it.seriesId,
+                        names = mapOf(it.languageCode to it.name),
+                    )
+                },
             rarity = detailsDto.rarity,
             names = mapOf(detailsDto.name.languageCode to detailsDto.name.value),
             codeInfo = StringWithValidity(detailsDto.code.value, detailsDto.code.valid),

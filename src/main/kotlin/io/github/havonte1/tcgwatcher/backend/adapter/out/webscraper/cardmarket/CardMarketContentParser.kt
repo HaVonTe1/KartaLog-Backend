@@ -175,6 +175,13 @@ class CardMarketContentParser {
         val setLink = setHrefElement?.attr("href")
         val setName = setHrefElement?.attr("title")?.ifEmpty { setHrefElement.attr("aria-label") }
 
+        val seriesDt = dts?.first { dt -> dt.text().startsWith("Serie") }
+        val seriesHref = seriesDt?.nextElementSibling()?.getElementsByTag("a")
+        val seriesHrefElement = seriesHref?.first()
+        val seriesLink = seriesHrefElement?.attr("href")
+        val seriesName = seriesHrefElement?.attr("title")?.ifEmpty { seriesHrefElement.attr("aria-label") }
+        val seriesId = seriesLink?.substringAfterLast("/")?.toLongOrNull() ?: 0L
+
         val abDt = dts?.first { dt -> dt.text() == "ab" }
         val localPrice = abDt?.nextElementSibling()?.text() ?: "0,00 €"
 
@@ -275,6 +282,7 @@ class CardMarketContentParser {
                 cmId = cmId,
                 rarity = rarityText ?: "",
                 set = SetDto(setName ?: "", setCode),
+                series = if (seriesId > 0 && seriesName != null) SeriesDto(seriesId, seriesName, lang) else null,
                 imageUrl = imageUrl,
                 price = localPrice,
                 priceTrend = PriceTrendType(localPriceTrend, true),

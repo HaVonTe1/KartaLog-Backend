@@ -18,6 +18,7 @@ data class CardmarketProductGallaryItemDto(
     val imgLink: String,
     val price: String,
     val priceTrend: PriceTrendType,
+    val series: SeriesDto? = null,
 ) {
     constructor(
         name: NameDto,
@@ -29,6 +30,7 @@ data class CardmarketProductGallaryItemDto(
         imgLink: String,
         price: String,
         priceTrend: String,
+        series: SeriesDto? = null,
     ) : this(
         name = name,
         code = CodeType(code, code.isNotEmpty()),
@@ -39,6 +41,7 @@ data class CardmarketProductGallaryItemDto(
         imgLink = imgLink,
         price = price,
         priceTrend = PriceTrendType(priceTrend, priceTrend.isNotEmpty()),
+        series = series,
     )
 }
 
@@ -58,6 +61,12 @@ data class NameDto(
     val i18n: String = "",
 )
 
+data class SeriesDto(
+    val seriesId: Long,
+    val name: String,
+    val languageCode: String,
+)
+
 data class SetDto(
     val name: String,
     val code: String,
@@ -72,6 +81,7 @@ data class CardmarketProductDetailsDto(
     val imageUrl: String,
     val rarity: String = "",
     val set: SetDto = SetDto("", ""),
+    val series: SeriesDto? = null,
     val price: String = "0,00 €",
     val priceTrend: PriceTrendType = PriceTrendType("?", false),
     val sellOffers: List<CardmarketSellOfferDto> = emptyList(),
