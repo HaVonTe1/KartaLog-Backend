@@ -102,3 +102,8 @@ app:
       enabled: true
       sqlite:
         path: import/quicksearch.db
+
+jwt:
+  secret: ${JWT_SECRET:dGhpc0lzQVZlcnlTZWNyZXRLZXlGb3JKV1RUb2tlbkdlbmVyYXRpb25BbmRWYWxpZGF0aW9u}
+  access-expiration-ms: ${JWT_ACCESS_EXPIRATION:900000}
+  refresh-expiration-ms: ${JWT_REFRESH_EXPIRATION:604800000}
