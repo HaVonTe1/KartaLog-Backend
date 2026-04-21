@@ -77,6 +77,7 @@ class CardMarketProductMapper {
             sellOffers =
                 detailsDto.sellOffers.map { sellOffer ->
                     SellOffer(
+                        sellOfferId = 0,
                         sellerName = sellOffer.sellerName,
                         sellerLocation = sellOffer.sellerLocation,
                         productLanguage = sellOffer.productLanguage,

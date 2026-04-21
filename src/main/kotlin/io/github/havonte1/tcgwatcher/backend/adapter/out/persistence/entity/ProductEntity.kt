@@ -106,16 +106,13 @@ data class ProductEntity(
     // JPA requires a no‑arg constructor
     constructor() : this(0, 0, null, null)
 
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (other !is ProductEntity) return false
-        if (id != null && other.id != null) return id == other.id
-        return externalId == other.externalId
-    }
+    override fun equals(other: Any?) =
+        other is ProductEntity && externalId == other.externalId
+
+    override fun hashCode() = externalId.hashCode()
 
     fun compareTo(other: ProductEntity): Int = compareValuesBy(this, other, { it.price }, { it.priceTrend }, { it.priceTrendValid })
 
-    override fun hashCode(): Int = id?.hashCode() ?: externalId.hashCode()
 
     override fun toString(): String =
         "ProductEntity(id=$id, externalId=$externalId, rarity=$rarity, codeInfo=$codeInfo, codeInfoValid=$codeInfoValid, genre=$genre, type=$type, cmId=$cmId, imgLink=$imgLink, price=$price, priceTrend=$priceTrend, priceTrendValid=$priceTrendValid, createdAt=$createdAt, updatedAt=$updatedAt, nameTranslations=$nameTranslations, sellOffers=${sellOffers.size})"

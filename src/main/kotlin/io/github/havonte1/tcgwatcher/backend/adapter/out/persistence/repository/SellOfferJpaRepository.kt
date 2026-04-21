@@ -7,4 +7,6 @@ import org.springframework.stereotype.Repository
 @Repository
 interface SellOfferJpaRepository : JpaRepository<SellOfferEntity, Long> {
     fun findByProductId(productId: Long): List<SellOfferEntity>
+
+    fun findAllByProductIdIn(productIds: List<Long>): List<SellOfferEntity>
 }

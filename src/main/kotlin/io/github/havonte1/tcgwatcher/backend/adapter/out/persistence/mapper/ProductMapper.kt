@@ -60,7 +60,7 @@ class ProductMapper {
         product.sellOffers?.forEach { sellOffer ->
             val sellOfferEntity =
                 SellOfferEntity(
-                    id = null,
+                    id = entity.id,
                     product = entity,
                     sellerName = sellOffer.sellerName,
                     sellerLocation = sellOffer.sellerLocation,
@@ -73,6 +73,20 @@ class ProductMapper {
             entity.sellOffers.add(sellOfferEntity)
         }
         return entity
+    }
+
+    fun toSellOfferEntity(sellOffer: SellOffer, productEntity: ProductEntity): SellOfferEntity {
+        return SellOfferEntity(
+            id = sellOffer.sellOfferId,
+            sellerName = sellOffer.sellerName,
+            sellerLocation = sellOffer.sellerLocation,
+            productLanguage = sellOffer.productLanguage,
+            special = sellOffer.special,
+            condition = sellOffer.condition,
+            amount = sellOffer.amount,
+            price = sellOffer.price,
+            product = productEntity,
+        )
     }
 
     private fun serializeLanguagePricing(languagePricing: List<LanguagePricing>): String? {
@@ -154,6 +168,7 @@ class ProductMapper {
         val sellOffers =
             entity.sellOffers.map { sellOffer ->
                 SellOffer(
+                    sellOfferId = sellOffer.id?:0L,
                     sellerName = sellOffer.sellerName,
                     sellerLocation = sellOffer.sellerLocation,
                     productLanguage = sellOffer.productLanguage,

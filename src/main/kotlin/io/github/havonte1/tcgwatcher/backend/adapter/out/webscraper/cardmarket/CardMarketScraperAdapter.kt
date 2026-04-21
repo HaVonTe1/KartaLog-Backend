@@ -8,6 +8,7 @@ import io.github.havonte1.tcgwatcher.backend.domain.model.SearchResult
 import io.github.havonte1.tcgwatcher.backend.domain.port.out.CardMarketScraperPort
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Component
+import java.time.Instant
 
 
 @Component
@@ -52,7 +53,8 @@ class CardMarketScraperAdapter(
                     query = searchString,
                     language = locale.code,
                     genre = genre.identifier,
-                    products = allProducts)
+                    products = allProducts,
+                    cachedAt = Instant.now())
             },
             onFailure = { error ->
                 logger.warn { "Failed to parse gallery page: ${error.message}" }

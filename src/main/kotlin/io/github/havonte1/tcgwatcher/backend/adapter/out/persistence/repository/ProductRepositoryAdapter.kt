@@ -1,7 +1,9 @@
 package io.github.havonte1.tcgwatcher.backend.adapter.out.persistence.repository
 
 import io.github.havonte1.tcgwatcher.backend.adapter.out.persistence.entity.NameTranslationEntity
+import io.github.havonte1.tcgwatcher.backend.adapter.out.persistence.entity.ProductEntity
 import io.github.havonte1.tcgwatcher.backend.adapter.out.persistence.entity.ProductSetEntity
+import io.github.havonte1.tcgwatcher.backend.adapter.out.persistence.entity.SellOfferEntity
 import io.github.havonte1.tcgwatcher.backend.adapter.out.persistence.mapper.ProductMapper
 import io.github.havonte1.tcgwatcher.backend.domain.model.Product
 import io.github.havonte1.tcgwatcher.backend.domain.port.out.ProductRepository
@@ -29,12 +31,12 @@ class ProductRepositoryAdapter(
         val productSetEntity: ProductSetEntity = if (product.set != null) {
             val cmSetCode = product.set.cmCode
 
-            val existingSets = productSetJpaRepository.findByCmProductCode(cmSetCode)
-            logger.debug { "Existing sets for $cmSetCode: ${existingSets.size}" }
+            val existingSet = productSetJpaRepository.findByCmProductCode(cmSetCode)
+            logger.debug { "Existing set for $cmSetCode: ${existingSet}" }
 
             val productSetEntity =
-                if (existingSets.isNotEmpty()) {
-                    existingSets.first()
+                if (existingSet!=null) {
+                    existingSet
                 } else {
                     val newSet = ProductSetEntity(cmProductCode = cmSetCode)
                     logger.debug { "Creating new ProductSetEntity with cmCode: $cmSetCode" }
@@ -73,14 +75,14 @@ class ProductRepositoryAdapter(
 
     @Transactional
     override fun saveAll(products: List<Product>): List<Product> {
-        val uniqueCmCodes = products.mapNotNull { it.set?.cmCode }.distinct()
-        logger.debug { "saveAll() called with ${products.size} products, unique cmCodes: $uniqueCmCodes" }
+        val uniqueCmSetCodes = products.mapNotNull { it.set?.cmCode }.distinct()
+        logger.debug { "saveAll() called with ${products.size} products, unique cmCodes: $uniqueCmSetCodes" }
 
-        val existingSets = uniqueCmCodes.flatMap { productSetJpaRepository.findByCmProductCode(it) }
+        val existingSets = productSetJpaRepository.findByCmProductCodeIn(uniqueCmSetCodes)
         val existingSetMap = existingSets.associateBy { it.cmProductCode }
         logger.debug { "Found ${existingSets.size} existing sets" }
 
-        val newCmCodes = uniqueCmCodes.filter { it !in existingSetMap.keys }
+        val newCmCodes = uniqueCmSetCodes.filter { it !in existingSetMap.keys }
         logger.debug { "Need to create ${newCmCodes.size} new sets: $newCmCodes" }
 
         val newSets =
@@ -111,22 +113,84 @@ class ProductRepositoryAdapter(
 
         val allSetMap = (existingSets + savedNewSets).associateBy { it.cmProductCode }
 
-        val entities =
-            products.map { product ->
-                val cmCode = product.set?.cmCode ?: "dummy"
-                val productSetEntity = allSetMap[cmCode]!!
-                logger.debug { "Mapping product ${product.externalId} with ProductSetEntity id: ${productSetEntity.id}" }
-                mapper.toEntity(product, productSetEntity)
-            }
+        val externalIds = products.map { it.externalId }
+        val existingProductMap = productJpaRepository
+            .findAllByExternalIdIn(externalIds)
+            .associateBy { it.externalId }
 
-        entities.forEach { entity ->
-            logger.debug { "ProductEntity setId before save: ${entity.setId}" }
+        val (toSave, unchanged) = products.partition { product ->
+            val existing = existingProductMap[product.externalId]
+            existing == null || mapper.toEntity(product, allSetMap[product.set?.cmCode ?: "dummy"]!!) != existing
         }
 
-        val productEntities = productJpaRepository.saveAll(entities)
-        val allSellOffers = entities.flatMap { it.sellOffers }
-        sellOfferJpaRepository.saveAll(allSellOffers)
-        return productEntities.map { mapper.toDomain(it) }
+        logger.debug { "${toSave.size} products changed, ${unchanged.size} unchanged – skipping unchanged" }
+        val productEntitiesToSave = toSave.map { product ->
+            val setEntity = allSetMap[product.set?.cmCode ?: "dummy"]!!
+            mapper.toEntity(product, setEntity)
+        }
+        val savedProducts = productJpaRepository.saveAll(productEntitiesToSave)
+        productJpaRepository.flush()    // IDs materialisieren, bevor SellOffers referenzieren
+
+        updateSellOffers(savedProducts, products)
+
+        val unchangedEntities = unchanged.mapNotNull { existingProductMap[it.externalId] }
+        updateSellOffers(unchangedEntities, unchanged)
+
+        return (savedProducts + unchangedEntities).map { mapper.toDomain(it) }
+    }
+
+
+    /**
+     * Synchronisiert SellOffers für eine Liste von (bereits gespeicherten) ProductEntities.
+     *
+     * – Neue Offers werden eingefügt.
+     * – Verschwundene Offers werden gelöscht.
+     * – Unveränderte Offers bleiben unangetastet (kein unnötiges UPDATE).
+     */
+    private fun updateSellOffers(
+        savedEntities: List<ProductEntity>,
+        domainProducts: List<Product>,
+    ) {
+        if (savedEntities.isEmpty()) return
+
+        val domainByExternalId = domainProducts.associateBy { it.externalId }
+
+        // Alle aktuellen SellOffers dieser Products in einem Query laden
+        val productIds = savedEntities.mapNotNull { it.id }
+        val existingOffersByProductId: Map<Long, List<SellOfferEntity>> =
+            sellOfferJpaRepository.findAllByProductIdIn(productIds)
+                .groupBy { it.product.id!! }
+
+        val toInsert = mutableListOf<SellOfferEntity>()
+        val toDelete = mutableListOf<SellOfferEntity>()
+
+        for (productEntity in savedEntities) {
+            val domain = domainByExternalId[productEntity.externalId] ?: continue
+            val desiredOffers = domain.sellOffers
+                ?.map { mapper.toSellOfferEntity(it, productEntity) }   ?: emptyList()
+            val existingOffers = existingOffersByProductId[productEntity.id!!] ?: emptyList()
+
+            // Neu: in desired, aber nicht in existing
+            val newOffers = desiredOffers.filter { desired ->
+                existingOffers.none { ex -> ex.businessEquals(desired) }
+            }
+            // Veraltet: in existing, aber nicht mehr in desired
+            val obsoleteOffers = existingOffers.filter { ex ->
+                desiredOffers.none { desired -> ex.businessEquals(desired) }
+            }
+
+            toInsert += newOffers
+            toDelete += obsoleteOffers
+        }
+
+        if (toDelete.isNotEmpty()) {
+            sellOfferJpaRepository.deleteAll(toDelete)
+            logger.debug { "Deleted ${toDelete.size} obsolete SellOfferEntities" }
+        }
+        if (toInsert.isNotEmpty()) {
+            sellOfferJpaRepository.saveAll(toInsert)
+            logger.debug { "Inserted ${toInsert.size} new SellOfferEntities" }
+        }
     }
 
     @Transactional(readOnly = true)

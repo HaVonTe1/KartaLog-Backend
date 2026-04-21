@@ -50,6 +50,7 @@ data class StringWithValidity(
 )
 
 data class SellOffer(
+    val sellOfferId: Long,
     val sellerName: String,
     val sellerLocation: String,
     val productLanguage: String,

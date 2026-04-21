@@ -33,33 +33,16 @@ class CollectablesService(
     ): SearchResponse {
         logger.debug { "Searching for collectables with query='$searchString'" }
 
+        val searchResult: SearchResult =
+            scraper.search(searchString, locale, genre)
 
-        val existingResult =
-            searchResultRepository.findByQueryLocaleAndGenre(
-                searchString, locale.code, genre.identifier)
-        val result =  if (existingResult != null) {
-            existingResult
-        } else {
+        val savedResult = searchResultRepository.save(searchResult)
 
-            val searchResult: SearchResult =
-                scraper.search(searchString, locale, genre)
-
-            val resultToSave = SearchResult(
-                query = searchString,
-                language = locale.code,
-                genre = genre.identifier,
-                products = searchResult.products,
-                cachedAt = Instant.now(),
-            )
-            val savedResult = searchResultRepository.save(resultToSave)
-            savedResult
-        }
-
-        val productCount = result.products.size
+        val productCount = savedResult.products.size
         logger.debug { "Scrape completed and cached ($productCount products) for query='$searchString'" }
         return SearchResponse(
-            products = result.products,
-            cachedAt = result.cachedAt?: Instant.now()
+            products = savedResult.products,
+            cachedAt = savedResult.cachedAt?: Instant.now()
         )
     }
 
