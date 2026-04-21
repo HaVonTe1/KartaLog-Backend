@@ -221,5 +221,6 @@ dependencies {
     testImplementation("org.springframework.boot:spring-boot-starter-integration-test")
     testImplementation("io.mockk:mockk:1.13.12")
     testImplementation("org.junit.jupiter:junit-jupiter-api")
+    testImplementation("com.ninja-squad:springmockk:5.0.1")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
 }

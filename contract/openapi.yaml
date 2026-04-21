@@ -37,31 +37,21 @@ paths:
       description: |
         Search for collectable products with optional filtering and pagination support.
         Results are sorted by relevance when a search query is provided.
-        Supports HTTP caching via ETag/If-None-Match header.
       operationId: listCollectables
       parameters:
         - $ref: '#/components/parameters/QueryParam'
         - $ref: '#/components/parameters/GenreParam'
         - $ref: '#/components/parameters/TypeParam'
         - $ref: '#/components/parameters/LocaleParam'
-        - $ref: '#/components/parameters/IfNoneMatchHeader'
       responses:
         '200':
           description: List of collectables matching the search criteria
-          headers:
-            ETag:
-              $ref: '#/components/headers/ETagHeader'
           content:
             application/json:
               schema:
                 type: array
                 items:
                   $ref: '#/components/schemas/ProductDTO'
-        '304':
-          description: Not Modified - content unchanged, use cached response
-          headers:
-            ETag:
-              $ref: '#/components/headers/ETagHeader'
         '400':
           description: Bad request - invalid query parameters
           content:
@@ -96,8 +86,7 @@ paths:
       description: |
         Fetch detailed information for a specific product including current pricing,
         price trends, and available sell offers. Data is fetched from CardMarket on
-        each request and cached if no changes are detected.
-        Supports HTTP caching via ETag/If-None-Match header.
+        each request.
       operationId: getProductDetails
       parameters:
         - name: cmId
@@ -111,13 +100,9 @@ paths:
         - $ref: '#/components/parameters/TypeParam'
         - $ref: '#/components/parameters/LanguageParam'
         - $ref: '#/components/parameters/SetNameParam'
-        - $ref: '#/components/parameters/IfNoneMatchHeader'
       responses:
         '200':
           description: Detailed product information including pricing and sell offers
-          headers:
-            ETag:
-              $ref: '#/components/headers/ETagHeader'
           content:
             application/json:
               schema:
@@ -140,11 +125,6 @@ paths:
                     condition: "NM"
                     amount: "5"
                     price: "12.00"
-        '304':
-          description: Not Modified - content unchanged, use cached response
-          headers:
-            ETag:
-              $ref: '#/components/headers/ETagHeader'
         '400':
           description: Bad request - invalid parameters
           content:
@@ -226,20 +206,6 @@ components:
       required: false
       schema:
         $ref: '#/components/schemas/LocaleSchema'
-    IfNoneMatchHeader:
-      name: If-None-Match
-      in: header
-      description: ETag from previous response (epoch seconds). Returns 304 if content hasn't changed.
-      required: false
-      schema:
-        type: string
-        example: "1742462400"
-  headers:
-    ETagHeader:
-      description: Current ETag (epoch seconds). Send this as If-None-Match in subsequent requests.
-      schema:
-        type: string
-        example: "1742462400"
   schemas:
     GenreSchema:
       type: string

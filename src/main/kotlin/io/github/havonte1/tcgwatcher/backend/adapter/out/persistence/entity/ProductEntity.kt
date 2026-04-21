@@ -111,7 +111,7 @@ data class ProductEntity(
 
     override fun hashCode() = externalId.hashCode()
 
-    fun compareTo(other: ProductEntity): Int = compareValuesBy(this, other, { it.price }, { it.priceTrend }, { it.priceTrendValid })
+    fun compareTo(other: ProductEntity): Int = compareValuesBy(this, other, { it.price })
 
 
     override fun toString(): String =

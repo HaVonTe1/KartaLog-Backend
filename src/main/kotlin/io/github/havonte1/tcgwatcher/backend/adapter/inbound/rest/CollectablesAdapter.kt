@@ -34,7 +34,6 @@ class CollectablesAdapter(
         genre: GenreSchema,
         type: ProductTypeSchema,
         locale: LocaleSchema,
-        ifNoneMatch: String?
     ): ResponseEntity<List<ProductDTO>> {
         logger.debug {
             "listCollectables called with query={$query} locale={$locale} genre=$genre"
@@ -44,17 +43,6 @@ class CollectablesAdapter(
             Genre.fromId(genre.value)
         val localeEnum =
             Locale.fromId(locale.value)
-
-        val existingCachedAt = collectablesService.getSearchCachedAt(query, localeEnum, genreEnum)
-        val existingETag = existingCachedAt?.epochSecond?.toString()
-
-        if (ifNoneMatch != null && ifNoneMatch == existingETag) {
-            logger.debug { "ETag match, returning 304 for query='$query'" }
-            return ResponseEntity
-                .status(HttpStatus.NOT_MODIFIED)
-                .eTag(existingETag)
-                .build()
-        }
 
         val searchTimer = Timer.builder("api.search.duration").register(meterRegistry)
         val startTime = System.currentTimeMillis()
@@ -83,18 +71,8 @@ class CollectablesAdapter(
         type: ProductTypeSchema,
         lang: LocaleSchema,
         setname: String,
-        ifNoneMatch: String?,
     ): ResponseEntity<ProductDetailsDTO> {
-        val existingUpdatedAt = collectablesService.getProductUpdatedAt(cmId)
-        val existingETag = existingUpdatedAt?.epochSecond?.toString()
 
-        if (ifNoneMatch != null && ifNoneMatch == existingETag) {
-            logger.debug { "ETag match, returning 304 for cmId=$cmId" }
-            return ResponseEntity
-                .status(HttpStatus.NOT_MODIFIED)
-                .eTag(existingETag)
-                .build()
-        }
         val genreEnum = Genre.fromId(genre.value)
         val localeEnum = Locale.fromId(lang.value)
         val typeEnum = ProductType.fromId(type.value)

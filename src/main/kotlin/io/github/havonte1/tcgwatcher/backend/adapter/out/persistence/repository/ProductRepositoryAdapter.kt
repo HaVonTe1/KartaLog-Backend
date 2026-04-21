@@ -120,13 +120,24 @@ class ProductRepositoryAdapter(
 
         val (toSave, unchanged) = products.partition { product ->
             val existing = existingProductMap[product.externalId]
-            existing == null || mapper.toEntity(product, allSetMap[product.set?.cmCode ?: "dummy"]!!) != existing
+            existing == null ||
+                (mapper.toEntity(product, allSetMap[product.set?.cmCode ?: "dummy"]!!).compareTo(existing) != 0)
         }
 
         logger.debug { "${toSave.size} products changed, ${unchanged.size} unchanged – skipping unchanged" }
         val productEntitiesToSave = toSave.map { product ->
-            val setEntity = allSetMap[product.set?.cmCode ?: "dummy"]!!
-            mapper.toEntity(product, setEntity)
+
+            if(existingProductMap.containsKey(product.externalId)) {
+                //changed --> update
+                logger.debug {" update for ${product.externalId} : new price: ${product.price} "}
+                existingProductMap[product.externalId]!!.copy(price = product.price)
+            } else {
+                //new --> insert
+                logger.debug { " new product: $product" }
+                val setEntity = allSetMap[product.set?.cmCode ?: "dummy"]!!
+                mapper.toEntity(product, setEntity)
+            }
+
         }
         val savedProducts = productJpaRepository.saveAll(productEntitiesToSave)
         productJpaRepository.flush()    // IDs materialisieren, bevor SellOffers referenzieren

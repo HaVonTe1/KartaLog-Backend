@@ -20,5 +20,6 @@ app:
 
 logging:
   level:
+    io.github.havonte1: TRACE
     org.springframework.boot.test: INFO
     org.testcontainers: INFO

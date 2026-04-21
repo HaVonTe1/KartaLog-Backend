@@ -15,11 +15,11 @@
 - **Run app:** `./gradlew bootRun` → `http://localhost:8080`, Swagger at `/swagger-ui.html`
 
 ## Architecture
-- **Pattern:** Hexagonal — `domain` (pure models + port interfaces) → `application` (use-case services) → `adapter/inbound` (REST controllers) → `adapter/out` (persistence + webscraper implementations)
+- **Pattern:** Hexagonal — `domain` (pure models + port interfaces) → `application` (use-case services) → `adapter/inbound` (REST controllers, security) → `adapter/out` (persistence + webscraper implementations)
 - **Entry point:** `TcgWatcherApplication.kt`
 - **API-first:** `contract/openapi.yaml` → OpenAPI Generator (kotlin-spring, coroutines mode) → `build/generated/src/main/kotlin/`. Controllers in `adapter/inbound/rest/` implement generated interfaces. **Do not edit generated code.**
 - **Database:** PostgreSQL (runtime) + SQLite (embedded, for quicksearch import). Liquibase migrations in `src/main/resources/db/changelog/`. Hibernate Envers for entity auditing.
-- **Scraping:** Playwright (Chromium) + Jsoup → `adapter/out/webscraper/`. Coroutines-based (`suspend` functions). Resilience4j circuit breaker (50% failure threshold, 60-call sliding window, 30s open) + retry (3 attempts, 10s base, 2x backoff). `NotFoundException` is ignored by circuit breaker.
+- **Scraping:** Playwright (1.58.0) + Jsoup (1.22.1) → `adapter/out/webscraper/`. Coroutines-based (`suspend` functions). Resilience4j (2.3.0) circuit breaker (50% failure threshold, 60-call sliding window, 30s open) + retry (3 attempts, 10s base, 2x backoff). `NotFoundException` is ignored by circuit breaker.
 - **Caching:** Caffeine (1h expiry, 1000 max entries) + HTTP ETag/If-None-Match.
 - **Actuator:** Separate management port 8081 (`/actuator/health`, `/actuator/metrics`, `/actuator/prometheus`). Spring Boot Admin at `http://localhost:9090`.
 
@@ -28,11 +28,12 @@
 - **Null-safety:** Prefer non-nullable types. Use `Result<T>` for expected failures; `throw` for unexpected.
 - **WebMVC, not WebFlux:** Despite reactive OpenAPI config, the runtime is Spring WebMVC.
 - **Import ordering:** Third-party imports first, blank line, then project imports. Alphabetical within each group. No wildcards (Detekt `WildcardImport` active).
+- **Code style:** 4-space indentation, 120 char line length, PascalCase classes, camelCase functions/variables, UPPER_SNAKE_CASE constants.
 
 ## Testing
 - **Mocking:** `mockk` only.
 - **Unit tests:** `src/test/kotlin/`, exclude `integration` and `e2e` JUnit tags.
-- **Integration tests:** `*IT` classes, include `integration` tag. Use `@SpringBootTest` + Testcontainers (PostgreSQL via Testcontainers).
+- **Integration tests:** `*IT` classes, include `integration` tag. Use `@SpringBootTest` + Testcontainers (PostgreSQL via Testcontainers). `@AutoConfigureCache` for cache testing.
 - **Naming:** Backtick descriptions preferred: `` `search returns one product` ``. Test classes: `ClassNameTest` (unit), `ClassNameIT` (integration).
 - **Async tests:** Wrap `suspend` function calls in `runBlocking`.
 - **Fixtures:** HTML snapshots in `src/test/resources/` (e.g., `pikachu_gallery_30.html`).
