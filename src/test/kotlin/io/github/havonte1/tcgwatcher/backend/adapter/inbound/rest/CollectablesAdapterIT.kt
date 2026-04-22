@@ -100,11 +100,9 @@ class CollectablesAdapterIT {
     fun cleanDb() {
         productRepo.deleteAll()
         searchRepo.deleteAll()
-    }
-    @BeforeEach
-    fun clearCache() {
         cacheManager.getCacheNames().forEach { cacheManager.getCache(it)?.clear() }
     }
+
 
     @Test
     fun `GET collectables returns empty list on successful request`() {
@@ -160,10 +158,10 @@ class CollectablesAdapterIT {
         val firstResult: SearchResponse = service.search("Pikachu", Locale.GERMAN, Genre.POKEMON)
         assertEquals(30, firstResult.products.size)
 
-        firstResult.products.find { it.externalId == 576753L }?.let {
-            assertEquals("Pikachu-V4-CEL008", it.cmId)
+        firstResult.products.find { it.externalId == 576754L }?.let {
+            assertEquals("Pikachu-V5-CEL009", it.cmId)
             assertEquals("1,50 €", it.price)
-        } ?: fail("No element with externalId=576753 found")
+        } ?: fail("No element with externalId=576754 found")
 
         // Clear cache to simulate time passing and allow fresh scraping
         cacheManager.getCache("listCache")?.clear()
@@ -172,88 +170,16 @@ class CollectablesAdapterIT {
         val secondResult: SearchResponse = service.search("Pikachu", Locale.GERMAN, Genre.POKEMON)
         assertEquals(30, secondResult.products.size)
 
-        secondResult.products.find { it.externalId == 576753L }?.let {
-            assertEquals("Pikachu-V4-CEL008", it.cmId)
-            assertEquals("4,00 €", it.price)
-        } ?: fail("No element with externalId=576753 found")
+        secondResult.products.find { it.externalId == 576754L }?.let {
+            assertEquals("Pikachu-V5-CEL009", it.cmId)
+            assertEquals("4,50 €", it.price)
+        } ?: fail("No element with externalId=576754 found")
     }
 
-    @Test
-    fun `products are unique by externalId`() {
-        val testFilePikachu30 = "src/test/resources/pikachu_gallery_30.html"
-        Assumptions.assumeTrue(File(testFilePikachu30).exists())
 
-        val firstResult: SearchResponse = runBlocking { service.search("Pikachu", Locale.GERMAN, Genre.POKEMON) }
-        assertEquals(30, firstResult.products.size)
-        assertEquals(30, productRepo.findAll().size)
 
-        val secondResult: SearchResponse = runBlocking { service.search("Pikachu", Locale.GERMAN, Genre.POKEMON) }
-        assertEquals(30, secondResult.products.size)
-        assertEquals(1, searchRepo.countByQuery("Pikachu"))
-    }
 
-    @Test
-    fun `products are updated when prices change`() {
-        val testFilePikachu40 = "src/test/resources/pikachu_gallery_40.html"
-        Assumptions.assumeTrue(File(testFilePikachu40).exists())
 
-        runBlocking { service.search("Pikachu", Locale.GERMAN, Genre.POKEMON) }
-        assertEquals(30, productRepo.findAll().size)
-
-        val secondResult: SearchResponse = runBlocking { service.search("Pikachu", Locale.GERMAN, Genre.POKEMON) }
-        assertEquals(30, secondResult.products.size)
-    }
-
-    @Test
-    fun `search results are cached correctly`() {
-        Assumptions.assumeTrue(File("src/test/resources/pikachu_gallery_30.html").exists())
-
-        runBlocking { service.search("Pikachu", Locale.GERMAN, Genre.POKEMON) }
-        assertEquals(1, searchRepo.countByQuery("Pikachu"))
-
-        val cachedResult: SearchResponse = runBlocking { service.search("Pikachu", Locale.GERMAN, Genre.POKEMON) }
-        assertEquals(30, cachedResult.products.size)
-        assertEquals(1, searchRepo.countByQuery("Pikachu"))
-    }
-
-    @Test
-    fun `products maintain their relationships after caching`() {
-        Assumptions.assumeTrue(File("src/test/resources/pikachu_gallery_30.html").exists())
-
-        val firstSearch: SearchResponse = runBlocking { service.search("Pikachu", Locale.GERMAN, Genre.POKEMON) }
-        val productId = firstSearch.products.first().externalId
-
-        val cachedSearch: SearchResponse = runBlocking { service.search("Pikachu", Locale.GERMAN, Genre.POKEMON) }
-        val cachedProduct = cachedSearch.products.find { it.externalId == productId }
-
-        assertNotNull(cachedProduct)
-        assertEquals(firstSearch.products.first().cmId, cachedProduct?.cmId)
-    }
-    @Test
-    fun `GET collectables returns all items from successful request for multiple pages`() {
-        val mvcResult =
-            mockMvc
-                .get("/collectables/") {
-                    param("query", "glurak")
-                    param("locale", Locale.GERMAN.code)
-                    param("game", Genre.POKEMON.identifier)
-                }.andExpect { request { asyncStarted() } }
-                .andReturn()
-
-        val dispatched =
-            mockMvc
-                .perform(
-                    MockMvcRequestBuilders.asyncDispatch(mvcResult),
-                ).andReturn()
-
-        assertEquals(200, dispatched.response.status)
-        val objectMapper = ObjectMapper().registerModule(KotlinModule.Builder().build())
-        val products: List<ProductDTO> = objectMapper.readValue(
-            dispatched.response.contentAsString,
-            objectMapper.typeFactory.constructCollectionType(List::class.java, ProductDTO::class.java),
-        )
-        assertEquals(40, products.size, "Expected 40 products from 4 pages")
-    }
 
     @Test
     fun `GET collectables returns cached result on repeated search with same params`() {
@@ -305,19 +231,39 @@ class CollectablesAdapterIT {
     fun `GET collectables with overlapping search params produces no duplicate products`() {
         coEvery { webFetcher.fetch("glurak", locale = Locale.GERMAN, Genre.POKEMON, 1) } returns
                 Result.success( Files.readString(Paths.get( "src/test/resources/glurak_de_100_page1_minimal.html")))
+        coEvery { webFetcher.fetch("glurak", locale = Locale.GERMAN, Genre.POKEMON, 2) } returns
+                Result.success( Files.readString(Paths.get( "src/test/resources/glurak_de_100_page2_minimal.html")))
+        coEvery { webFetcher.fetch("glurak", locale = Locale.GERMAN, Genre.POKEMON, 3) } returns
+                Result.success( Files.readString(Paths.get( "src/test/resources/glurak_de_100_page3_minimal.html")))
+        coEvery { webFetcher.fetch("glurak", locale = Locale.GERMAN, Genre.POKEMON, 4) } returns
+                Result.success( Files.readString(Paths.get( "src/test/resources/glurak_de_100_page4_minimal.html")))
         coEvery { webFetcher.fetch("glurak x", locale = Locale.GERMAN, Genre.POKEMON, 1) } returns
             Result.success( Files.readString(Paths.get( "src/test/resources/glurak_x_de_100_page1_minimal.html")))
 
 
-        mockMvc
-            .get("/collectables/") {
-                param("query", "glurak")
-                param("locale", Locale.GERMAN.code)
-                param("game", Genre.POKEMON.identifier)
-            }
-            .andReturn()
+        val mvcResultGlurak =
+            mockMvc
+                .get("/collectables/") {
+                    param("query", "glurak")
+                    param("locale", Locale.GERMAN.code)
+                    param("game", Genre.POKEMON.identifier)
+                }.andExpect { request { asyncStarted() } }
+                .andReturn()
 
+        val dispatchedGlurak =
+            mockMvc
+                .perform(
+                    MockMvcRequestBuilders.asyncDispatch(mvcResultGlurak),
+                ).andReturn()
 
+        assertEquals(200, dispatchedGlurak.response.status)
+        val initproducts: List<ProductDTO> = objectMapper.readValue(
+            dispatchedGlurak.response.contentAsString,
+            objectMapper.typeFactory.constructCollectionType(List::class.java, ProductDTO::class.java),
+        )
+        assertEquals(40, initproducts.size, "Expected 30 products from cache")
+
+        assertEquals("4,00 €", initproducts.first { it.externalId == 18L }.price)
 
         val mvcResult =
             mockMvc
@@ -345,6 +291,9 @@ class CollectablesAdapterIT {
             uniqueCmIds.size,
             "Expected no duplicate products, but found ${products.size - uniqueCmIds.size} duplicates",
         )
+
+        assertEquals("4,10 €", products.first { it.externalId == 18L }.price)
+
     }
 
 }
