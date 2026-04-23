@@ -1,6 +1,5 @@
 package io.github.havonte1.tcgwatcher.backend.application
 
-import io.github.havonte1.tcgwatcher.backend.config.GenreConfig
 import io.github.havonte1.tcgwatcher.backend.domain.model.Genre
 import io.github.havonte1.tcgwatcher.backend.domain.model.LanguagePricing
 import io.github.havonte1.tcgwatcher.backend.domain.model.Locale

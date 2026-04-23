@@ -3,7 +3,6 @@ package io.github.havonte1.tcgwatcher.backend.domain.model
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Test
-import java.util.HashMap
 
 class LocaleTest {
     @Test

@@ -9,7 +9,6 @@ import io.github.havonte1.tcgwatcher.backend.domain.port.out.CardMarketScraperPo
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Component
 import java.time.Instant
-import kotlin.math.log
 
 
 @Component

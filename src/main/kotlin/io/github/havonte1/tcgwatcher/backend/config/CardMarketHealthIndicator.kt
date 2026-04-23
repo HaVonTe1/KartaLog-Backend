@@ -1,7 +1,7 @@
 package io.github.havonte1.tcgwatcher.backend.config
 
-import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry
 import io.github.oshai.kotlinlogging.KotlinLogging
+import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry
 import org.springframework.boot.health.contributor.Health
 import org.springframework.boot.health.contributor.HealthIndicator
 import org.springframework.stereotype.Component

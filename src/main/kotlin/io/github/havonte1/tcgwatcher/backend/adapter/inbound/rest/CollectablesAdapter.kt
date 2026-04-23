@@ -16,7 +16,6 @@ import io.github.resilience4j.ratelimiter.annotation.RateLimiter
 import io.micrometer.core.instrument.MeterRegistry
 import io.micrometer.core.instrument.Timer
 import org.springframework.http.CacheControl
-import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.RestController
 import java.util.concurrent.TimeUnit

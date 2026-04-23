@@ -1,11 +1,6 @@
 package io.github.havonte1.tcgwatcher.backend.adapter.out.persistence.repository
 
-import io.github.havonte1.tcgwatcher.backend.adapter.out.persistence.entity.NameTranslationEntity
-import io.github.havonte1.tcgwatcher.backend.adapter.out.persistence.entity.ProductEntity
-import io.github.havonte1.tcgwatcher.backend.adapter.out.persistence.entity.ProductSetEntity
-import io.github.havonte1.tcgwatcher.backend.adapter.out.persistence.mapper.ProductMapper
 import io.github.havonte1.tcgwatcher.backend.adapter.out.persistence.mapper.SearchResultMapper
-import io.github.havonte1.tcgwatcher.backend.domain.model.Product
 import io.github.havonte1.tcgwatcher.backend.domain.model.SearchResult
 import io.github.havonte1.tcgwatcher.backend.domain.port.out.SearchResultRepository
 import org.springframework.stereotype.Component

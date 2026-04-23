@@ -9,7 +9,6 @@ import io.github.havonte1.tcgwatcher.backend.domain.model.ProductSet
 import io.github.havonte1.tcgwatcher.backend.domain.model.SellOffer
 import io.github.havonte1.tcgwatcher.backend.domain.model.StringWithValidity
 import io.github.oshai.kotlinlogging.KotlinLogging
-import java.util.UUID
 import kotlin.random.Random
 
 class CardMarketProductMapper {
