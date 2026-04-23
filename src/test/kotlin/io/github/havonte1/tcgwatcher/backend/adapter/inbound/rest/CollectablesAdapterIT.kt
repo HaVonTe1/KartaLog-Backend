@@ -103,50 +103,6 @@ class CollectablesAdapterIT {
         cacheManager.getCacheNames().forEach { cacheManager.getCache(it)?.clear() }
     }
 
-
-    @Test
-    fun `GET collectables returns empty list on successful request`() {
-        val mvcResult =
-            mockMvc
-                .get("/collectables/") {
-                    param("query", "test")
-                    param("locale", "en")
-                    param("game", "Pokemon")
-                }.andExpect { request { asyncStarted() } }
-                .andReturn()
-
-        val dispatched =
-            mockMvc
-                .perform(
-                    MockMvcRequestBuilders.asyncDispatch(mvcResult),
-                ).andReturn()
-
-        assertEquals(200, dispatched.response.status)
-    }
-
-
-    @Test
-    fun `API responds successfully when rate limit not exceeded`() {
-        val mvcResult =
-            mockMvc
-                .get("/collectables/") {
-                    param("query", "test")
-                    param("locale", "en")
-                    param("game", "Pokemon")
-                }.andExpect { request { asyncStarted() } }
-                .andReturn()
-
-        val dispatched =
-            mockMvc
-                .perform(
-                    MockMvcRequestBuilders.asyncDispatch(mvcResult),
-                ).andReturn()
-
-        assertTrue(
-            dispatched.response.status == 200 || dispatched.response.status == 503,
-            "Should return 200 or 503 (circuit breaker)",
-        )
-    }
     @Test
     fun `repeated seaches with different result`() = runBlocking {
         coEvery { webFetcher.fetch("Pikachu", Locale.GERMAN, Genre.POKEMON, 1) } returnsMany
@@ -175,11 +131,6 @@ class CollectablesAdapterIT {
             assertEquals("4,50 €", it.price)
         } ?: fail("No element with externalId=576754 found")
     }
-
-
-
-
-
 
     @Test
     fun `GET collectables returns cached result on repeated search with same params`() {

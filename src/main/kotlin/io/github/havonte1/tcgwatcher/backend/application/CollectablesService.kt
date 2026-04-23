@@ -31,7 +31,9 @@ class CollectablesService(
         locale: Locale,
         genre: Genre,
     ): SearchResponse {
-        logger.debug { "Searching for collectables with query='$searchString' locale=$locale genre=$genre  -- no cache hit" }
+        logger.debug {
+            "Searching for collectables with " +
+                "query='$searchString' locale=$locale genre=$genre  -- no cache hit" }
 
         val searchResult: SearchResult =
             scraper.search(searchString, locale, genre)
