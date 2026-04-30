@@ -15,15 +15,17 @@ import java.nio.charset.StandardCharsets
 object CollectablesMapper {
     fun toDto(
         product: Product,
+        locale: Locale
     ): ProductDTO =
         ProductDTO(
             externalId = product.externalId,
             cmId = product.cmId ?: "",
+            displayName = product.names[locale],
             genre = product.genre.name,
             type = product.type.cmIdentifier,
             setCode = product.set?.cmCode,
+            setName = product.set?.names[locale],
             seriesId = product.series?.seriesId ?: product.set?.seriesId,
-            rarity = product.rarity,
             code = product.codeInfo?.value,
             price = product.price ?: "",
             imageUrl = product.imgLink?.let { URI.create(it) },

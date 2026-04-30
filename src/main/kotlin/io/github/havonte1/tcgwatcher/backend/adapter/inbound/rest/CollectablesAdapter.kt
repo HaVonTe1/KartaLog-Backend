@@ -53,7 +53,7 @@ class CollectablesAdapter(
         searchTimer.record(System.currentTimeMillis() - startTime, TimeUnit.MILLISECONDS)
         meterRegistry.counter("api.search.requests").increment()
 
-        val dtoList: List<ProductDTO> = searchResponse.products.map { CollectablesMapper.toDto(it) }
+        val dtoList: List<ProductDTO> = searchResponse.products.map { CollectablesMapper.toDto(it, localeEnum) }
         val newETag = searchResponse.cachedAt.epochSecond.toString()
 
         return ResponseEntity

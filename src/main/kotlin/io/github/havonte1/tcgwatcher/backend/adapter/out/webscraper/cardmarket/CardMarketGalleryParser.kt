@@ -6,6 +6,7 @@ import io.github.havonte1.tcgwatcher.backend.domain.model.ProductType
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
+import kotlin.text.ifEmpty
 
 class CardMarketGalleryParser {
     private val nameAndCodePattern = "^(.*?)\\s*\\((.*?)\\)$".toRegex()
@@ -60,7 +61,16 @@ class CardMarketGalleryParser {
         val intPrice = if (intPriceTag.isNotEmpty()) intPriceTag[0].text() else ""
 
         val expansionSymbol = titleTag.firstOrNull()?.getElementsByClass("expansion-symbol")?.firstOrNull()
-        val setName = expansionSymbol?.attr("title") ?: ""
+        var setName = expansionSymbol?.attr("title")?:""
+        if(setName.isBlank()) {
+            setName = expansionSymbol?.attr("aria-label")?:""
+        }
+        if(setName.isBlank()) {
+            expansionSymbol?.attr("data-bs-original-title")?:""
+        }
+
+
+
         val setCode = parsedLink.setCode ?: ""
 
         return CardmarketProductGallaryItemDto(
