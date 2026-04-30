@@ -15,6 +15,7 @@ data class SearchResultsPageDto<T>(
 data class CardmarketProductGallaryItemDto(
     val name: NameDto,
     val code: CodeType,
+    val set: SetDto,
     val genre: Genre,
     val type: ProductType,
     val cmId: String,
@@ -25,6 +26,7 @@ data class CardmarketProductGallaryItemDto(
     constructor(
         name: NameDto,
         code: String,
+        set: SetDto,
         genre: Genre,
         type: ProductType,
         cmId: String,
@@ -35,6 +37,7 @@ data class CardmarketProductGallaryItemDto(
     ) : this(
         name = name,
         code = CodeType(code, code.isNotEmpty()),
+        set = set,
         type = type,
         genre = genre,
         cmId = cmId,

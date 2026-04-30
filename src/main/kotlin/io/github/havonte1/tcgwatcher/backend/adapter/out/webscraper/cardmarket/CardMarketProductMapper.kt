@@ -35,7 +35,7 @@ class CardMarketProductMapper {
 
             Product(
                 externalId = externalIdFromImg,
-                set = ProductSet(setId = 0, cmCode = parsedLink.setCode ?: "", names = mapOf()),
+                set = ProductSet(setId = 0, cmCode = dto.set.code, names = mapOf(dto.name.locale to dto.set.name)),
                 rarity = null,
                 names = mapOf(dto.name.locale to dto.name.value),
                 codeInfo = StringWithValidity(

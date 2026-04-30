@@ -51,6 +51,7 @@ class CardMarketGalleryParser {
             }
         }
         val titleTag = tile.getElementsByTag("h2")
+
         val localName = if (titleTag.isNotEmpty()) titleTag[0].text() else ""
         val matchResult = nameAndCodePattern.find(localName)
         val name = matchResult?.groupValues?.getOrNull(1)
@@ -58,9 +59,14 @@ class CardMarketGalleryParser {
         val intPriceTag = tile.getElementsByTag("b")
         val intPrice = if (intPriceTag.isNotEmpty()) intPriceTag[0].text() else ""
 
+        val expansionSymbol = titleTag.firstOrNull()?.getElementsByClass("expansion-symbol")?.firstOrNull()
+        val setName = expansionSymbol?.attr("title") ?: ""
+        val setCode = parsedLink.setCode ?: ""
+
         return CardmarketProductGallaryItemDto(
             name = NameDto(name ?: localName, Locale.fromId(parsedLink.language ?: "de"), localName),
             code = CodeType(code ?: "", code != null),
+            set = SetDto(setName, setCode),
             genre = Genre.fromId(parsedLink.genre ?: "Pokemon"), //:-(
             type = ProductType.fromId(parsedLink.type ?: "Singles"),
             cmId = parsedLink.id ?: "",
@@ -74,23 +80,25 @@ class CardMarketGalleryParser {
         val language: String?,
         val genre: String?,
         val type: String?,
+        val setCode: String?,
         val id: String?,
     )
 
     private fun parseLink(typePath: String?): ParsedLink {
         if (typePath.isNullOrBlank()) {
-            return ParsedLink(null, null, null, null)
+            return ParsedLink(null, null, null, null, null)
         }
 
         val parts = typePath.split('/')
         val startIdx = parts.indexOfFirst { it.isNotEmpty() }.takeIf { it >= 0 }
-            ?: return ParsedLink(null, null, null, null)
+            ?: return ParsedLink(null, null, null, null, null)
 
         if (parts.size - startIdx < minPathParts) {
             return ParsedLink(
                 parts.getOrNull(startIdx),
                 parts.getOrNull(startIdx + 1),
                 parts.getOrNull(startIdx + 2),
+                null,
                 typePath,
             )
         }
@@ -98,9 +106,10 @@ class CardMarketGalleryParser {
         val language = parts[startIdx]
         val genre = parts.getOrNull(startIdx + 1)
         val type = parseTypeFromParts(parts, startIdx)
+        val setCode = parts.getOrNull(startIdx + 3)
         val id = typePath.substringAfter(language)
 
-        return ParsedLink(language, genre, type, id)
+        return ParsedLink(language, genre, type, setCode, id)
     }
 
     private fun parseTypeFromParts(parts: List<String>, startIdx: Int): String? {
