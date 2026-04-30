@@ -106,7 +106,7 @@ class CardMarketGalleryParser {
         val language = parts[startIdx]
         val genre = parts.getOrNull(startIdx + 1)
         val type = parseTypeFromParts(parts, startIdx)
-        val setCode = parts.getOrNull(startIdx + 3)
+        val setCode = parts.getOrNull(startIdx + 4)
         val id = typePath.substringAfter(language)
 
         return ParsedLink(language, genre, type, setCode, id)

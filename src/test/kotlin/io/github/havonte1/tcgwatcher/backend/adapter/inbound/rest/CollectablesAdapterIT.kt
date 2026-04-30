@@ -162,15 +162,15 @@ class CollectablesAdapterIT {
     @Test
     fun `GET collectables with overlapping search params produces no duplicate products`() {
         coEvery { webFetcher.fetch("glurak", locale = Locale.GERMAN, Genre.POKEMON, 1) } returns
-            Result.success(Files.readString(Paths.get("src/test/resources/glurak_de_100_page1_minimal.html")))
+            Result.success(Files.readString(Paths.get("src/test/resources/glurak_de_10_page1_minimal.html")))
         coEvery { webFetcher.fetch("glurak", locale = Locale.GERMAN, Genre.POKEMON, 2) } returns
-            Result.success(Files.readString(Paths.get("src/test/resources/glurak_de_100_page2_minimal.html")))
+            Result.success(Files.readString(Paths.get("src/test/resources/glurak_de_10_page2_minimal.html")))
         coEvery { webFetcher.fetch("glurak", locale = Locale.GERMAN, Genre.POKEMON, 3) } returns
-            Result.success(Files.readString(Paths.get("src/test/resources/glurak_de_100_page3_minimal.html")))
+            Result.success(Files.readString(Paths.get("src/test/resources/glurak_de_10_page3_minimal.html")))
         coEvery { webFetcher.fetch("glurak", locale = Locale.GERMAN, Genre.POKEMON, 4) } returns
-            Result.success(Files.readString(Paths.get("src/test/resources/glurak_de_100_page4_minimal.html")))
+            Result.success(Files.readString(Paths.get("src/test/resources/glurak_de_10_page4_minimal.html")))
         coEvery { webFetcher.fetch("glurak x", locale = Locale.GERMAN, Genre.POKEMON, 1) } returns
-            Result.success(Files.readString(Paths.get("src/test/resources/glurak_x_de_100_page1_minimal.html")))
+            Result.success(Files.readString(Paths.get("src/test/resources/glurak_x_de_10_page1_minimal.html")))
 
         val mvcResultGlurak =
             mockMvc
@@ -194,7 +194,7 @@ class CollectablesAdapterIT {
         )
         assertEquals(40, initproducts.size, "Expected 30 products from cache")
 
-        assertEquals("4,00 €", initproducts.first { it.externalId == 18L }.price)
+        assertEquals("0,20 €", initproducts.first { it.externalId == 802823L }.price)
 
         val mvcResult =
             mockMvc
@@ -223,6 +223,6 @@ class CollectablesAdapterIT {
             "Expected no duplicate products, but found ${products.size - uniqueCmIds.size} duplicates",
         )
 
-        assertEquals("4,10 €", products.first { it.externalId == 18L }.price)
+        assertEquals("0,30 €", products.first { it.externalId == 802823L }.price)
     }
 }

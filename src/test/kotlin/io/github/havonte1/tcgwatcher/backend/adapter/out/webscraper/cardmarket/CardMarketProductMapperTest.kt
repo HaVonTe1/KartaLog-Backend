@@ -17,6 +17,7 @@ class CardMarketProductMapperTest {
             CardmarketProductGallaryItemDto(
                 name = nameDto,
                 code = "12345",
+                set = SetDto("Set X", "setx"),
                 genre = Genre.POKEMON,
                 type = ProductType.SINGLES,
                 cmId = "/pokemon/product/singles/setx/12345",
