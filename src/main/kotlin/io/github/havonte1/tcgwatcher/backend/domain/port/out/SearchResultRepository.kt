@@ -7,6 +7,7 @@ interface SearchResultRepository {
     fun deleteAll()
 
     fun getCachedAtByQueryLocaleAndGenre(query: String, language: String, genre: String): Instant?
+
     fun findByQueryLocaleAndGenre(query: String, language: String, genre: String): SearchResult?
 
     fun save(searchResult: SearchResult): SearchResult

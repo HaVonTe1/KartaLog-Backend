@@ -68,6 +68,7 @@ class CardMarketDetailsParser {
 
             val languagePricing = parseLanguagePricing(document, labels)
             val (releaseDate, cardNumber) = extractAdditionalAttributes(dts, labels)
+            val series = extractSeriesInfo(dts, labels)
 
             val productDetailsDto =
                 CardmarketProductDetailsDto(
@@ -86,6 +87,8 @@ class CardMarketDetailsParser {
                     productAttributes = buildProductAttributes(rarityText, releaseDate, cardNumber, setName),
                     releaseDate = releaseDate ?: "",
                     cardNumber = cardNumber ?: "",
+                    seriesId = series?.first,
+                    seriesName = series?.second,
                 )
 
             Result.success(productDetailsDto)
@@ -213,6 +216,18 @@ class CardMarketDetailsParser {
         }
 
         return Pair(releaseDate, cardNumber)
+    }
+
+    private fun extractSeriesInfo(dts: org.jsoup.select.Elements, labels: Labels): Pair<Long, String>? {
+        val seriesDt = dts.firstOrNull { it.text() == labels.seriesLabel }
+        val seriesLink = seriesDt?.nextElementSibling()?.getElementsByTag("a")?.first()
+        val seriesHref = seriesLink?.attr("href") ?: return null
+
+        val seriesIdMatch = "serieId=(\\d+)".toRegex().find(seriesHref)
+        val seriesId = seriesIdMatch?.groupValues?.get(1)?.toLongOrNull() ?: return null
+        val seriesName = seriesLink.text().ifEmpty { seriesLink.attr("title") }
+
+        return if (seriesId > 0 && seriesName.isNotEmpty()) Pair(seriesId, seriesName) else null
     }
 
     private fun buildProductAttributes(

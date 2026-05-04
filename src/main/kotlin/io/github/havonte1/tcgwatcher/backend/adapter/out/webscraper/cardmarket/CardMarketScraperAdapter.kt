@@ -8,6 +8,7 @@ import io.github.havonte1.tcgwatcher.backend.domain.model.SearchResult
 import io.github.havonte1.tcgwatcher.backend.domain.port.out.CardMarketScraperPort
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Component
+import java.time.Instant
 
 
 @Component
@@ -29,13 +30,14 @@ class CardMarketScraperAdapter(
         var page = 1
 
         val result = fetchAndParse(searchString, locale, genre, page, )
-
+        logger.debug { "result: ${result.isSuccess} "}
         return result.fold(
-            onSuccess = { dto ->
+            onSuccess = { resultsPageDto ->
+                logger.debug { "page: ${resultsPageDto.page} of ${resultsPageDto.totalPages} - products=${resultsPageDto.results.size}" }
                 val allProducts = arrayListOf<Product>()
-                val products = mapper.toProducts(dto)
+                val products = mapper.toProducts(resultsPageDto)
                 allProducts.addAll(products)
-                while(page < dto.totalPages) {
+                while(page < resultsPageDto.totalPages) {
                     page = page.inc()
                     val fetchAndParse = fetchAndParse(searchString, locale, genre, page)
                     fetchAndParse.fold(
@@ -52,7 +54,8 @@ class CardMarketScraperAdapter(
                     query = searchString,
                     language = locale.code,
                     genre = genre.identifier,
-                    products = allProducts)
+                    products = allProducts,
+                    cachedAt = Instant.now())
             },
             onFailure = { error ->
                 logger.warn { "Failed to parse gallery page: ${error.message}" }
@@ -69,6 +72,7 @@ class CardMarketScraperAdapter(
           page: Int
     )
     : Result<SearchResultsPageDto<CardmarketProductGallaryItemDto>> {
+        logger.debug { "fetching and parsing query=$searchString locale=$locale genre=$genre page=$page" }
         val fetchResult = webFetcher.fetch(searchString, locale, genre, page)
         val content =
             fetchResult.getOrElse {

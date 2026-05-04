@@ -4,11 +4,11 @@ import io.github.havonte1.tcgwatcher.backend.domain.model.LanguagePricing
 import io.github.havonte1.tcgwatcher.backend.domain.model.Product
 import io.github.havonte1.tcgwatcher.backend.domain.model.ProductAttribute
 import io.github.havonte1.tcgwatcher.backend.domain.model.ProductAttributeType
+import io.github.havonte1.tcgwatcher.backend.domain.model.ProductSeries
 import io.github.havonte1.tcgwatcher.backend.domain.model.ProductSet
 import io.github.havonte1.tcgwatcher.backend.domain.model.SellOffer
 import io.github.havonte1.tcgwatcher.backend.domain.model.StringWithValidity
 import io.github.oshai.kotlinlogging.KotlinLogging
-import java.util.UUID
 import kotlin.random.Random
 
 class CardMarketProductMapper {
@@ -35,7 +35,7 @@ class CardMarketProductMapper {
 
             Product(
                 externalId = externalIdFromImg,
-                set = ProductSet(setId = 0, cmCode = parsedLink.setCode ?: "", names = mapOf()),
+                set = ProductSet(setId = 0, cmCode = dto.set.code, names = mapOf(dto.name.locale to dto.set.name)),
                 rarity = null,
                 names = mapOf(dto.name.locale to dto.name.value),
                 codeInfo = StringWithValidity(
@@ -76,6 +76,7 @@ class CardMarketProductMapper {
             sellOffers =
                 detailsDto.sellOffers.map { sellOffer ->
                     SellOffer(
+                        sellOfferId = 0,
                         sellerName = sellOffer.sellerName,
                         sellerLocation = sellOffer.sellerLocation,
                         productLanguage = sellOffer.productLanguage,
@@ -103,6 +104,12 @@ class CardMarketProductMapper {
             },
             releaseDate = detailsDto.releaseDate.ifEmpty { null },
             cardNumber = detailsDto.cardNumber.ifEmpty { null },
+            series = if (detailsDto.seriesId != null && detailsDto.seriesName != null) {
+                ProductSeries(
+                    seriesId = detailsDto.seriesId,
+                    names = mapOf(detailsDto.name.locale to detailsDto.seriesName)
+                )
+            } else null,
         )
     }
 

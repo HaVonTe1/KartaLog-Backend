@@ -16,7 +16,6 @@ import io.github.resilience4j.ratelimiter.annotation.RateLimiter
 import io.micrometer.core.instrument.MeterRegistry
 import io.micrometer.core.instrument.Timer
 import org.springframework.http.CacheControl
-import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.RestController
 import java.util.concurrent.TimeUnit
@@ -28,13 +27,11 @@ class CollectablesAdapter(
 ) : CollectablesApi {
     private val logger = KotlinLogging.logger {}
 
-    @RateLimiter(name = "apiRateLimiter")
     override suspend fun listCollectables(
         query: String,
         genre: GenreSchema,
         type: ProductTypeSchema,
         locale: LocaleSchema,
-        ifNoneMatch: String?
     ): ResponseEntity<List<ProductDTO>> {
         logger.debug {
             "listCollectables called with query={$query} locale={$locale} genre=$genre"
@@ -45,28 +42,20 @@ class CollectablesAdapter(
         val localeEnum =
             Locale.fromId(locale.value)
 
-        val existingCachedAt = collectablesService.getSearchCachedAt(query, localeEnum, genreEnum)
-        val existingETag = existingCachedAt?.epochSecond?.toString()
-
-        if (ifNoneMatch != null && ifNoneMatch == existingETag) {
-            logger.debug { "ETag match, returning 304 for query='$query'" }
-            return ResponseEntity
-                .status(HttpStatus.NOT_MODIFIED)
-                .eTag(existingETag)
-                .build()
-        }
-
         val searchTimer = Timer.builder("api.search.duration").register(meterRegistry)
         val startTime = System.currentTimeMillis()
+
+        //-----------------------------------
         val searchResponse: SearchResponse = collectablesService.search(
             query,
             localeEnum,
             genreEnum,
         )
+        //-----------------------------------
         searchTimer.record(System.currentTimeMillis() - startTime, TimeUnit.MILLISECONDS)
         meterRegistry.counter("api.search.requests").increment()
 
-        val dtoList: List<ProductDTO> = searchResponse.products.map { CollectablesMapper.toDto(it) }
+        val dtoList: List<ProductDTO> = searchResponse.products.map { CollectablesMapper.toDto(it, localeEnum) }
         val newETag = searchResponse.cachedAt.epochSecond.toString()
 
         return ResponseEntity
@@ -76,25 +65,14 @@ class CollectablesAdapter(
             .body(dtoList)
     }
 
-    @RateLimiter(name = "apiRateLimiter")
     override suspend fun getProductDetails(
         cmId: String,
         genre: GenreSchema,
         type: ProductTypeSchema,
         lang: LocaleSchema,
         setname: String,
-        ifNoneMatch: String?,
     ): ResponseEntity<ProductDetailsDTO> {
-        val existingUpdatedAt = collectablesService.getProductUpdatedAt(cmId)
-        val existingETag = existingUpdatedAt?.epochSecond?.toString()
 
-        if (ifNoneMatch != null && ifNoneMatch == existingETag) {
-            logger.debug { "ETag match, returning 304 for cmId=$cmId" }
-            return ResponseEntity
-                .status(HttpStatus.NOT_MODIFIED)
-                .eTag(existingETag)
-                .build()
-        }
         val genreEnum = Genre.fromId(genre.value)
         val localeEnum = Locale.fromId(lang.value)
         val typeEnum = ProductType.fromId(type.value)

@@ -93,4 +93,13 @@ data class SellOfferEntity(
 
     override fun toString(): String =
         "SellOfferEntity(id=$id, sellerName='$sellerName', sellerLocation='$sellerLocation', productLanguage='$productLanguage', special='$special', condition='$condition', amount='$amount', price='$price')"
+
+    fun businessEquals(other: SellOfferEntity): Boolean =
+        sellerName      == other.sellerName     &&
+            sellerLocation  == other.sellerLocation &&
+            productLanguage == other.productLanguage &&
+            condition       == other.condition      &&
+            amount          == other.amount         &&
+            price           == other.price          &&
+            special         == other.special
 }

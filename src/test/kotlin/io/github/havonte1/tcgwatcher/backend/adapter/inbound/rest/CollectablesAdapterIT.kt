@@ -1,34 +1,29 @@
 package io.github.havonte1.tcgwatcher.backend.adapter.inbound.rest
 
-import io.github.havonte1.tcgwatcher.backend.adapter.out.webscraper.cardmarket.CardMarketDetailsParser
-import io.github.havonte1.tcgwatcher.backend.adapter.out.webscraper.cardmarket.CardMarketGalleryParser
-import io.github.havonte1.tcgwatcher.backend.adapter.out.webscraper.cardmarket.CardMarketProductMapper
-import io.github.havonte1.tcgwatcher.backend.adapter.out.webscraper.cardmarket.CardMarketScraperAdapter
-import io.github.havonte1.tcgwatcher.backend.adapter.out.webscraper.cardmarket.CardMarketWebFetcher
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.module.kotlin.registerKotlinModule
+import com.ninjasquad.springmockk.MockkBean
+import io.github.havonte1.tcgwatcher.backend.adapter.inbound.rest.model.ProductDTO
 import io.github.havonte1.tcgwatcher.backend.adapter.out.webscraper.cardmarket.CardMarketWebFetcherPort
-import io.github.havonte1.tcgwatcher.backend.config.GenreConfig
+import io.github.havonte1.tcgwatcher.backend.application.SearchResponse
+import io.github.havonte1.tcgwatcher.backend.application.SearchUseCase
 import io.github.havonte1.tcgwatcher.backend.domain.model.Genre
 import io.github.havonte1.tcgwatcher.backend.domain.model.Locale
-import io.github.havonte1.tcgwatcher.backend.domain.model.Product
-import io.github.havonte1.tcgwatcher.backend.domain.model.ProductType
-import io.github.havonte1.tcgwatcher.backend.domain.model.SearchResult
 import io.github.havonte1.tcgwatcher.backend.domain.port.out.CardMarketScraperPort
+import io.github.havonte1.tcgwatcher.backend.domain.port.out.ProductRepository
+import io.github.havonte1.tcgwatcher.backend.domain.port.out.SearchResultRepository
+import io.mockk.coEvery
+import io.mockk.coVerify
+import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.cache.test.autoconfigure.AutoConfigureCache
 import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.boot.test.context.TestConfiguration
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc
 import org.springframework.cache.CacheManager
-import org.springframework.context.annotation.Bean
-import org.springframework.context.annotation.EnableAspectJAutoProxy
-import org.springframework.context.annotation.Primary
-import org.springframework.http.HttpHeaders
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.get
@@ -38,6 +33,7 @@ import org.testcontainers.junit.jupiter.Testcontainers
 import org.testcontainers.postgresql.PostgreSQLContainer
 import java.nio.file.Files
 import java.nio.file.Paths
+import kotlin.test.fail
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -59,37 +55,82 @@ class CollectablesAdapterIT {
     @Autowired
     lateinit var cacheManager: CacheManager
 
+    @Autowired
+    lateinit var service: SearchUseCase
+
+    @Autowired
+    lateinit var searchRepo: SearchResultRepository
+
+    @Autowired
+    lateinit var productRepo: ProductRepository
+
+    @Autowired
+    lateinit var scraperPort: CardMarketScraperPort
+
+    @MockkBean
+    lateinit var webFetcher: CardMarketWebFetcherPort
+
+    val objectMapper = ObjectMapper().registerKotlinModule()
+
     @BeforeEach
-    fun clearCache() {
+    fun cleanDb() {
+        productRepo.deleteAll()
+        searchRepo.deleteAll()
         cacheManager.getCacheNames().forEach { cacheManager.getCache(it)?.clear() }
     }
 
     @Test
-    fun `GET collectables returns empty list on successful request`() {
-        val mvcResult =
-            mockMvc
-                .get("/collectables/") {
-                    param("query", "test")
-                    param("locale", "en")
-                    param("game", "Pokemon")
-                }.andExpect { request { asyncStarted() } }
-                .andReturn()
+    fun `repeated seaches with different result`() = runBlocking {
+        coEvery { webFetcher.fetch("Pikachu", Locale.GERMAN, Genre.POKEMON, 1) } returnsMany
+            listOf(
+                Result.success(Files.readString(Paths.get("src/test/resources/pikachu_gallery_size30_v1.html"))),
+                Result.success(Files.readString(Paths.get("src/test/resources/pikachu_gallery_size30_v2.html"))),
+            )
 
-        val dispatched =
-            mockMvc
-                .perform(
-                    MockMvcRequestBuilders.asyncDispatch(mvcResult),
-                ).andReturn()
+        val firstResult: SearchResponse = service.search("Pikachu", Locale.GERMAN, Genre.POKEMON)
+        assertEquals(30, firstResult.products.size)
 
-        assertEquals(200, dispatched.response.status)
+        firstResult.products.find { it.externalId == 576754L }?.let {
+            assertEquals("Pikachu-V5-CEL009", it.cmId)
+            assertEquals("1,50 €", it.price)
+        } ?: fail("No element with externalId=576754 found")
+
+        // Clear cache to simulate time passing and allow fresh scraping
+        cacheManager.getCache("listCache")?.clear()
+
+        // repeated search to a later time results in same products BUT with different prices
+        val secondResult: SearchResponse = service.search("Pikachu", Locale.GERMAN, Genre.POKEMON)
+        assertEquals(30, secondResult.products.size)
+
+        secondResult.products.find { it.externalId == 576754L }?.let {
+            assertEquals("Pikachu-V5-CEL009", it.cmId)
+            assertEquals("4,50 €", it.price)
+        } ?: fail("No element with externalId=576754 found")
     }
 
     @Test
-    fun `GET collectables returns ETag and Cache-Control headers`() {
+    fun `GET collectables returns cached result on repeated search with same params`() {
+        coEvery { webFetcher.fetch("pikachu", locale = Locale.GERMAN, Genre.POKEMON, 1) } returns
+            Result.success(Files.readString(Paths.get("src/test/resources/pikachu_gallery_size30_v1.html")))
+
+        mockMvc
+            .get("/collectables/") {
+                param("query", "pikachu")
+                param("locale", Locale.GERMAN.code)
+                param("game", Genre.POKEMON.identifier)
+            }.andExpect { request { asyncStarted() } }
+            .andReturn()
+            .let {
+                mockMvc
+                    .perform(
+                        MockMvcRequestBuilders.asyncDispatch(it),
+                    ).andReturn()
+            }
+
         val mvcResult =
             mockMvc
                 .get("/collectables/") {
-                    param("query", "Pikachu")
+                    param("query", "pikachu")
                     param("locale", Locale.GERMAN.code)
                     param("game", Genre.POKEMON.identifier)
                 }.andExpect { request { asyncStarted() } }
@@ -102,58 +143,65 @@ class CollectablesAdapterIT {
                 ).andReturn()
 
         assertEquals(200, dispatched.response.status)
-        assertTrue(dispatched.response.getHeader(HttpHeaders.ETAG) != null, "ETag header should be present")
-        assertTrue(
-            dispatched.response.getHeader(HttpHeaders.CACHE_CONTROL)?.contains("max-age") == true,
-            "Cache-Control header should contain max-age",
+
+        coVerify(exactly = 1) {
+            webFetcher.fetch(
+                any(),
+                any(),
+                any(),
+                any(),
+            )
+        }
+        val products: List<ProductDTO> = objectMapper.readValue(
+            dispatched.response.contentAsString,
+            objectMapper.typeFactory.constructCollectionType(List::class.java, ProductDTO::class.java),
         )
+        assertEquals(30, products.size, "Expected 30 products from cache")
     }
 
     @Test
-    fun `GET collectables returns 304 when ETag matches`() {
-        val firstRequest =
+    fun `GET collectables with overlapping search params produces no duplicate products`() {
+        coEvery { webFetcher.fetch("glurak", locale = Locale.GERMAN, Genre.POKEMON, 1) } returns
+            Result.success(Files.readString(Paths.get("src/test/resources/glurak_de_10_page1_minimal.html")))
+        coEvery { webFetcher.fetch("glurak", locale = Locale.GERMAN, Genre.POKEMON, 2) } returns
+            Result.success(Files.readString(Paths.get("src/test/resources/glurak_de_10_page2_minimal.html")))
+        coEvery { webFetcher.fetch("glurak", locale = Locale.GERMAN, Genre.POKEMON, 3) } returns
+            Result.success(Files.readString(Paths.get("src/test/resources/glurak_de_10_page3_minimal.html")))
+        coEvery { webFetcher.fetch("glurak", locale = Locale.GERMAN, Genre.POKEMON, 4) } returns
+            Result.success(Files.readString(Paths.get("src/test/resources/glurak_de_10_page4_minimal.html")))
+        coEvery { webFetcher.fetch("glurak x", locale = Locale.GERMAN, Genre.POKEMON, 1) } returns
+            Result.success(Files.readString(Paths.get("src/test/resources/glurak_x_de_10_page1_minimal.html")))
+
+        val mvcResultGlurak =
             mockMvc
                 .get("/collectables/") {
-                    param("query", "Pikachu")
-                    param("locale", "en")
-                    param("game", "Pokemon")
+                    param("query", "glurak")
+                    param("locale", Locale.GERMAN.code)
+                    param("game", Genre.POKEMON.identifier)
                 }.andExpect { request { asyncStarted() } }
                 .andReturn()
 
-        val dispatchedFirst =
+        val dispatchedGlurak =
             mockMvc
                 .perform(
-                    MockMvcRequestBuilders.asyncDispatch(firstRequest),
+                    MockMvcRequestBuilders.asyncDispatch(mvcResultGlurak),
                 ).andReturn()
 
-        assertEquals(200, dispatchedFirst.response.status)
-        val eTag = dispatchedFirst.response.getHeader(HttpHeaders.ETAG) ?: ""
+        assertEquals(200, dispatchedGlurak.response.status)
+        val initproducts: List<ProductDTO> = objectMapper.readValue(
+            dispatchedGlurak.response.contentAsString,
+            objectMapper.typeFactory.constructCollectionType(List::class.java, ProductDTO::class.java),
+        )
+        assertEquals(40, initproducts.size, "Expected 30 products from cache")
 
-        val secondRequest =
-            mockMvc
-                .get("/collectables/") {
-                    param("query", "Pikachu")
-                    param("locale", "en")
-                    param("game", "Pokemon")
-                    header(HttpHeaders.IF_NONE_MATCH, eTag)
-                }.andExpect { request { asyncStarted() } }
-                .andReturn()
+        assertEquals("0,20 €", initproducts.first { it.externalId == 802823L }.price)
 
-        val dispatchedSecond =
-            mockMvc
-                .perform(
-                    MockMvcRequestBuilders.asyncDispatch(secondRequest),
-                ).andReturn()
-
-        assertEquals(304, dispatchedSecond.response.status)
-    }
-
-    @Test
-    fun `GET product details returns ETag and Cache-Control headers`() {
         val mvcResult =
             mockMvc
-                .get("/collectables/Pikachu-MCD166") {
-                    param("setname", "McDonalds-Collection-2016")
+                .get("/collectables/") {
+                    param("query", "glurak x")
+                    param("locale", Locale.GERMAN.code)
+                    param("game", Genre.POKEMON.identifier)
                 }.andExpect { request { asyncStarted() } }
                 .andReturn()
 
@@ -164,102 +212,17 @@ class CollectablesAdapterIT {
                 ).andReturn()
 
         assertEquals(200, dispatched.response.status)
-        assertTrue(dispatched.response.getHeader(HttpHeaders.ETAG) != null, "ETag header should be present")
-        assertTrue(
-            dispatched.response.getHeader(HttpHeaders.CACHE_CONTROL)?.contains("max-age") == true,
-            "Cache-Control header should contain max-age",
+        val products: List<ProductDTO> = objectMapper.readValue(
+            dispatched.response.contentAsString,
+            objectMapper.typeFactory.constructCollectionType(List::class.java, ProductDTO::class.java),
         )
-    }
-
-    @Test
-    fun `GET product details returns 304 when ETag matches`() {
-        val firstRequest =
-            mockMvc
-                .get("/collectables/Pikachu-MCD166") {
-                    param("setname", "McDonalds-Collection-2016")
-                }.andExpect { request { asyncStarted() } }
-                .andReturn()
-
-        val dispatchedFirst =
-            mockMvc
-                .perform(
-                    MockMvcRequestBuilders.asyncDispatch(firstRequest),
-                ).andReturn()
-
-        assertEquals(200, dispatchedFirst.response.status)
-        val eTag = dispatchedFirst.response.getHeader(HttpHeaders.ETAG) ?: ""
-
-        val secondRequest =
-            mockMvc
-                .get("/collectables/Pikachu-MCD166") {
-                    param("setname", "McDonalds-Collection-2016")
-                    header(HttpHeaders.IF_NONE_MATCH, eTag)
-                }.andExpect { request { asyncStarted() } }
-                .andReturn()
-
-        val dispatchedSecond =
-            mockMvc
-                .perform(
-                    MockMvcRequestBuilders.asyncDispatch(secondRequest),
-                ).andReturn()
-
-        assertEquals(304, dispatchedSecond.response.status)
-    }
-
-    @Test
-    fun `API responds successfully when rate limit not exceeded`() {
-        val mvcResult =
-            mockMvc
-                .get("/collectables/") {
-                    param("query", "test")
-                    param("locale", "en")
-                    param("game", "Pokemon")
-                }.andExpect { request { asyncStarted() } }
-                .andReturn()
-
-        val dispatched =
-            mockMvc
-                .perform(
-                    MockMvcRequestBuilders.asyncDispatch(mvcResult),
-                ).andReturn()
-
-        assertTrue(
-            dispatched.response.status == 200 || dispatched.response.status == 503,
-            "Should return 200 or 503 (circuit breaker)",
+        val uniqueCmIds = products.map { it.cmId }.distinct()
+        assertEquals(
+            products.size,
+            uniqueCmIds.size,
+            "Expected no duplicate products, but found ${products.size - uniqueCmIds.size} duplicates",
         )
-    }
 
-    @TestConfiguration
-    @EnableAspectJAutoProxy(proxyTargetClass = true)
-    @AutoConfigureCache
-    class TestConfig {
-        private val testFilePikachu30 = "src/test/resources/pikachu_gallery_30.html"
-        private val testFilePikachuDetails = "src/test/resources/pikachu_mcd166_details_stripped.html"
-
-        @Bean
-        @Primary
-        fun cardMarketWebFetcherPort(): CardMarketWebFetcherPort =
-            object : CardMarketWebFetcherPort {
-
-                override suspend fun fetch(
-                    searchString: String,
-                    locale: Locale,
-                    genre: Genre,
-                    page: Int,
-                ): Result<String> {
-                    return Result.success(Files.readString(Paths.get(testFilePikachu30)))
-                }
-
-                override suspend fun fetchDetails(
-                    cmId: String,
-                    genre: Genre,
-                    type: ProductType,
-                    locale: Locale,
-                    setname: String,
-                ): Result<String> {
-                    val content = Files.readString(Paths.get(testFilePikachuDetails))
-                    return Result.success(content)
-                }
-            }
+        assertEquals("0,30 €", products.first { it.externalId == 802823L }.price)
     }
 }

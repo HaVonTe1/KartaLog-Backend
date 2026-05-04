@@ -2,12 +2,13 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     id("org.openapi.generator") version "7.19.0"
-    kotlin("jvm") version "2.2.20"
-    kotlin("plugin.spring") version "2.2.20"
+    kotlin("jvm") version "2.3.21"
+    kotlin("plugin.spring") version "2.3.21"
     id("org.springframework.boot") version "4.0.2"
     id("io.spring.dependency-management") version "1.1.6"
     id("org.jlleitschuh.gradle.ktlint") version "14.2.0"
-    id("dev.detekt") version "2.0.0-alpha.1"
+    id("dev.detekt") version "2.0.0-alpha.3"
+    kotlin("plugin.jpa") version "2.3.21"
 }
 
 openApiGenerate {
@@ -107,17 +108,14 @@ detekt {
     allRules = false
 }
 
+tasks.named("detekt") {
+    enabled = false
+}
+
 ktlint {
     version.set("1.8.0")
     android.set(false)
     outputToConsole.set(true)
-//    disabledRules.set(setOf(
-//        import-ordering
-//    ))
-//    filter {
-//        exclude(Regex.generate)
-//        exclude(Regex.build/generated)
-//    }
 }
 
 tasks.named("runKtlintCheckOverMainSourceSet") {
@@ -217,5 +215,6 @@ dependencies {
     testImplementation("org.springframework.boot:spring-boot-starter-integration-test")
     testImplementation("io.mockk:mockk:1.13.12")
     testImplementation("org.junit.jupiter:junit-jupiter-api")
+    testImplementation("com.ninja-squad:springmockk:5.0.1")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
 }

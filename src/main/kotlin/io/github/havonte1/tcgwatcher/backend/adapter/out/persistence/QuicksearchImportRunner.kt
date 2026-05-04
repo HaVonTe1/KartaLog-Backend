@@ -9,6 +9,7 @@ import io.github.havonte1.tcgwatcher.backend.adapter.out.persistence.repository.
 import io.github.havonte1.tcgwatcher.backend.adapter.out.persistence.repository.ProductSetJpaRepository
 import io.github.havonte1.tcgwatcher.backend.adapter.out.persistence.repository.SeriesJpaRepository
 import io.github.oshai.kotlinlogging.KotlinLogging
+import org.springframework.aot.hint.TypeReference.listOf
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.ApplicationArguments
 import org.springframework.boot.ApplicationRunner
@@ -19,6 +20,7 @@ import java.io.BufferedReader
 import java.io.InputStreamReader
 import java.sql.Connection
 import java.sql.DriverManager
+import kotlin.collections.emptyList
 
 @Component
 @Order(Int.MAX_VALUE)
@@ -209,64 +211,58 @@ class QuicksearchImportRunner(
         rs.close()
         stmt.close()
     }
-
     private fun importSetsFromCsv() {
         logger.info { "Importing sets from CSV" }
-        val resource =
-            javaClass.classLoader.getResource("import/sets.csv")
-                ?: throw IllegalArgumentException("CSV file not found on classpath: sets.csv")
-        val reader = BufferedReader(InputStreamReader(resource.openStream()))
-        // Skip header line
-        var line = reader.readLine()
-        var count = 0
-        while (true) {
-            line = reader.readLine() ?: break
-            if (line.isBlank()) continue
-            val parts = line.split(';')
-            if (parts.size < 5) continue
-            val id = parts[0]
-            val nameDe = parts[1]
-            val nameEn = parts[2]
-            val nameFr = parts[3]
-            val code = parts[4]
-            val productSet =
-                ProductSetEntity(
-                    sourceId = null,
-                    abbreviation = null,
-                    cmProductId = id,
-                    cmProductCode = null,
-                    code = code,
-                    official = null,
-                    tcgpId = null,
-                    total = null,
-                    series = null,
-                )
-            val saved = productSetJpaRepository.save(productSet)
-            nameTranslationJpaRepository.save(
-                NameTranslationEntity(
-                    languageCode = "de",
-                    name = nameDe,
-                    productSet = saved,
-                ),
+
+        val resource = javaClass.classLoader.getResource("import/sets.csv")
+            ?: throw IllegalArgumentException("CSV file not found on classpath: sets.csv")
+
+        val lines = resource.openStream()
+            .bufferedReader()
+            .useLines { lines ->
+                lines
+                    .drop(1) // Header überspringen
+                    .filter { it.isNotBlank() }
+                    .map { it.split(';') }
+                    .filter { it.size >= 5 }
+                    .toList()
+            }
+
+        val existingIds = lines.map { it[0] }.toSet()
+        val existingSets = productSetJpaRepository.findAllByCmProductIdIn(existingIds)
+            .associateBy { it.cmProductId }
+
+        val setsToSave = lines.map { parts ->
+            val x = existingSets[parts[0]] ?: ProductSetEntity(
+                sourceId = null,
+                abbreviation = null,
+                cmProductId = parts[0],
+                cmProductCode = parts[4],
+                code = null,
+                official = null,
+                tcgpId = null,
+                total = null,
+                series = null,
             )
-            nameTranslationJpaRepository.save(
-                NameTranslationEntity(
-                    languageCode = "en",
-                    name = nameEn,
-                    productSet = saved,
-                ),
-            )
-            nameTranslationJpaRepository.save(
-                NameTranslationEntity(
-                    languageCode = "fr",
-                    name = nameFr,
-                    productSet = saved,
-                ),
-            )
-            count++
+            x.copy(cmProductCode = parts[4])
+
         }
-        logger.info { "Imported $count sets with translations from CSV" }
-        reader.close()
+
+        val savedSets = productSetJpaRepository.saveAll(setsToSave)
+            .associateBy { it.cmProductId }
+
+        val translations = lines.flatMap { parts ->
+            val saved = savedSets[parts[0]] ?: return@flatMap emptyList()
+            listOf(
+                NameTranslationEntity(languageCode = "de", name = parts[1], productSet = saved),
+                NameTranslationEntity(languageCode = "en", name = parts[2], productSet = saved),
+                NameTranslationEntity(languageCode = "fr", name = parts[3], productSet = saved),
+            )
+        }
+
+        nameTranslationJpaRepository.saveAll(translations)
+
+        logger.info { "Imported ${lines.size} sets with translations from CSV" }
     }
 
     private fun buildSetsMap(): Map<String, Long> {

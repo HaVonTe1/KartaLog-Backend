@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                  xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.8.xsd">
+
+  <changeSet author="havonte" id="01-create-users-table">
+    <createTable schemaName="watcher" tableName="users">
+      <column autoIncrement="true" name="id" type="BIGINT">
+        <constraints nullable="false" primaryKey="true"/>
+      </column>
+      <column name="email" type="VARCHAR(255)">
+        <constraints nullable="false" unique="true"/>
+      </column>
+      <column name="password_hash" type="VARCHAR(255)">
+        <constraints nullable="false"/>
+      </column>
+      <column name="role" type="VARCHAR(20)">
+        <constraints nullable="false" defaultValue="USER"/>
+      </column>
+      <column name="created_at" type="BIGINT">
+        <constraints nullable="false"/>
+      </column>
+      <column name="updated_at" type="BIGINT">
+        <constraints nullable="false"/>
+      </column>
+    </createTable>
+  </changeSet>
+
+  <changeSet author="havonte" id="02-create-refresh-tokens-table">
+    <createTable schemaName="watcher" tableName="refresh_tokens">
+      <column autoIncrement="true" name="id" type="BIGINT">
+        <constraints nullable="false" primaryKey="true"/>
+      </column>
+      <column name="user_id" type="BIGINT">
+        <constraints nullable="false"/>
+      </column>
+      <column name="token_hash" type="VARCHAR(255)">
+        <constraints nullable="false"/>
+      </column>
+      <column name="expires_at" type="TIMESTAMP">
+        <constraints nullable="false"/>
+      </column>
+      <column name="revoked" type="BOOLEAN">
+        <constraints nullable="false" defaultValue="false"/>
+      </column>
+    </createTable>
+    <addForeignKeyConstraint baseTableName="refresh_tokens"
+                            baseColumnNames="user_id"
+                            referencedTableName="users"
+                            referencedColumnNames="id"
+                            baseTableSchemaName="watcher"
+                            referencedTableSchemaName="watcher"
+                            constraintName="fk_refresh_token_user"/>
+  </changeSet>
+
+  <changeSet author="havonte" id="03-create-users-audit-table">
+    <createTable schemaName="watcher" tableName="users_aud">
+      <column name="id" type="BIGINT">
+        <constraints nullable="false"/>
+      </column>
+      <column name="rev" type="BIGINT">
+        <constraints nullable="false"/>
+      </column>
+      <column name="revtype" type="SMALLINT"/>
+      <column name="email" type="VARCHAR(255)"/>
+      <column name="password_hash" type="VARCHAR(255)"/>
+      <column name="role" type="VARCHAR(20)"/>
+      <column name="created_at" type="BIGINT"/>
+      <column name="updated_at" type="BIGINT"/>
+    </createTable>
+    <addPrimaryKey schemaName="watcher" tableName="users_aud" columnNames="id, rev"/>
+    <addForeignKeyConstraint baseTableName="users_aud"
+                            baseColumnNames="rev"
+                            referencedTableName="revinfo"
+                            referencedColumnNames="rev"
+                            baseTableSchemaName="watcher"
+                            referencedTableSchemaName="watcher"
+                            constraintName="fk_users_aud_revinfo"/>
+  </changeSet>
+
+  <changeSet author="havonte" id="04-create-refresh-tokens-audit-table">
+    <createTable schemaName="watcher" tableName="refresh_tokens_aud">
+      <column name="id" type="BIGINT">
+        <constraints nullable="false"/>
+      </column>
+      <column name="rev" type="BIGINT">
+        <constraints nullable="false"/>
+      </column>
+      <column name="revtype" type="SMALLINT"/>
+      <column name="user_id" type="BIGINT"/>
+      <column name="token_hash" type="VARCHAR(255)"/>
+      <column name="expires_at" type="TIMESTAMP"/>
+      <column name="revoked" type="BOOLEAN"/>
+    </createTable>
+    <addPrimaryKey schemaName="watcher" tableName="refresh_tokens_aud" columnNames="id, rev"/>
+    <addForeignKeyConstraint baseTableName="refresh_tokens_aud"
+                            baseColumnNames="rev"
+                            referencedTableName="revinfo"
+                            referencedColumnNames="rev"
+                            baseTableSchemaName="watcher"
+                            referencedTableSchemaName="watcher"
+                            constraintName="fk_refresh_tokens_aud_revinfo"/>
+  </changeSet>
+
+</databaseChangeLog>

@@ -6,9 +6,10 @@ import org.springframework.stereotype.Repository
 
 @Repository
 interface ProductSetJpaRepository : JpaRepository<ProductSetEntity, Long> {
-    fun findBySourceId(sourceId: String): ProductSetEntity?
 
-    fun existsBySourceId(sourceId: String): Boolean
+    fun findByCmProductCode(cmProductCode: String): ProductSetEntity?
 
-    fun findByCmProductCode(cmProductCode: String): MutableList<ProductSetEntity>
+    fun findAllByCmProductIdIn(cmProductIds: Set<String>): List<ProductSetEntity>
+
+    fun findByCmProductCodeIn(productCodes: List<String>): List<ProductSetEntity>
 }

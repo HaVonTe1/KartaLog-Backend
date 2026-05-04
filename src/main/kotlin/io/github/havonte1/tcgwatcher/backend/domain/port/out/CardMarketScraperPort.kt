@@ -1,8 +1,8 @@
 package io.github.havonte1.tcgwatcher.backend.domain.port.out
 
+import io.github.havonte1.tcgwatcher.backend.domain.model.Genre
 import io.github.havonte1.tcgwatcher.backend.domain.model.Locale
 import io.github.havonte1.tcgwatcher.backend.domain.model.Product
-import io.github.havonte1.tcgwatcher.backend.domain.model.Genre
 import io.github.havonte1.tcgwatcher.backend.domain.model.ProductType
 import io.github.havonte1.tcgwatcher.backend.domain.model.SearchResult
 

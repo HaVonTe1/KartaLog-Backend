@@ -1,6 +1,5 @@
 package io.github.havonte1.tcgwatcher.backend.adapter.out.webscraper.cardmarket
 
-import io.github.havonte1.tcgwatcher.backend.config.GenreConfig
 import io.github.havonte1.tcgwatcher.backend.domain.model.Genre
 import io.github.havonte1.tcgwatcher.backend.domain.model.Locale
 import io.github.havonte1.tcgwatcher.backend.domain.model.ProductType

@@ -50,6 +50,7 @@ data class StringWithValidity(
 )
 
 data class SellOffer(
+    val sellOfferId: Long,
     val sellerName: String,
     val sellerLocation: String,
     val productLanguage: String,
@@ -63,6 +64,8 @@ data class ProductSet(
     val setId: Long,
     val cmCode: String,
     val names: Map<Locale, String> = emptyMap(),
+    val seriesId: Long? = null,
+    val seriesNames: Map<Locale, String> = emptyMap(),
 )
 
 data class ProductSeries(

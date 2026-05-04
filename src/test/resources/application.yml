@@ -11,8 +11,14 @@ spring:
     enabled: true
     change-log: classpath:db/changelog/db.changelog-master.xml
     contexts: test
-
+app:
+  data:
+    import:
+      enabled: false
+      sqlite:
+        path: import/quicksearch.db
 logging:
   level:
+    io.github.havonte1: trace
     org.springframework.boot.test: INFO
     org.testcontainers: INFO

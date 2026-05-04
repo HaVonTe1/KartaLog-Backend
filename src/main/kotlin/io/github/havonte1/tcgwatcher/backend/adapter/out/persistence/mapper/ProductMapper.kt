@@ -11,8 +11,8 @@ import io.github.havonte1.tcgwatcher.backend.domain.model.Locale
 import io.github.havonte1.tcgwatcher.backend.domain.model.Product
 import io.github.havonte1.tcgwatcher.backend.domain.model.ProductAttribute
 import io.github.havonte1.tcgwatcher.backend.domain.model.ProductAttributeType
-import io.github.havonte1.tcgwatcher.backend.domain.model.ProductSet
 import io.github.havonte1.tcgwatcher.backend.domain.model.ProductSeries
+import io.github.havonte1.tcgwatcher.backend.domain.model.ProductSet
 import io.github.havonte1.tcgwatcher.backend.domain.model.ProductType
 import io.github.havonte1.tcgwatcher.backend.domain.model.SellOffer
 import io.github.havonte1.tcgwatcher.backend.domain.model.StringWithValidity
@@ -60,7 +60,7 @@ class ProductMapper {
         product.sellOffers?.forEach { sellOffer ->
             val sellOfferEntity =
                 SellOfferEntity(
-                    id = null,
+                    id = entity.id,
                     product = entity,
                     sellerName = sellOffer.sellerName,
                     sellerLocation = sellOffer.sellerLocation,
@@ -73,6 +73,20 @@ class ProductMapper {
             entity.sellOffers.add(sellOfferEntity)
         }
         return entity
+    }
+
+    fun toSellOfferEntity(sellOffer: SellOffer, productEntity: ProductEntity): SellOfferEntity {
+        return SellOfferEntity(
+            id = sellOffer.sellOfferId,
+            sellerName = sellOffer.sellerName,
+            sellerLocation = sellOffer.sellerLocation,
+            productLanguage = sellOffer.productLanguage,
+            special = sellOffer.special,
+            condition = sellOffer.condition,
+            amount = sellOffer.amount,
+            price = sellOffer.price,
+            product = productEntity,
+        )
     }
 
     private fun serializeLanguagePricing(languagePricing: List<LanguagePricing>): String? {
@@ -125,13 +139,18 @@ class ProductMapper {
             return null
         }
         return ProductSet(
-            setId = entity.id,
+            setId = entity.id!!,
             cmCode = entity.cmProductCode ?: "",
             names =
                 entity.nameTranslations.associate {
                     Locale.fromId(it.languageCode) to
                             it.name
                 },
+            seriesId = entity.series?.id,
+            seriesNames =
+                entity.series?.nameTranslations?.associate {
+                    Locale.fromId(it.languageCode) to it.name
+                } ?: emptyMap(),
         )
     }
 
@@ -140,7 +159,7 @@ class ProductMapper {
             return null
         }
         return ProductSeries(
-            seriesId = entity.id,
+            seriesId = entity.id!!,
             names = entity.nameTranslations.associate { Locale.valueOf(it.languageCode) to it.name })
     }
 
@@ -149,6 +168,7 @@ class ProductMapper {
         val sellOffers =
             entity.sellOffers.map { sellOffer ->
                 SellOffer(
+                    sellOfferId = sellOffer.id?:0L,
                     sellerName = sellOffer.sellerName,
                     sellerLocation = sellOffer.sellerLocation,
                     productLanguage = sellOffer.productLanguage,
