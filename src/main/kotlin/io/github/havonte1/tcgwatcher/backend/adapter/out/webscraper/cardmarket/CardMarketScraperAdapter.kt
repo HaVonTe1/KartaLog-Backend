@@ -32,12 +32,12 @@ class CardMarketScraperAdapter(
         val result = fetchAndParse(searchString, locale, genre, page, )
         logger.debug { "result: ${result.isSuccess} "}
         return result.fold(
-            onSuccess = { dto ->
-                logger.debug { "page: ${dto.page} of ${dto.totalPages} - products=${dto.results.size}" }
+            onSuccess = { resultsPageDto ->
+                logger.debug { "page: ${resultsPageDto.page} of ${resultsPageDto.totalPages} - products=${resultsPageDto.results.size}" }
                 val allProducts = arrayListOf<Product>()
-                val products = mapper.toProducts(dto)
+                val products = mapper.toProducts(resultsPageDto)
                 allProducts.addAll(products)
-                while(page < dto.totalPages) {
+                while(page < resultsPageDto.totalPages) {
                     page = page.inc()
                     val fetchAndParse = fetchAndParse(searchString, locale, genre, page)
                     fetchAndParse.fold(

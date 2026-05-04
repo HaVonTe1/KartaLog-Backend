@@ -55,14 +55,6 @@ resilience4j:
         # ignore-exceptions does not work - seems to be a bug in resilience4j - see io.github.havonte1.tcgwatcher.backend.config.Resilience4jConfig
         # ignore-exceptions:
         #  - jakarta.ws.rs.NotFoundException
-  ratelimiter:
-    instances:
-      apiRateLimiter:
-        limit-for-period: 10
-        limit-refresh-period: 1s
-        timeout-duration: 0s
-        register-health-indicator: true
-        event-consumer-buffer: 100
   retry:
     instances:
       cardMarketRetry:

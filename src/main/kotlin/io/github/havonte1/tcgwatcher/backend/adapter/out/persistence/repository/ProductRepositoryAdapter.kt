@@ -115,7 +115,7 @@ class ProductRepositoryAdapter(
 
         val externalIds = products.map { it.externalId }
         val existingProductMap = productJpaRepository
-            .findAllByExternalIdIn(externalIds)
+            .findAllWithDetailsByExternalIdIn(externalIds)
             .associateBy { it.externalId }
 
         val (toSave, unchanged) = products.partition { product ->
@@ -205,14 +205,14 @@ class ProductRepositoryAdapter(
     }
 
     @Transactional(readOnly = true)
-    override fun findById(id: Long): Product? = productJpaRepository.findById(id).orElse(null)?.let { mapper.toDomain(it) }
+    override fun findById(id: Long): Product? = productJpaRepository.findWithDetailsById(id)?.let { mapper.toDomain(it) }
 
     @Transactional(readOnly = true)
     override fun findByExternalId(externalId: Long): Product? =
         productJpaRepository.findByExternalId(externalId)?.let { mapper.toDomain(it) }
 
     @Transactional(readOnly = true)
-    override fun findAll(): List<Product> = productJpaRepository.findAll().map { mapper.toDomain(it) }
+    override fun findAll(): List<Product> = productJpaRepository.findAllWithDetails().map { mapper.toDomain(it) }
 
     @Transactional
     override fun delete(product: Product) {

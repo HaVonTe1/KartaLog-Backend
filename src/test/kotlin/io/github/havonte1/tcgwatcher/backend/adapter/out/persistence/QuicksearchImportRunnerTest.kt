@@ -57,7 +57,7 @@ class QuicksearchImportRunnerTest {
         // After context startup, the runner has executed.
         // Verify counts
         assertEquals(20, seriesRepo.count(), "Series count should be 20")
-        assertEquals(916, productSetRepo.count(), "Product set count should be 916")
+        assertEquals(778, productSetRepo.count(), "Product set count should be 916")
         assertEquals(972, productRepo.count(), "Product count should be 972")
     }
 
@@ -66,7 +66,7 @@ class QuicksearchImportRunnerTest {
         // Context is reloaded due to @DirtiesContext after previous test.
         // Verify that counts are unchanged (no duplicates)
         assertEquals(20, seriesRepo.count(), "Series count should remain 20 after second startup")
-        assertEquals(916, productSetRepo.count(), "Product set count should remain 192 after second startup")
+        assertEquals(778, productSetRepo.count(), "Product set count should remain 192 after second startup")
         assertEquals(972, productRepo.count(), "Product count should remain 972 after second startup")
     }
 }

@@ -27,7 +27,6 @@ class CollectablesAdapter(
 ) : CollectablesApi {
     private val logger = KotlinLogging.logger {}
 
-    @RateLimiter(name = "apiRateLimiter")
     override suspend fun listCollectables(
         query: String,
         genre: GenreSchema,
@@ -45,11 +44,14 @@ class CollectablesAdapter(
 
         val searchTimer = Timer.builder("api.search.duration").register(meterRegistry)
         val startTime = System.currentTimeMillis()
+
+        //-----------------------------------
         val searchResponse: SearchResponse = collectablesService.search(
             query,
             localeEnum,
             genreEnum,
         )
+        //-----------------------------------
         searchTimer.record(System.currentTimeMillis() - startTime, TimeUnit.MILLISECONDS)
         meterRegistry.counter("api.search.requests").increment()
 
@@ -63,7 +65,6 @@ class CollectablesAdapter(
             .body(dtoList)
     }
 
-    @RateLimiter(name = "apiRateLimiter")
     override suspend fun getProductDetails(
         cmId: String,
         genre: GenreSchema,
