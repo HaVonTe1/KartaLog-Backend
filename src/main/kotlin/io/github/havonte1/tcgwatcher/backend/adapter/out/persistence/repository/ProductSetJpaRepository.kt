@@ -9,5 +9,7 @@ interface ProductSetJpaRepository : JpaRepository<ProductSetEntity, Long> {
 
     fun findByCmProductCode(cmProductCode: String): ProductSetEntity?
 
+    fun findAllByCmProductIdIn(cmProductIds: Set<String>): List<ProductSetEntity>
+
     fun findByCmProductCodeIn(productCodes: List<String>): List<ProductSetEntity>
 }

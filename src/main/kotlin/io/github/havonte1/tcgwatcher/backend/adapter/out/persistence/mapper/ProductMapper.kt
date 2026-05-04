@@ -139,7 +139,7 @@ class ProductMapper {
             return null
         }
         return ProductSet(
-            setId = entity.id,
+            setId = entity.id!!,
             cmCode = entity.cmProductCode ?: "",
             names =
                 entity.nameTranslations.associate {
@@ -159,7 +159,7 @@ class ProductMapper {
             return null
         }
         return ProductSeries(
-            seriesId = entity.id,
+            seriesId = entity.id!!,
             names = entity.nameTranslations.associate { Locale.valueOf(it.languageCode) to it.name })
     }
 
