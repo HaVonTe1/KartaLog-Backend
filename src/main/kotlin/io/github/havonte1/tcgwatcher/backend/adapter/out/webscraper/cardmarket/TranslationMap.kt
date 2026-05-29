@@ -20,8 +20,8 @@ fun Locale.getTranslationMap(): Labels {
         Locale.ITALIAN -> DEFAULT_TRANSLATION_MAP.it
         Locale.ENGLISH -> DEFAULT_TRANSLATION_MAP.en
         Locale.FRENCH -> DEFAULT_TRANSLATION_MAP.fr
-        Locale.SPANISH -> DEFAULT_TRANSLATION_MAP.it
-        Locale.POLISH -> DEFAULT_TRANSLATION_MAP.pt
+        Locale.SPANISH -> DEFAULT_TRANSLATION_MAP.es
+        Locale.POLISH -> DEFAULT_TRANSLATION_MAP.pl
         Locale.PORTUGUESE -> DEFAULT_TRANSLATION_MAP.pt
     }
 }

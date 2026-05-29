@@ -3,8 +3,12 @@
                   xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.8.xsd">
 
-  <include file="classpath:db/changelog/20260207-init.xml"/>
-  <include file="classpath:db/changelog/20260405-add-product-details-columns.xml"/>
-  <include file="classpath:db/changelog/20260529-add-search-result-unique-constraint.xml"/>
+  <changeSet author="agent" id="fix-search-result-unique-constraint">
+    <addUniqueConstraint
+        schemaName="watcher"
+        tableName="search_results"
+        columnNames="query, language, genre"
+        constraintName="uq_search_results_query_language_genre"/>
+  </changeSet>
 
 </databaseChangeLog>

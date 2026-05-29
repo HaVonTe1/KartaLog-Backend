@@ -8,11 +8,13 @@ import org.springframework.stereotype.Repository
 
 @Repository
 interface ProductJpaRepository : JpaRepository<ProductEntity, Long> {
-    fun findByExternalId(externalId: Long): ProductEntity?
+    @Query("SELECT p FROM ProductEntity p LEFT JOIN FETCH p.series LEFT JOIN FETCH p.productSet LEFT JOIN FETCH p.nameTranslations LEFT JOIN FETCH p.sellOffers WHERE p.externalId = :externalId")
+    fun findByExternalId(@Param("externalId") externalId: Long): ProductEntity?
 
     fun findAllByExternalIdIn(externalIds: Collection<Long>): List<ProductEntity>
 
-    fun findByCmId(cmId: String?): ProductEntity?
+    @Query("SELECT p FROM ProductEntity p LEFT JOIN FETCH p.series LEFT JOIN FETCH p.productSet LEFT JOIN FETCH p.nameTranslations LEFT JOIN FETCH p.sellOffers WHERE p.cmId = :cmId")
+    fun findByCmId(@Param("cmId") cmId: String?): ProductEntity?
 
     fun existsByExternalId(externalId: Long): Boolean
 

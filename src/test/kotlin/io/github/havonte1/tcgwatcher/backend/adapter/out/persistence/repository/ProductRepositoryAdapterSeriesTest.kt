@@ -12,16 +12,9 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Test
-import java.lang.reflect.Field
 
 class ProductRepositoryAdapterSeriesTest {
     private val mapper = ProductMapper()
-
-    private fun setField(obj: Any, fieldName: String, value: Any) {
-        val field = obj.javaClass.getDeclaredField(fieldName)
-        field.isAccessible = true
-        field.set(obj, value)
-    }
 
     @Test
     fun `mapper correctly maps series when entity has series loaded`() {
@@ -35,8 +28,8 @@ class ProductRepositoryAdapterSeriesTest {
                 seriesId = 1L,
                 type = "Singles",
                 genre = "POKEMON",
+                series = seriesEntity,
             )
-        setField(productEntity, "series", seriesEntity)
 
         val domain = mapper.toDomain(productEntity)
 
@@ -55,8 +48,8 @@ class ProductRepositoryAdapterSeriesTest {
                 setId = 2L,
                 type = "Singles",
                 genre = "POKEMON",
+                productSet = productSetEntity,
             )
-        setField(productEntity, "productSet", productSetEntity)
 
         val domain = mapper.toDomain(productEntity)
 

@@ -28,6 +28,7 @@ class CardMarketScraperAdapter(
         logger.info { "Scraping CardMarket for $searchString" }
 
         var page = 1
+        val maxPage = 100
 
         val result = fetchAndParse(searchString, locale, genre, page, )
         logger.debug { "result: ${result.isSuccess} "}
@@ -37,7 +38,7 @@ class CardMarketScraperAdapter(
                 val allProducts = arrayListOf<Product>()
                 val products = mapper.toProducts(resultsPageDto)
                 allProducts.addAll(products)
-                while(page < resultsPageDto.totalPages) {
+                while(page < resultsPageDto.totalPages && page < maxPage) {
                     page = page.inc()
                     val fetchAndParse = fetchAndParse(searchString, locale, genre, page)
                     fetchAndParse.fold(

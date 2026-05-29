@@ -71,7 +71,7 @@ data class ProductEntity(
         mappedBy = "product",
         cascade = [CascadeType.ALL],
         orphanRemoval = true,
-        fetch = FetchType.EAGER,
+        fetch = FetchType.LAZY,
     )
     val nameTranslations: MutableSet<NameTranslationEntity> = mutableSetOf(),
     @ManyToOne(fetch = FetchType.LAZY)
@@ -84,7 +84,7 @@ data class ProductEntity(
         mappedBy = "product",
         cascade = [CascadeType.ALL],
         orphanRemoval = true,
-        fetch = FetchType.EAGER,
+        fetch = FetchType.LAZY,
     )
     val sellOffers: MutableSet<SellOfferEntity> = mutableSetOf(),
 ) : Serializable {
@@ -111,7 +111,7 @@ data class ProductEntity(
 
     override fun hashCode() = externalId.hashCode()
 
-    fun compareTo(other: ProductEntity): Int = compareValuesBy(this, other, { it.price })
+    fun compareTo(other: ProductEntity): Int = compareValuesBy(this, other, { it.price }, { it.externalId })
 
 
     override fun toString(): String =

@@ -12,7 +12,7 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlin.random.Random
 
 class CardMarketProductMapper {
-    val rng = Random(System.currentTimeMillis())
+    private val rng = Random
     val logger = KotlinLogging.logger {}
     fun toProducts(result: SearchResultsPageDto<CardmarketProductGallaryItemDto>): List<Product> =
         result.results.map { dto ->
@@ -99,7 +99,7 @@ class CardMarketProductMapper {
                     attributeName = pa.attributeName,
                     value = pa.value,
                     attributeType = ProductAttributeType.entries.find { it.name == pa.attributeType }
-                        ?: ProductAttributeType.RARITY,
+                        ?: error("Unknown attribute type: ${pa.attributeType}"),
                 )
             },
             releaseDate = detailsDto.releaseDate.ifEmpty { null },

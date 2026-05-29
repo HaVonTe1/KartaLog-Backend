@@ -66,7 +66,7 @@ class CardMarketGalleryParser {
             setName = expansionSymbol?.attr("aria-label")?:""
         }
         if(setName.isBlank()) {
-            expansionSymbol?.attr("data-bs-original-title")?:""
+            setName = expansionSymbol?.attr("data-bs-original-title") ?: ""
         }
 
 

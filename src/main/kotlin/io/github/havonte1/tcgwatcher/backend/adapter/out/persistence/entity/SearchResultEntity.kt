@@ -19,7 +19,11 @@ import java.time.Instant
  * Stores the original query string and the set of products returned by the scraper.
  */
 @Entity
-@Table(name = "search_results", schema = "watcher", uniqueConstraints = [UniqueConstraint(columnNames = ["query"])])
+@Table(
+    name = "search_results",
+    schema = "watcher",
+    uniqueConstraints = [UniqueConstraint(columnNames = ["query", "language", "genre"])],
+)
 class SearchResultEntity(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

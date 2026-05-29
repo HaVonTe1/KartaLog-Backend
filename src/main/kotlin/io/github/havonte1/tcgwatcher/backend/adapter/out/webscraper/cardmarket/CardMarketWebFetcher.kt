@@ -1,6 +1,5 @@
 package io.github.havonte1.tcgwatcher.backend.adapter.out.webscraper.cardmarket
 
-import com.microsoft.playwright.BrowserContext
 import com.microsoft.playwright.Page
 import com.microsoft.playwright.options.LoadState
 import io.github.havonte1.tcgwatcher.backend.adapter.out.webscraper.PlaywrightManager
@@ -16,7 +15,6 @@ import jakarta.ws.rs.NotFoundException
 import org.springframework.http.HttpStatusCode
 import org.springframework.stereotype.Component
 import java.net.URLEncoder
-import java.nio.file.Path
 
 @Component
 open class CardMarketWebFetcher(
@@ -69,7 +67,6 @@ open class CardMarketWebFetcher(
             }
             val fetchedContent = page.content()
             logger.debug { "Fetched content length: ${fetchedContent.length}" }
-            context.storageState(BrowserContext.StorageStateOptions().setPath(Path.of("auth.json")))
             fetchedContent
         }
         return content
@@ -125,6 +122,6 @@ open class CardMarketWebFetcher(
     ): String {
         val detailsUrlBase = GenreConfig.buildDetailsUrlBase(genre, locale, type)
         val basePath = config.basePath
-        return "$basePath$detailsUrlBase/$setname/$cmId"
+        return "$basePath$detailsUrlBase/${URLEncoder.encode(setname, Charsets.UTF_8)}/$cmId"
     }
 }

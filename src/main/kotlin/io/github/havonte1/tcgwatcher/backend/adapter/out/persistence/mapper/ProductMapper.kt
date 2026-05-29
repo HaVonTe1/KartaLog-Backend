@@ -127,7 +127,7 @@ class ProductMapper {
                 ProductAttribute(
                     attributeName = parts[0],
                     attributeType = ProductAttributeType.entries.find { it.name == parts[1] }
-                        ?: ProductAttributeType.RARITY,
+                        ?: error("Unknown attribute type: ${parts[1]}"),
                     value = parts[2],
                 )
             } else null
@@ -160,7 +160,7 @@ class ProductMapper {
         }
         return ProductSeries(
             seriesId = entity.id!!,
-            names = entity.nameTranslations.associate { Locale.valueOf(it.languageCode) to it.name })
+            names = entity.nameTranslations.associate { Locale.fromId(it.languageCode) to it.name })
     }
 
     fun toDomain(entity: ProductEntity): Product {
