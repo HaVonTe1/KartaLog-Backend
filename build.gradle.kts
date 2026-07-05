@@ -170,7 +170,7 @@ dependencies {
     implementation(libs.jakarta.ws.rs.api)
     implementation(libs.jersey.common)
     implementation(libs.springdoc)
-    implementation(libs.resilience4j.spring.boot3)
+    implementation(libs.resilience4j.spring.boot4)
     implementation(libs.resilience4j.all)
     implementation(libs.resilience4j.kotlin)
 
