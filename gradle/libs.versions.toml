@@ -1,0 +1,66 @@
+[versions]
+kotlin = "2.3.21"
+spring-boot = "4.1.0"
+spring-dependency-management = "1.1.7"
+openapi-generator = "7.23.0"
+ktlint-plugin = "14.2.0"
+detekt = "2.0.0-alpha.5"
+gradle-versions = "0.54.0"
+
+spring-boot-admin = "4.1.1"
+caffeine = "3.2.4"
+kotlinx-coroutines = "1.11.0"
+kotlinx-coroutines-test = "1.11.0"
+kotlin-logging = "8.0.4"
+playwright = "1.61.0"
+jsoup = "1.22.2"
+jakarta-ws-rs = "4.0.0"
+jersey-common = "5.0.0-M1"
+springdoc = "3.0.3"
+resilience4j = "2.4.0"
+sqlite-jdbc = "3.53.2.0"
+wiremock = "3.13.2"
+mockk = "1.13.12"
+springmockk = "5.0.1"
+
+ktlintTool = "1.8.0"
+
+[libraries]
+spring-boot-starter-aspectj = { module = "org.springframework.boot:spring-boot-starter-aspectj" }
+spring-boot-admin-client = { module = "de.codecentric:spring-boot-admin-starter-client", version.ref = "spring-boot-admin" }
+spring-boot-admin-server = { module = "de.codecentric:spring-boot-admin-starter-server", version.ref = "spring-boot-admin" }
+caffeine = { module = "com.github.ben-manes.caffeine:caffeine", version.ref = "caffeine" }
+
+kotlinx-coroutines-reactor = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-reactor", version.ref = "kotlinx-coroutines" }
+kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinx-coroutines" }
+kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinx-coroutines-test" }
+kotlin-logging = { module = "io.github.oshai:kotlin-logging-jvm", version.ref = "kotlin-logging" }
+
+playwright = { module = "com.microsoft.playwright:playwright", version.ref = "playwright" }
+jsoup = { module = "org.jsoup:jsoup", version.ref = "jsoup" }
+
+jakarta-ws-rs-api = { module = "jakarta.ws.rs:jakarta.ws.rs-api", version.ref = "jakarta-ws-rs" }
+jersey-common = { module = "org.glassfish.jersey.core:jersey-common", version.ref = "jersey-common" }
+
+springdoc = { module = "org.springdoc:springdoc-openapi-starter-webmvc-ui", version.ref = "springdoc" }
+
+resilience4j-spring-boot3 = { module = "io.github.resilience4j:resilience4j-spring-boot3", version.ref = "resilience4j" }
+resilience4j-all = { module = "io.github.resilience4j:resilience4j-all", version.ref = "resilience4j" }
+resilience4j-kotlin = { module = "io.github.resilience4j:resilience4j-kotlin", version.ref = "resilience4j" }
+
+sqlite-jdbc = { module = "org.xerial:sqlite-jdbc", version.ref = "sqlite-jdbc" }
+
+wiremock = { module = "org.wiremock:wiremock-standalone", version.ref = "wiremock" }
+mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
+springmockk = { module = "com.ninja-squad:springmockk", version.ref = "springmockk" }
+
+[plugins]
+kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+kotlin-spring = { id = "org.jetbrains.kotlin.plugin.spring", version.ref = "kotlin" }
+kotlin-jpa = { id = "org.jetbrains.kotlin.plugin.jpa", version.ref = "kotlin" }
+spring-boot = { id = "org.springframework.boot", version.ref = "spring-boot" }
+spring-dependency-management = { id = "io.spring.dependency-management", version.ref = "spring-dependency-management" }
+openapi-generator = { id = "org.openapi.generator", version.ref = "openapi-generator" }
+ktlint = { id = "org.jlleitschuh.gradle.ktlint", version.ref = "ktlint-plugin" }
+detekt = { id = "dev.detekt", version.ref = "detekt" }
+gradle-versions = { id = "com.github.ben-manes.versions", version.ref = "gradle-versions" }

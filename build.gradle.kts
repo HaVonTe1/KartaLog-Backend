@@ -1,14 +1,15 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    id("org.openapi.generator") version "7.19.0"
-    kotlin("jvm") version "2.3.21"
-    kotlin("plugin.spring") version "2.3.21"
-    id("org.springframework.boot") version "4.0.2"
-    id("io.spring.dependency-management") version "1.1.6"
-    id("org.jlleitschuh.gradle.ktlint") version "14.2.0"
-    id("dev.detekt") version "2.0.0-alpha.3"
-    kotlin("plugin.jpa") version "2.3.21"
+    alias(libs.plugins.openapi.generator)
+    alias(libs.plugins.kotlin.jvm)
+    alias(libs.plugins.kotlin.spring)
+    alias(libs.plugins.spring.boot)
+    alias(libs.plugins.spring.dependency.management)
+    alias(libs.plugins.ktlint)
+    alias(libs.plugins.detekt)
+    alias(libs.plugins.gradle.versions)
+    alias(libs.plugins.kotlin.jpa)
 }
 
 openApiGenerate {
@@ -113,7 +114,7 @@ tasks.named("detekt") {
 }
 
 ktlint {
-    version.set("1.8.0")
+    version.set(libs.versions.ktlintTool)
     android.set(false)
     outputToConsole.set(true)
 }
@@ -130,8 +131,6 @@ tasks.named("runKtlintFormatOverKotlinScripts") {
     dependsOn("openApiGenerate")
 }
 
-val resilience4jVersion = "2.3.0"
-
 dependencies {
     // -------------------------------------------------
     // Spring Boot starters – runtime dependencies
@@ -141,45 +140,45 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     implementation("org.hibernate.orm:hibernate-envers")
     implementation("org.springframework.boot:spring-boot-starter-actuator")
-    implementation("org.springframework.boot:spring-boot-starter-aop:4.0.0-M2")
-    implementation("de.codecentric:spring-boot-admin-starter-client:4.0.2")
+    implementation(libs.spring.boot.starter.aspectj)
+    implementation(libs.spring.boot.admin.client)
     implementation("org.springframework.boot:spring-boot-starter-liquibase")
     implementation("org.springframework.boot:spring-boot-starter-restclient")
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springframework.boot:spring-boot-starter-cache")
-    implementation("com.github.ben-manes.caffeine:caffeine:3.1.8")
+    implementation(libs.caffeine)
 
     // -------------------------------------------------
     // Kotlin & logging
     // -------------------------------------------------
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor:1.8.1")
-    implementation("io.github.oshai:kotlin-logging-jvm:7.0.14")
+    implementation(libs.kotlinx.coroutines.reactor)
+    implementation(libs.kotlin.logging)
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
 
     // -------------------------------------------------
     // Playwright & HTML parsing
     // -------------------------------------------------
-    implementation("com.microsoft.playwright:playwright:1.58.0")
-    implementation("org.jsoup:jsoup:1.22.1")
+    implementation(libs.playwright)
+    implementation(libs.jsoup)
 
     // -------------------------------------------------
     // Jakarta APIs
     // -------------------------------------------------
     implementation("jakarta.validation:jakarta.validation-api")
-    implementation("jakarta.ws.rs:jakarta.ws.rs-api:4.0.0")
-    implementation("org.glassfish.jersey.core:jersey-common:3.1.6")
-    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.7.0")
-    implementation("io.github.resilience4j:resilience4j-spring-boot3:$resilience4jVersion")
-    implementation("io.github.resilience4j:resilience4j-all:$resilience4jVersion")
-    implementation("io.github.resilience4j:resilience4j-kotlin:$resilience4jVersion")
+    implementation(libs.jakarta.ws.rs.api)
+    implementation(libs.jersey.common)
+    implementation(libs.springdoc)
+    implementation(libs.resilience4j.spring.boot3)
+    implementation(libs.resilience4j.all)
+    implementation(libs.resilience4j.kotlin)
 
     // -------------------------------------------------
     // Database drivers
     // -------------------------------------------------
     runtimeOnly("org.postgresql:postgresql")
-    implementation("org.xerial:sqlite-jdbc:3.45.1.0")
+    implementation(libs.sqlite.jdbc)
 
     // -------------------------------------------------
     // Optional dev tools (runtime)
@@ -194,7 +193,7 @@ dependencies {
 
     // -------------------------------------------------
     // TEST DEPENDENCIES – full list from original boot pom
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.1")
+    implementation(libs.kotlinx.coroutines.core)
     // -------------------------------------------------
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.springframework.boot:spring-boot-starter-actuator-test")
@@ -205,16 +204,16 @@ dependencies {
     testImplementation("org.springframework.boot:spring-boot-starter-cache-test")
     testImplementation("org.springframework.boot:spring-boot-testcontainers")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
-    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.10.2")
+    testImplementation(libs.kotlinx.coroutines.test)
     testImplementation("org.springframework.integration:spring-integration-test")
     testImplementation("org.testcontainers:testcontainers-junit-jupiter")
     testImplementation("org.testcontainers:testcontainers-postgresql")
     testImplementation("org.testcontainers:testcontainers-toxiproxy")
-    testImplementation("org.wiremock:wiremock-standalone:3.13.2")
+    testImplementation(libs.wiremock)
     testImplementation("org.springframework.boot:spring-boot-starter-webmvc-test")
     testImplementation("org.springframework.boot:spring-boot-starter-integration-test")
-    testImplementation("io.mockk:mockk:1.13.12")
+    testImplementation(libs.mockk)
     testImplementation("org.junit.jupiter:junit-jupiter-api")
-    testImplementation("com.ninja-squad:springmockk:5.0.1")
+    testImplementation(libs.springmockk)
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
 }

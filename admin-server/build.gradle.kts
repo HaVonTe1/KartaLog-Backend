@@ -1,7 +1,7 @@
 plugins {
-    id("org.springframework.boot") version "4.0.2"
-    id("io.spring.dependency-management") version "1.1.6"
-    kotlin("jvm") version "2.3.21"
+    alias(libs.plugins.spring.boot)
+    alias(libs.plugins.spring.dependency.management)
+    alias(libs.plugins.kotlin.jvm)
 }
 
 repositories {
@@ -9,7 +9,7 @@ repositories {
 }
 
 dependencies {
-    implementation("de.codecentric:spring-boot-admin-starter-server:4.0.2")
+    implementation(libs.spring.boot.admin.server)
     implementation("org.springframework.boot:spring-boot-starter-webflux")
 }
 
