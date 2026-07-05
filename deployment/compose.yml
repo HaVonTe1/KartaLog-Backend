@@ -24,15 +24,20 @@ services:
       - "8081"
     environment:
       - SPRING_PROFILES_ACTIVE=compose
+      - SCRAPER_WORKER_URL=http://scraper-worker:3000
     healthcheck:
       test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:8081/actuator/health || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 5
       start_period: 30s
+    volumes:
+      - playwright-data:/app/playwright-data
     depends_on:
       postgres:
         condition: service_healthy
+      scraper-worker:
+        condition: service_started
     env_file:
       - ../.env
 
@@ -76,6 +81,21 @@ services:
       ofelia.job-exec.db-backup.schedule: "@every 1d"
       ofelia.job-exec.db-backup.command: "/scripts/backup.sh >> /backups/backup.log 2>&1"
 
+  scraper-worker:
+    profiles:
+      - deployment
+    build:
+      context: ../scraper-worker
+      dockerfile: Dockerfile
+    ports:
+      - "3000"
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:3000/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+
   ofelia:
     profiles:
       - deployment
@@ -85,3 +105,6 @@ services:
     command: daemon --docker
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
+
+volumes:
+  playwright-data:

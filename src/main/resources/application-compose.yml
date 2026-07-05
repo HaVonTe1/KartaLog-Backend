@@ -38,8 +38,16 @@ spring:
   docker:
     compose:
       enabled: false
+scraper:
+  worker:
+    url: ${SCRAPER_WORKER_URL:}
+
 playwright:
-  executable-path: /usr/bin/chromium
+  browser: chromium
+  # Switch to camoufox for Camoufox stealth scraping:
+  # browser: camoufox
+  # executable-path: /opt/camoufox/camoufox-bin
+  user-data-dir: /app/playwright-data
 
 app:
   data:
