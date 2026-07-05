@@ -3,7 +3,7 @@ server:
 
 spring:
   application:
-    name: TCGWatcher-Admin
+    name: KartaLog-Admin
 
 management:
   endpoints:

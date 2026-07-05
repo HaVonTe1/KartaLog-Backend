@@ -1,9 +1,9 @@
 openapi: 3.0.3
 info:
-  title: TCGWatcher API
+  title: KartaLog API
   version: 1.0.0
   description: |
-    TCGWatcher API provides endpoints for searching and retrieving collectible card data from multiple sources.
+    KartaLog API provides endpoints for searching and retrieving collectible card data from multiple sources.
     Currently integrates with CardMarket to fetch product information, pricing trends, and sell offers.
 
     ## Features
@@ -14,12 +14,12 @@ info:
     ## Rate Limits
     Please be mindful of API usage to avoid rate limiting.
   contact:
-    name: TCGWatcher Support
+    name: KartaLog Support
     url: https://github.com/HaVonTe1
   license:
     name: Creative Commons
     url: https://creativecommons.org/licenses/
-  termsOfService: https://github.com/HaVonTe1/TCGWatcher-Backend#terms
+  termsOfService: https://github.com/HaVonTe1/KartaLog-Backend#terms
 servers:
   - url: https://havonte.ddns.net:8080
     description: Production server

@@ -7,6 +7,11 @@
       <option name="url" value="https://partner.bdr.de/artifactory/bun-proxy" />
     </remote-repository>
     <remote-repository>
+      <option name="id" value="central" />
+      <option name="name" value="bun-proxy" />
+      <option name="url" value="https://partner.bdr.de/artifactory/bun-proxy" />
+    </remote-repository>
+    <remote-repository>
       <option name="id" value="sunray-third" />
       <option name="name" value="sunray-third" />
       <option name="url" value="https://partner.bdr.de/artifactory/bun-third-maven/" />
@@ -15,11 +20,6 @@
       <option name="id" value="central" />
       <option name="name" value="Maven Central repository" />
       <option name="url" value="https://repo1.maven.org/maven2" />
-    </remote-repository>
-    <remote-repository>
-      <option name="id" value="central" />
-      <option name="name" value="bun-proxy" />
-      <option name="url" value="https://partner.bdr.de/artifactory/bun-proxy" />
     </remote-repository>
     <remote-repository>
       <option name="id" value="jboss.community" />
@@ -40,6 +40,11 @@
       <option name="id" value="sunray-releases" />
       <option name="name" value="sunray-releases" />
       <option name="url" value="https://partner.bdr.de/artifactory/bun-dev/" />
+    </remote-repository>
+    <remote-repository>
+      <option name="id" value="MavenRepo" />
+      <option name="name" value="MavenRepo" />
+      <option name="url" value="https://repo.maven.apache.org/maven2/" />
     </remote-repository>
   </component>
 </project>

@@ -2,7 +2,7 @@ server:
   port: 8083
 spring:
   application:
-    name: TCGWatcher-Backend
+    name: KartaLog-Backend
   docker:
     compose:
       enabled: true
@@ -52,7 +52,7 @@ resilience4j:
         permitted-number-of-calls-in-half-open-state: 3
         automatic-transition-from-open-to-half-open-enabled: true
         register-health-indicator: true
-        # ignore-exceptions does not work - seems to be a bug in resilience4j - see io.github.havonte1.tcgwatcher.backend.config.Resilience4jConfig
+        # ignore-exceptions does not work - seems to be a bug in resilience4j - see io.github.havonte1.kartalog.backend.config.Resilience4jConfig
         # ignore-exceptions:
         #  - jakarta.ws.rs.NotFoundException
   retry:
@@ -63,7 +63,7 @@ resilience4j:
         enableExponentialBackoff: true
         exponentialBackoffMultiplier: 2
         retryExceptions:
-          - io.github.havonte1.tcgwatcher.backend.adapter.out.webscraper.cardmarket.CloudFlareException
+          - io.github.havonte1.kartalog.backend.adapter.out.webscraper.cardmarket.CloudFlareException
           - org.springframework.web.client.HttpServerErrorException
           - java.io.IOException
         ignore-exceptions:

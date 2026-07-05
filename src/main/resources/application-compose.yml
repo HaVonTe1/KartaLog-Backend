@@ -18,7 +18,7 @@ spring:
       client:
         url: http://admin-server:8080
         instance:
-          name: TCGWatcher-Backend
+          name: KartaLog-Backend
           management-url: http://app:8081/actuator
           health-url: http://app:8081/actuator/health
           service-base-url: http://app:8080
@@ -27,7 +27,7 @@ spring:
         metadata:
           context-path: /actuator
   datasource:
-    url: jdbc:postgresql://postgres:5432/tcgwatcherdb
+    url: jdbc:postgresql://postgres:5432/kartalogdb
     username: watcher_app
     password: ${WATCHER_APP_PWD}
   liquibase:

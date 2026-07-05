@@ -1,4 +1,4 @@
-name: TCGWatcher Backend
+name: KartaLog Backend
 
 services:
   nginx:
@@ -59,7 +59,7 @@ services:
     ports:
       - "51915:5432"
     environment:
-      - POSTGRES_DB=tcgwatcherdb
+      - POSTGRES_DB=kartalogdb
     volumes:
       - ./postgres/initdb.d:/docker-entrypoint-initdb.d/
       - ./backups:/backups
@@ -67,7 +67,7 @@ services:
     env_file:
       - ../.env
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d tcgwatcherdb"]
+      test: ["CMD-SHELL", "pg_isready -U postgres -d kartalogdb"]
       interval: 5s
       timeout: 5s
       retries: 5

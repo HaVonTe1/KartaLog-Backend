@@ -20,8 +20,8 @@ openApiGenerate {
             .resolve("generated/")
             .path,
     )
-    apiPackage.set("io.github.havonte1.tcgwatcher.backend.adapter.inbound.rest.api")
-    modelPackage.set("io.github.havonte1.tcgwatcher.backend.adapter.inbound.rest.model")
+    apiPackage.set("io.github.havonte1.kartalog.backend.adapter.inbound.rest.api")
+    modelPackage.set("io.github.havonte1.kartalog.backend.adapter.inbound.rest.model")
     configOptions.set(
         mapOf(
             "interfaceOnly" to "true",

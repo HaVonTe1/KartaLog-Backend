@@ -1,7 +1,7 @@
 # AGENTS.md – Deployment Module Guidelines
 
 ## OVERVIEW
-- Purpose: package, deliver, and run TCGWatcher backend.
+- Purpose: package, deliver, and run KartaLog backend.
 - Artifacts: Docker image, DB init scripts, compose profiles.
 - Audience: DevOps engineers, CI pipelines, on‑prem operators.
 

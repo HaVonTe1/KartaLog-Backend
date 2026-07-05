@@ -64,7 +64,7 @@
     <ID>SerialVersionUIDInSerializableClass:NameTranslationEntity.kt:NameTranslationEntity : Serializable</ID>
     <ID>SerialVersionUIDInSerializableClass:ProductSetEntity.kt:ProductSetEntity : Serializable</ID>
     <ID>SerialVersionUIDInSerializableClass:SeriesEntity.kt:SeriesEntity : Serializable</ID>
-    <ID>SpreadOperator:TcgWatcherApplication.kt:(*args)</ID>
+    <ID>SpreadOperator:KartaLogApplication.kt:(*args)</ID>
     <ID>TooGenericExceptionCaught:QuicksearchImportRunner.kt:QuicksearchImportRunner$e: Exception</ID>
     <ID>UnsafeCallOnNullableType:CardMarketWebFetcher.kt:CardMarketWebFetcher$genreConfigData!!</ID>
     <ID>UnsafeCallOnNullableType:Genre.kt:Genre.Companion$map[key]!!</ID>

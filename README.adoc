@@ -1,4 +1,4 @@
-= TCGWatcher Backend
+= KartaLog Backend
 :toc: macro
 :toclevels: 2
 :source-highlighter: coderay
@@ -12,7 +12,7 @@ image::https://img.shields.io/badge/Java-17-orange.svg[Java]
 
 
 == Overview
-TCGWatcher Backend is a Kotlin‑based service that aggregates trading‑card‑game data from various web sources. It provides a clean Spring Boot REST API, persists data with PostgreSQL (via Testcontainers for integration tests), and includes a robust web‑scraping layer built with Playwright and Jsoup.
+KartaLog Backend is a Kotlin‑based service that aggregates trading‑card‑game data from various web sources. It provides a clean Spring Boot REST API, persists data with PostgreSQL (via Testcontainers for integration tests), and includes a robust web‑scraping layer built with Playwright and Jsoup.
 
 == Tech Stack
 * **Language**: Kotlin 2.2.21 (JVM 17)
@@ -34,8 +34,8 @@ TCGWatcher Backend is a Kotlin‑based service that aggregates trading‑card‑
 === Clone the Repository
 [source, bash]
 ----
-git clone https://github.com/<your‑username>/TCGWatcher-Backend.git
-cd TCGWatcher-Backend
+git clone https://github.com/<your‑username>/KartaLog-Backend.git
+cd KartaLog-Backend
 ----
 
 === Build
@@ -72,7 +72,7 @@ The service starts on `http://localhost:8080`. Swagger UI is available at `http:
 == Project Structure
 [source, text]
 ----
-src/main/kotlin/io/github/havonte1/tcgwatcher/backend/
+src/main/kotlin/io/github/havonte1/kartalog/backend/
 ├── application/      # Use‑cases / services
 ├── domain/           # Domain models & ports
 ├── adapter/

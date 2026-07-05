@@ -2,8 +2,8 @@
 set -euo pipefail
 
 BACKUP_DIR="${BACKUP_DIR:-./backups}"
-DB_CONTAINER="${DB_CONTAINER:-tcgwatcherbackend-postgres-1}"
-DB_NAME="${DB_NAME:-tcgwatcherdb}"
+DB_CONTAINER="${DB_CONTAINER:-kartalogbackend-postgres-1}"
+DB_NAME="${DB_NAME:-kartalogdb}"
 DB_USER="${POSTGRES_USER:-postgres}"
 DB_PASSWORD="${POSTGRES_PASSWORD:-}"
 RETENTION_DAYS="${RETENTION_DAYS:-7}"

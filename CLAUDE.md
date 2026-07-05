@@ -28,7 +28,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 | Build | `./gradlew build` |
 | Build (skip tests) | `./gradlew build -x test` |
 | Run **all** tests | `./gradlew test` |
-| Run a **single test class** (fully‑qualified name) | `./gradlew test --tests "io.github.havonte1.tcgwatcher.backend.<package>.<TestClass>"` |
+| Run a **single test class** (fully‑qualified name) | `./gradlew test --tests "io.github.havonte1.kartalog.backend.<package>.<TestClass>"` |
 | Run a **single test method** (back‑ticked description) | `./gradlew test --tests "ClassName.\`method description\`"` |
 | Run **integration tests only** (`*IT`) | `./gradlew test --tests "*IT"` |
 | Lint (Detekt) | `./gradlew detekt` |
@@ -42,7 +42,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## High‑Level Architecture Overview
 
 ```
-src/main/kotlin/io/github/havonte1/tcgwatcher/backend/
+src/main/kotlin/io/github/havonte1/kartalog/backend/
 ├── domain/          # Pure business‑logic models & port interfaces
 │   ├── model/       # Core domain entities (e.g., Card, Set, MarketPrice)
 │   └── port/        # Hexagonal “ports” that the application layer depends on
@@ -62,7 +62,7 @@ src/main/kotlin/io/github/havonte1/tcgwatcher/backend/
 │       └── webscraper/    # Playwright/Jsoup scrapers that fulfil
 │                             the `scraper` port contract
 │
-└── TcgWatcherApplication.kt   # Spring Boot entry point (`@SpringBootApplication`)
+└── KartaLogApplication.kt   # Spring Boot entry point (`@SpringBootApplication`)
 ```
 
 ### Architectural Highlights
@@ -148,7 +148,7 @@ src/main/kotlin/io/github/havonte1/tcgwatcher/backend/
 
 ## Project Structure
 ```
-src/main/kotlin/io/github/havonte1/tcgwatcher/backend/
+src/main/kotlin/io/github/havonte1/kartalog/backend/
 ├── domain/           # Domain models and port interfaces
 ├── application/      # Use cases and services
 ├── adapter/inbound/  # REST controllers, mappers
@@ -211,7 +211,7 @@ src/main/kotlin/io/github/havonte1/tcgwatcher/backend/
 <!-- GSD:project-start source:PROJECT.md -->
 ## Project
 
-**Project: TCGWatcher-Backend**
+**Project: KartaLog-Backend**
 
 Spring Boot Kotlin backend service that monitors and provides pricing data for trading cards (Pokemon, Magic: The Gathering, Yu-Gi-Oh!). Scrapes CardMarket.eu for pricing data, stores in PostgreSQL, exposes via REST API with caching and ETag support.
 
@@ -332,22 +332,22 @@ Conventions not yet established. Will populate as patterns emerge during develop
 - Dependencies point inward — domain has no external dependencies
 ## Layers
 - Purpose: Pure domain models and port (interface) definitions
-- Location: `src/main/kotlin/io/github/havonte1/tcgwatcher/backend/domain/`
+- Location: `src/main/kotlin/io/github/havonte1/kartalog/backend/domain/`
 - Contains: Domain models (`domain/model/`), Port interfaces (`domain/port/out/`)
 - Depends on: None (pure Kotlin)
 - Used by: Application layer
 - Purpose: Use-case services orchestrating domain logic
-- Location: `src/main/kotlin/io/github/havonte1/tcgwatcher/backend/application/`
+- Location: `src/main/kotlin/io/github/havonte1/kartalog/backend/application/`
 - Contains: `CollectablesService.kt` (implements `SearchUseCase`), `SearchUseCase.kt` (interface)
 - Depends on: Domain ports
 - Used by: Inbound adapters (REST controller)
 - Purpose: Expose domain functionality to external clients
-- Location: `src/main/kotlin/io/github/havonte1/tcgwatcher/backend/adapter/inbound/rest/`
+- Location: `src/main/kotlin/io/github/havonte1/kartalog/backend/adapter/inbound/rest/`
 - Contains: `CollectablesAdapter.kt` (REST controller implementing OpenAPI interface)
 - Depends on: Application use-case interfaces
 - Examples: `CollectablesAdapter`
 - Purpose: Implement domain ports for external systems
-- Location: `src/main/kotlin/io/github/havonte1/tcgwatcher/backend/adapter/out/`
+- Location: `src/main/kotlin/io/github/havonte1/kartalog/backend/adapter/out/`
 - Contains: Webscraper adapters (`webscraper/cardmarket/`), Persistence adapters (`persistence/`)
 - Depends on: Domain ports
 ## Data Flow
@@ -357,19 +357,19 @@ Conventions not yet established. Will populate as patterns emerge during develop
 - Caffeine cache for in-memory caching (`listCache`, `detailsCache`)
 ## Key Abstractions
 - Purpose: Persist and retrieve Product aggregates
-- Location: `src/main/kotlin/io/github/havonte1/tcgwatcher/backend/domain/port/out/ProductRepository.kt`
+- Location: `src/main/kotlin/io/github/havonte1/kartalog/backend/domain/port/out/ProductRepository.kt`
 - Pattern: Repository pattern with JPA implementation
 - Purpose: Scrape CardMarket for search results and product details
-- Location: `src/main/kotlin/io/github/havonte1/tcgwatcher/backend/domain/port/out/CardMarketScraperPort.kt`
+- Location: `src/main/kotlin/io/github/havonte1/kartalog/backend/domain/port/out/CardMarketScraperPort.kt`
 - Pattern: Port interface (driven adapter)
 - Purpose: Define collectables search/use-case contract
-- Location: `src/main/kotlin/io/github/havonte1/tcgwatcher/backend/application/SearchUseCase.kt`
+- Location: `src/main/kotlin/io/github/havonte1/kartalog/backend/application/SearchUseCase.kt`
 - Pattern: Use-case interface
 ## Entry Points
-- Location: `src/main/kotlin/io/github/havonte1/tcgwatcher/backend/TcgWatcherApplication.kt`
+- Location: `src/main/kotlin/io/github/havonte1/kartalog/backend/KartaLogApplication.kt`
 - Triggers: Spring Boot startup
 - Responsibilities: Auto-configuration, component scanning
-- Location: `src/main/kotlin/io/github/havonte1/tcgwatcher/backend/adapter/inbound/rest/CollectablesAdapter.kt`
+- Location: `src/main/kotlin/io/github/havonte1/kartalog/backend/adapter/inbound/rest/CollectablesAdapter.kt`
 - Triggers: HTTP requests to `/api/collectables` (from OpenAPI spec)
 - Responsibilities: Request validation, ETag handling, rate limiting, response mapping
 ## Error Handling

@@ -14,5 +14,5 @@ dependencies {
 }
 
 springBoot {
-    mainClass.set("io.github.havonte1.tcgwatcher.backend.admin.AdminServerApplicationKt")
+    mainClass.set("io.github.havonte1.kartalog.backend.admin.AdminServerApplicationKt")
 }
