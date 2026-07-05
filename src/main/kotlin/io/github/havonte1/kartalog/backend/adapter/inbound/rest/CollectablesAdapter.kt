@@ -6,6 +6,7 @@ import io.github.havonte1.kartalog.backend.adapter.inbound.rest.model.LocaleSche
 import io.github.havonte1.kartalog.backend.adapter.inbound.rest.model.ProductDTO
 import io.github.havonte1.kartalog.backend.adapter.inbound.rest.model.ProductDetailsDTO
 import io.github.havonte1.kartalog.backend.adapter.inbound.rest.model.ProductTypeSchema
+import io.github.havonte1.kartalog.backend.adapter.out.webscraper.cardmarket.CloudFlareException
 import io.github.havonte1.kartalog.backend.application.SearchResponse
 import io.github.havonte1.kartalog.backend.application.SearchUseCase
 import io.github.havonte1.kartalog.backend.domain.model.Genre
@@ -16,7 +17,9 @@ import io.github.resilience4j.ratelimiter.annotation.RateLimiter
 import io.micrometer.core.instrument.MeterRegistry
 import io.micrometer.core.instrument.Timer
 import org.springframework.http.CacheControl
+import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
+import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestController
 import java.util.concurrent.TimeUnit
 
@@ -94,5 +97,13 @@ class CollectablesAdapter(
                 .body(dto)
         }
         return ResponseEntity.notFound().build()
+    }
+
+    @ExceptionHandler(CloudFlareException::class)
+    fun handleCloudFlareException(ex: CloudFlareException): ResponseEntity<Map<String, String>> {
+        logger.warn { "CardMarket blocked request: ${ex.message}" }
+        return ResponseEntity
+            .status(HttpStatus.SERVICE_UNAVAILABLE)
+            .body(mapOf("error" to "CardMarket is currently unavailable"))
     }
 }

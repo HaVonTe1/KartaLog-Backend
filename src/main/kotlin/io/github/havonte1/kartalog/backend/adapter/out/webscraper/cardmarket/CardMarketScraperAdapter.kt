@@ -30,7 +30,7 @@ class CardMarketScraperAdapter(
         var page = 1
         val maxPage = 100
 
-        val result = fetchAndParse(searchString, locale, genre, page, )
+        val result = fetchAndParse(searchString, locale, genre, page)
         logger.debug { "result: ${result.isSuccess} "}
         return result.fold(
             onSuccess = { resultsPageDto ->
@@ -40,14 +40,12 @@ class CardMarketScraperAdapter(
                 allProducts.addAll(products)
                 while(page < resultsPageDto.totalPages && page < maxPage) {
                     page = page.inc()
-                    val fetchAndParse = fetchAndParse(searchString, locale, genre, page)
-                    fetchAndParse.fold(
+                    fetchAndParse(searchString, locale, genre, page).fold(
                         onSuccess = { dto2 ->
                             allProducts.addAll(mapper.toProducts(dto2))
                         },
                         onFailure = {
-                            logger.error(it) { "Failed to fetch cardmarket" }
-                            throw it
+                            logger.warn { "Failed to fetch page $page: ${it.message}" }
                         }
                     )
                 }
@@ -78,7 +76,7 @@ class CardMarketScraperAdapter(
         val content =
             fetchResult.getOrElse {
                 logger.warn { "Failed to fetch CardMarket page: ${it.message}" }
-                return Result.failure(IllegalArgumentException("Failed to fetch CardMarket page: ${it.message}"))
+                return Result.failure(it)
             }
 
         return galleryParser.parse(content, locale, page)
