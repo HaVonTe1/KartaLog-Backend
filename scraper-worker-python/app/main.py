@@ -70,7 +70,8 @@ async def shutdown():
     await stop_browser()
 
 
-@app.get("/health")
+# Accept both GET and HEAD (Docker healthcheck uses HEAD with curl -sf).
+@app.api_route("/health", methods=["GET", "HEAD"])
 async def health():
     return {"status": "ok", "browser": "connected" if browser else "disconnected"}
 
@@ -138,26 +139,10 @@ async def fetch(request: Request):
     page = await ctx.new_page()
 
     try:
-        # Warmup: navigate to the CardMarket homepage first. This establishes
-        # session cookies and a referer header, making the subsequent search
-        # request appear as a real user browsing session. Without warmup,
-        # the first navigation to a search URL often triggers Cloudflare.
-        home_page = "https://www.cardmarket.com/de/Pokemon"
-        logger.info(f"Warming up via homepage: {home_page}")
-        try:
-            await page.goto(home_page, timeout=60000, wait_until="load")
-            await asyncio.sleep(5)
-            if is_cardmarket_content(await page.content()):
-                logger.info("Homepage loaded without challenge")
-            else:
-                logger.info("Homepage has challenge, continuing to target URL")
-        except Exception as warm_e:
-            logger.warning(f"Homepage warmup failed: {warm_e}")
-
         await page.goto(url, timeout=NAV_TIMEOUT, wait_until="load")
-        await asyncio.sleep(2)
+        await asyncio.sleep(3)
 
-        for attempt in range(12):
+        for attempt in range(16):
             content = await page.content()
             cur_url = page.url
 
@@ -170,25 +155,35 @@ async def fetch(request: Request):
                 c2, u2 = await wait_for_content(page, url, timeout=15)
                 return {"status": 200, "content": c2, "url": u2}
 
-            logger.info(f"Challenge persists attempt {attempt+1}/12, url={cur_url}")
+            logger.info(f"Challenge persists attempt {attempt+1}/16, url={cur_url}")
 
-            # Recovery: after 3 failed attempts, do a soft reload (same page
-            # context, preserves cookies). After 7, do a full navigation
-            # (fresh HTTP request, new session negotiation).
-            if attempt == 3:
-                logger.info("Retrying with location.reload()")
+            if attempt == 5:
+                logger.info("Doing location.reload()")
                 try:
                     await page.evaluate("() => location.reload()")
+                    await asyncio.sleep(2)
                 except Exception:
                     pass
-            elif attempt == 7:
-                logger.info("Retrying fresh navigation")
+            elif attempt == 10:
+                logger.info("Fresh navigation")
                 try:
                     await page.goto(url, timeout=NAV_TIMEOUT, wait_until="load")
                 except Exception:
                     pass
 
             await asyncio.sleep(3)
+
+        logger.error("Challenge not resolved after 16 attempts")
+        final_content = await page.content()
+        return JSONResponse(
+            status_code=200,
+            content={
+                "status": 503,
+                "error": "Cloudflare challenge not resolved",
+                "content": final_content,
+                "url": page.url,
+            },
+        )
 
         logger.error("Challenge not resolved after 12 attempts")
         final_content = await page.content()

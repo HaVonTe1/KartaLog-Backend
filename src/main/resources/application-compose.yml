@@ -42,7 +42,7 @@ spring:
     compose:
       enabled: false
 scraper:
-  default-strategy: chromium
+  default-strategy: camoufox-python-worker
   workers:
     puppeteer:
       url: ${PUPPETEER_WORKER_URL:http://scraper-worker:3000}

@@ -83,7 +83,7 @@ logging:
     io.github.havonte1: debug
 
 scraper:
-  default-strategy: chromium
+  default-strategy: camoufox-python-worker
   workers:
     puppeteer:
       url: ${PUPPETEER_WORKER_URL:}
