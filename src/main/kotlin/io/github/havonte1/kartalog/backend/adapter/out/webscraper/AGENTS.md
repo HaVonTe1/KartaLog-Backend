@@ -18,7 +18,8 @@ webscraper/
 │   ├── CamoufoxPlaywrightStrategy.kt     # In-process: Java Playwright + Camoufox (Firefox fork)
 │   ├── WorkerStrategy.kt                 # Sealed base: HTTP POST to external worker
 │   ├── PuppeteerWorkerStrategy.kt        # Out-of-process: → scraper-worker (puppeteer-extra)
-│   └── PlaywrightExtraWorkerStrategy.kt  # Out-of-process: → scraper-worker-playwright (playwright-extra)
+│   ├── PlaywrightExtraWorkerStrategy.kt  # Out-of-process: → scraper-worker-playwright (playwright-extra)
+│   └── CamoufoxPythonWorkerStrategy.kt   # Out-of-process: → scraper-worker-python (camoufox + ClickSolver)
 └── cardmarket/                 # CardMarket-specific implementation
     ├── CardMarketScraperAdapter.kt   # Port implementation
     ├── CardMarketWebFetcher.kt       # URL building + delegates to active strategy via selector
@@ -35,6 +36,7 @@ webscraper/
 | `camoufox` | Java Playwright - Camoufox | In-process | Always (binary required) |
 | `puppeteer-worker` | Puppeteer scraper-worker | HTTP → Node.js | `scraper.workers.puppeteer.url` set |
 | `playwright-extra-worker` | playwright-extra scraper-worker | HTTP → Node.js | `scraper.workers.playwright-extra.url` set |
+| `camoufox-python-worker` | Camoufox Python worker (playwright-captcha) | HTTP → Python | `scraper.workers.camoufox-python.url` set |
 
 Switch at runtime: `PUT /actuator/scraper/strategy` `{"strategy": "camoufox"}`
 

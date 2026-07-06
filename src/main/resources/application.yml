@@ -89,6 +89,8 @@ scraper:
       url: ${PUPPETEER_WORKER_URL:}
     playwright-extra:
       url: ${PLAYWRIGHT_EXTRA_WORKER_URL:}
+    camoufox-python:
+      url: ${CAMOUFOX_PYTHON_WORKER_URL:}
 
 playwright:
   chromium:

@@ -13,6 +13,9 @@ management:
       probes:
         enabled: true
 spring:
+  mvc:
+    async:
+      request-timeout: 120000
   boot:
     admin:
       client:
@@ -45,6 +48,8 @@ scraper:
       url: ${PUPPETEER_WORKER_URL:http://scraper-worker:3000}
     playwright-extra:
       url: ${PLAYWRIGHT_EXTRA_WORKER_URL:}
+    camoufox-python:
+      url: ${CAMOUFOX_PYTHON_WORKER_URL:http://scraper-worker-python:3002}
 
 playwright:
   chromium:

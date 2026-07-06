@@ -1,6 +1,6 @@
 # AGENTS.md – KartaLog Backend
 
-**Generated:** 2026-07-05
+**Generated:** 2026-07-06
 **Commit:** `bcb84c8` (main)
 **Stack:** Spring Boot 4.0.2 · Kotlin 2.2.x · Java 17+ · Gradle 9.0 · PostgreSQL 18 · Playwright 1.58.0
 
@@ -46,6 +46,14 @@
 - **Scraping:** Playwright (1.58.0) + Jsoup (1.22.1) → `adapter/out/webscraper/`. Coroutines-based (`suspend` functions). Resilience4j (2.3.0) circuit breaker (50% failure threshold, 60-call sliding window, 30s open) + retry (3 attempts, 10s base, 2x backoff). `NotFoundException` is ignored by circuit breaker via Java config (YAML `ignore-exceptions` is bugged).
 - **Caching:** Caffeine (1h expiry, 1000 max entries) + HTTP ETag/If-None-Match.
 - **Actuator:** Management port 8084 (local) / 8081 (Docker). Endpoints: `health,info,metrics,prometheus,loggers,env,heapdump,threaddump`. Spring Boot Admin client auto-registers to `http://localhost:9090`. Scraper management at `/actuator/scraper/*`.
+- **Scraping strategies (5 total):**
+  - In-process Java Playwright: `chromium` (lazy init), `camoufox` (lazy init)
+  - Out-of-process sidecar: `puppeteer-worker` (port 3000), `playwright-extra-worker` (port 3001), `camoufox-python-worker` (port 3002)
+  - Switch at runtime: `PUT /actuator/scraper/strategy {"strategy":"camoufox-python-worker"}`
+- **Sidecar workers:** Each self-contained Docker container with its own browser. App delegates via HTTP.
+- **BrowserContextPool:** Accepts `suspend` lambdas for coroutine-friendly context management.
+- **CloudflareChallengeSolver.kt:** Detects Turnstile via JS + polling, attempts checkbox click in iframe. Only works for interactive checkbox variant; non-interactive (`/dark/fbE/new/normal`) cannot be clicked.
+- **Camoufox Python worker:** FastAPI + Camoufox (Stealth Firefox fork) + playwright-captcha ClickSolver. Dodges initial Cloudflare block (200 vs 403 from other strategies) but Turnstile widget fails to initialize (`turnstile` global undefined). Challenge page persists indefinitely. Identified issue: Turnstile API v0/b/80a697ecdece fails silently in Camoufox Firefox.
 
 ## CODE MAP
 | Symbol | Type | Location | Role |
@@ -84,8 +92,9 @@
 | `CamoufoxPlaywrightStrategy` | class | `adapter/out/webscraper/strategy/` | In-process: Java Playwright + Camoufox |
 | `PuppeteerWorkerStrategy` | class | `adapter/out/webscraper/strategy/` | Out-of-process: HTTP → scraper-worker |
 | `PlaywrightExtraWorkerStrategy` | class | `adapter/out/webscraper/strategy/` | Out-of-process: HTTP → playwright-extra worker |
+| `CamoufoxPythonWorkerStrategy` | class | `adapter/out/webscraper/strategy/` | Out-of-process: HTTP → camoufox-python-worker |
 | `ScraperManagementController` | class | `adapter/inbound/rest/strategy/` | /actuator/scraper/* endpoints |
-| `ScrapingStrategyConfig` | class | `config/` | Bean wiring for all 4 strategies |
+| `ScrapingStrategyConfig` | class | `config/` | Bean wiring for all 5 strategies |
 | `PlaywrightManager` | class | `adapter/out/webscraper/` | Legacy browser lifecycle (not used by strategies) |
 | `BrowserContextPool` | class | `adapter/out/webscraper/` | Browser context reuse |
 | `CacheConfig` | class | `config/` | Caffeine cache setup |
@@ -117,7 +126,7 @@
 - **Lint note:** Detekt main task is disabled in CI (`build.gradle.kts` disables it). Detekt config at `config/detekt/detekt.yml` is for IDE use only. Ktlint runs only on test sources and Gradle scripts.
 
 ## Config & Ops
-- **Docker Compose:** `deployment/compose.yml` — profiles: `local` (postgres via `spring-boot-docker-compose`), `deployment` (full stack: app, nginx, admin-server, postgres, ofelia).
+- **Docker Compose:** `deployment/compose.yml` — profiles: `local` (postgres via `spring-boot-docker-compose`), `deployment` (full stack: app, nginx, admin-server, postgres, ofelia, scraper-worker, scraper-worker-playwright, scraper-worker-python).
 - **Docker build:** `deployment/Dockerfile` — multi-stage, JDK 17 build → JRE 24 runtime. Chromium + Node.js installed in runtime image.
 - **Env vars:** `.env` file (gitignored). Required: `WATCHER_READONLY_PWD`, `POSTGRES_PASSWORD`, `MIGRATION_PWD`, `WATCHER_MIG_PWD`, `WATCHER_APP_PWD`, `APPLICATION_PWD`, `JWT_SECRET`. JWT has hardcoded fallback secret in `application.yml`.
 - **CI:** Self-hosted runner, runs `./gradlew check` on push/PR to `main`.

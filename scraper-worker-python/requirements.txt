@@ -1,0 +1,5 @@
+fastapi>=0.115.0
+uvicorn[standard]>=0.34.0
+camoufox[geoip]==0.4.10
+playwright>=1.49.0
+playwright-captcha>=0.1.0

@@ -112,6 +112,26 @@ services:
       retries: 5
       start_period: 15s
 
+  scraper-worker-python:
+    profiles:
+      - deployment
+    build:
+      context: ../scraper-worker-python
+      dockerfile: Dockerfile
+    ports:
+      - "3002"
+    environment:
+      - PORT=3002
+      - HEADLESS=true
+      - NAV_TIMEOUT=90000
+      - SOLVE_TIMEOUT=60
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:3002/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
   ofelia:
     profiles:
       - deployment

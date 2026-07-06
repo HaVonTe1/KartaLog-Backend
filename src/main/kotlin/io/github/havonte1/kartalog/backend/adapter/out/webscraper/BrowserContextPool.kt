@@ -28,7 +28,7 @@ class BrowserContextPool(
         logger.info { "BrowserContextPool initialized with $poolSize contexts, max $maxConcurrent concurrent" }
     }
 
-    suspend fun <T> use(block: (BrowserContext) -> T): T = semaphore.withPermit {
+    suspend fun <T> use(block: suspend (BrowserContext) -> T): T = semaphore.withPermit {
         val context = pool.poll() ?: run {
             logger.warn { "Pool exhausted, creating temporary context" }
             contextOptions(browser)
