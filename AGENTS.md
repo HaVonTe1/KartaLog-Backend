@@ -30,6 +30,9 @@
 | JPA entities | `adapter/out/persistence/entity/` | Hibernate Envers audited |
 | Persistence adapters | `adapter/out/persistence/repository/` | Adapter → JpaRepository pattern |
 | Web scraping | `adapter/out/webscraper/cardmarket/` | Playwright + Jsoup pipeline |
+| Scraping strategies | `adapter/out/webscraper/strategy/` | 4 runtime-switchable strategies + selector |
+| Scraper management API | `adapter/inbound/rest/strategy/` | `/actuator/scraper/*` |
+| Scraping config | `config/` | `ScrapingStrategyConfig` bean wiring |
 | Configuration | `config/` | Cache, Resilience4j, Health, Genre |
 | OpenAPI contract | `contract/openapi.yaml` | API-first source of truth |
 | DB migrations | `src/main/resources/db/changelog/` | Liquibase changeLogs |
@@ -42,7 +45,7 @@
 - **Database:** PostgreSQL (runtime) + SQLite (embedded, for quicksearch import). Liquibase migrations. Hibernate Envers for entity auditing. Separate DB users: `watcher_mig` (migrations), `watcher_app` (app), `watcher_readonly` (read-only).
 - **Scraping:** Playwright (1.58.0) + Jsoup (1.22.1) → `adapter/out/webscraper/`. Coroutines-based (`suspend` functions). Resilience4j (2.3.0) circuit breaker (50% failure threshold, 60-call sliding window, 30s open) + retry (3 attempts, 10s base, 2x backoff). `NotFoundException` is ignored by circuit breaker via Java config (YAML `ignore-exceptions` is bugged).
 - **Caching:** Caffeine (1h expiry, 1000 max entries) + HTTP ETag/If-None-Match.
-- **Actuator:** Management port 8084 (local) / 8081 (Docker). Endpoints: `health,info,metrics,prometheus,loggers,env,heapdump,threaddump`. Spring Boot Admin client auto-registers to `http://localhost:9090`.
+- **Actuator:** Management port 8084 (local) / 8081 (Docker). Endpoints: `health,info,metrics,prometheus,loggers,env,heapdump,threaddump`. Spring Boot Admin client auto-registers to `http://localhost:9090`. Scraper management at `/actuator/scraper/*`.
 
 ## CODE MAP
 | Symbol | Type | Location | Role |
@@ -73,8 +76,17 @@
 | `CardMarketScraperAdapter` | class | `adapter/out/webscraper/cardmarket/` | Scraping implementation |
 | `CardMarketGalleryParser` | class | `adapter/out/webscraper/cardmarket/` | Parses gallery HTML |
 | `CardMarketDetailsParser` | class | `adapter/out/webscraper/cardmarket/` | Parses details HTML |
-| `CardMarketWebFetcher` | class | `adapter/out/webscraper/cardmarket/` | HTTP fetch layer |
-| `PlaywrightManager` | class | `adapter/out/webscraper/` | Browser lifecycle |
+| `CardMarketWebFetcher` | class | `adapter/out/webscraper/cardmarket/` | URL building + delegates to active strategy |
+| `ScrapingStrategy` | interface | `adapter/out/webscraper/strategy/` | Strategy contract: id, fetch(), close() |
+| `ScrapingStrategySelector` | class | `adapter/out/webscraper/strategy/` | Runtime switch via AtomicReference |
+| `ScrapingStrategyRegistry` | class | `adapter/out/webscraper/strategy/` | Strategy lookup by id |
+| `ChromiumPlaywrightStrategy` | class | `adapter/out/webscraper/strategy/` | In-process: Java Playwright + Chromium |
+| `CamoufoxPlaywrightStrategy` | class | `adapter/out/webscraper/strategy/` | In-process: Java Playwright + Camoufox |
+| `PuppeteerWorkerStrategy` | class | `adapter/out/webscraper/strategy/` | Out-of-process: HTTP → scraper-worker |
+| `PlaywrightExtraWorkerStrategy` | class | `adapter/out/webscraper/strategy/` | Out-of-process: HTTP → playwright-extra worker |
+| `ScraperManagementController` | class | `adapter/inbound/rest/strategy/` | /actuator/scraper/* endpoints |
+| `ScrapingStrategyConfig` | class | `config/` | Bean wiring for all 4 strategies |
+| `PlaywrightManager` | class | `adapter/out/webscraper/` | Legacy browser lifecycle (not used by strategies) |
 | `BrowserContextPool` | class | `adapter/out/webscraper/` | Browser context reuse |
 | `CacheConfig` | class | `config/` | Caffeine cache setup |
 | `Resilience4jConfig` | class | `config/` | Circuit breaker Java config |

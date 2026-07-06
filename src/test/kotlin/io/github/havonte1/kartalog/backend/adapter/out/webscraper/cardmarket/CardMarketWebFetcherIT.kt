@@ -10,6 +10,7 @@ import com.github.tomakehurst.wiremock.core.WireMockConfiguration.options
 import eu.rekawek.toxiproxy.Proxy
 import eu.rekawek.toxiproxy.ToxiproxyClient
 import eu.rekawek.toxiproxy.model.ToxicDirection
+import io.github.havonte1.kartalog.backend.adapter.out.webscraper.strategy.ScrapingStrategySelector
 import io.github.havonte1.kartalog.backend.config.CardMarketConfig
 import io.github.havonte1.kartalog.backend.domain.model.Genre
 import io.github.havonte1.kartalog.backend.domain.model.Locale
@@ -33,6 +34,8 @@ import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.ValueSource
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.cache.test.autoconfigure.AutoConfigureCache
 import org.springframework.boot.test.context.SpringBootTest
@@ -63,6 +66,9 @@ class CardMarketWebFetcherIT {
 
     @Autowired
     private lateinit var fetcher: CardMarketWebFetcherPort
+
+    @Autowired
+    private lateinit var selector: ScrapingStrategySelector
 
     @Autowired
     lateinit var proxyForWiremockFetcher: Proxy
@@ -285,6 +291,38 @@ class CardMarketWebFetcherIT {
         assertThat(retry.metrics.numberOfFailedCallsWithoutRetryAttempt).isGreaterThanOrEqualTo(21)
         assertThat(retry.metrics.numberOfFailedCallsWithRetryAttempt).isGreaterThanOrEqualTo(1)
         assertThat(retry.metrics.numberOfSuccessfulCallsWithRetryAttempt).isEqualTo(0)
+    }
+
+    @Test
+    fun `default strategy is chromium`() {
+        assertThat(selector.getActiveId()).isEqualTo("chromium")
+    }
+
+    @Test
+    fun `can switch strategies at runtime`() {
+        val original = selector.getActiveId()
+        val all = selector.getAll()
+        for (strategy in all) {
+            if (strategy.isAvailable) {
+                selector.switch(strategy.id)
+                assertThat(selector.getActiveId()).isEqualTo(strategy.id)
+            }
+        }
+        selector.switch(original)
+        assertThat(selector.getActiveId()).isEqualTo(original)
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = ["chromium", "camoufox"])
+    fun `in-process strategies can fetch gallery HTML`(strategyId: String) {
+        val strategy = selector.getAll().firstOrNull { it.id == strategyId }
+        org.junit.jupiter.api.Assumptions.assumeTrue(strategy != null && strategy.isAvailable)
+        selector.switch(strategyId)
+        val result = runBlocking { fetcher.fetch("Pikachu", Locale.GERMAN, Genre.POKEMON, 1) }
+        Assertions.assertTrue(result.isSuccess)
+        val content = result.getOrNull()
+        Assertions.assertNotNull(content)
+        Assertions.assertTrue(content!!.isNotEmpty())
     }
 
     private fun logThrowable(

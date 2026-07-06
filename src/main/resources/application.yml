@@ -82,11 +82,19 @@ logging:
   level:
     io.github.havonte1: debug
 
-#playwright:
-#  executable-path: /var/lib/snapd/snap/bin/chromium
-#playwright:
-  #  executable-path: /usr/local/bin/chromium
+scraper:
+  default-strategy: chromium
+  workers:
+    puppeteer:
+      url: ${PUPPETEER_WORKER_URL:}
+    playwright-extra:
+      url: ${PLAYWRIGHT_EXTRA_WORKER_URL:}
 
+playwright:
+  chromium:
+    executable-path: ${PLAYWRIGHT_CHROMIUM_PATH:}
+  camoufox:
+    executable-path: ${PLAYWRIGHT_CAMOUFOX_PATH:}
 
 app:
   data:

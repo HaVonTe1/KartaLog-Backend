@@ -39,14 +39,18 @@ spring:
     compose:
       enabled: false
 scraper:
-  worker:
-    url: ${SCRAPER_WORKER_URL:}
+  default-strategy: chromium
+  workers:
+    puppeteer:
+      url: ${PUPPETEER_WORKER_URL:http://scraper-worker:3000}
+    playwright-extra:
+      url: ${PLAYWRIGHT_EXTRA_WORKER_URL:}
 
 playwright:
-  browser: chromium
-  # Switch to camoufox for Camoufox stealth scraping:
-  # browser: camoufox
-  # executable-path: /opt/camoufox/camoufox-bin
+  chromium:
+    executable-path: ${PLAYWRIGHT_CHROMIUM_PATH:}
+  camoufox:
+    executable-path: ${PLAYWRIGHT_CAMOUFOX_PATH:/opt/camoufox/camoufox-bin}
   user-data-dir: /app/playwright-data
 
 app:
