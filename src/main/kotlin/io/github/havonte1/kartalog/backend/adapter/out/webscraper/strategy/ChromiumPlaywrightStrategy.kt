@@ -4,11 +4,9 @@ import com.microsoft.playwright.Browser
 import com.microsoft.playwright.BrowserContext
 import com.microsoft.playwright.BrowserType
 import com.microsoft.playwright.Playwright
-import com.microsoft.playwright.options.LoadState
 import io.github.havonte1.kartalog.backend.adapter.out.webscraper.BrowserContextPool
 import io.github.havonte1.kartalog.backend.adapter.out.webscraper.cardmarket.CloudFlareException
 import io.github.oshai.kotlinlogging.KotlinLogging
-import jakarta.ws.rs.NotFoundException
 import org.springframework.http.HttpStatusCode
 import kotlin.random.Random
 
@@ -53,6 +51,7 @@ class ChromiumPlaywrightStrategy(
                             "--metrics-recording-only",
                             "--mute-audio",
                             "--disable-blink-features=AutomationControlled",
+                            "--headless=new",
                         )
                     )
                 }
@@ -94,15 +93,35 @@ class ChromiumPlaywrightStrategy(
                     )
                 )
                 randomDelay()
-                val response = page.navigate(url, com.microsoft.playwright.Page.NavigateOptions().setTimeout(20000.0))
-                page.waitForLoadState(LoadState.NETWORKIDLE)
-                if (response.status() == 404) throw NotFoundException(response.url())
-                if (!response.ok() || CloudflareChallengeSolver.hasChallenge(page)) {
-                    if (CloudflareChallengeSolver.trySolve(page)) {
-                        page.waitForLoadState(LoadState.NETWORKIDLE)
-                    } else {
-                        throw CloudFlareException(HttpStatusCode.valueOf(response.status()))
+                try {
+                    page.navigate(url, com.microsoft.playwright.Page.NavigateOptions().setTimeout(15000.0))
+                } catch (_: com.microsoft.playwright.TimeoutError) {
+                    logger.info { "Navigation timed out (expected with Cloudflare), starting poll..." }
+                }
+                val deadline = System.currentTimeMillis() + 90000L
+                var detected = false
+                while (System.currentTimeMillis() < deadline) {
+                    try {
+                        val html = page.evaluate("() => document.documentElement.outerHTML") as String
+                        if (html.contains("ProductSearchInput") || html.contains("CardmarketNewsLink")) {
+                            detected = true
+                            break
+                        }
+                        if (!html.contains("cf_chl_opt") && !html.contains("/cdn-cgi/challenge-platform/")
+                            && !html.contains("Just a moment") && !html.contains("Attention Required")) {
+                            detected = true
+                            break
+                        }
+                    } catch (_: Exception) {
+                        logger.info { "Page evaluate failed, retrying..." }
                     }
+                    Thread.sleep(2000)
+                }
+                if (detected) {
+                    logger.info { "CardMarket content detected" }
+                } else {
+                    logger.warn { "Cloudflare challenge not resolved within timeout" }
+                    throw CloudFlareException(HttpStatusCode.valueOf(503))
                 }
                 page.content()
             } finally {
@@ -136,7 +155,7 @@ class ChromiumPlaywrightStrategy(
 
     private companion object {
         private const val CHROMIUM_USER_AGENT =
-            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36"
+            "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36"
 
         private val SHADOW_ROOT_PATCH = """
 (() => {

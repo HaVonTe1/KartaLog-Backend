@@ -34,7 +34,7 @@ resolve_app_port() {
 
 echo "====================================="
 echo "  Pipeline validation"
-echo "  nginx → app → Python worker"
+echo "  nginx → app → scraper"
 echo "====================================="
 echo ""
 
@@ -62,24 +62,11 @@ fi
 # --- 3. Strategy ---
 echo ""
 echo "--- 3. Scraping strategy ---"
-# Strategy management is on the main app server, accessible via nginx
 STRATEGY=$(curl -s --max-time 15 "$NGINX_URL/actuator/scraper/strategy" 2>/dev/null || echo '{"error":"unreachable"}')
 echo "  Current: $STRATEGY"
-
 CURRENT_ID=$(echo "$STRATEGY" | python3 -c "import sys,json; print(json.load(sys.stdin).get('id',''))" 2>/dev/null || echo "")
-if [ "$CURRENT_ID" = "camoufox-python-worker" ]; then
-    pass "strategy is camoufox-python-worker"
-elif [ -n "$CURRENT_ID" ]; then
-    echo "  Switching to camoufox-python-worker..."
-    SWITCH=$(curl -s -X PUT "$NGINX_URL/actuator/scraper/strategy" \
-        -H "Content-Type: application/json" \
-        -d '{"strategy":"camoufox-python-worker"}' --max-time 15 2>/dev/null || echo '{"error":"switch failed"}')
-    SWITCH_ID=$(echo "$SWITCH" | python3 -c "import sys,json; print(json.load(sys.stdin).get('id',''))" 2>/dev/null || echo "")
-    if [ "$SWITCH_ID" = "camoufox-python-worker" ]; then
-        pass "switched to camoufox-python-worker"
-    else
-        fail "switch failed — $SWITCH"
-    fi
+if [ -n "$CURRENT_ID" ]; then
+    pass "strategy: $CURRENT_ID"
 else
     fail "strategy API unreachable"
 fi
@@ -110,7 +97,7 @@ fi
 
 # --- 5. Full pipeline search ---
 echo ""
-echo "--- 5. Live search (nginx → app → worker → CardMarket) ---"
+echo "--- 5. Live search (nginx → app → scraper → CardMarket) ---"
 echo "  Search: Pikachu (this may take 30-120s)"
 
 START_TS=$(date +%s%N)
@@ -131,8 +118,8 @@ print(len(d.get('results', [])))
 " 2>/dev/null || echo "0")
     pass "search returned $RESULTS results in ${DURATION_MS}ms"
 elif [ "$HTTP_CODE" = "503" ]; then
-    echo "  (Cloudflare blocked — expected when IP is flagged)"
-    echo "  Pipeline connected, worker attempted, CardMarket rejected"
+    echo "  (Cloudflare blocked or challenge not resolved)"
+    echo "  Pipeline connected, scraper attempted, CardMarket rejected"
     pass "search attempted (503 — pipeline OK, Cloudflare blocked)"
 elif [ "$HTTP_CODE" = "504" ]; then
     echo "  (nginx timeout — worker took too long)"

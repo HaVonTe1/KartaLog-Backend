@@ -26,6 +26,9 @@ services:
       - SPRING_PROFILES_ACTIVE=compose
       - PUPPETEER_WORKER_URL=http://scraper-worker:3000
       - PLAYWRIGHT_EXTRA_WORKER_URL=http://scraper-worker-playwright:3001
+      - CHROME_CDP_URL=http://172.17.0.1:9223
+    extra_hosts:
+      - host.docker.internal:host-gateway
     healthcheck:
       test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:8081/actuator/health || exit 1"]
       interval: 10s
@@ -124,7 +127,15 @@ services:
       - PORT=3002
       - HEADLESS=true
       - NAV_TIMEOUT=90000
-      - SOLVE_TIMEOUT=60
+      # Path to a cookies.json file (Playwright format) inside the container.
+      # Mount a host file at this path to reuse your Chrome browser's
+      # cf_clearance cookie and skip Cloudflare challenges.
+      - COOKIES_FILE=/app/cookies.json
+    volumes:
+      # Mount cookies.json from host. Create it by exporting cookies from
+      # Chrome DevTools → Application → Cookies → cardmarket.com → "Export as JSON"
+      # and saving to ./cookies.json relative to the compose file.
+      - ./cookies.json:/app/cookies.json:ro
     healthcheck:
       test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:3002/health || exit 1"]
       interval: 10s

@@ -32,10 +32,37 @@ Timeout: 120s (configurable via `NAV_TIMEOUT` env var)
 
 ## Known Issues
 - Turnstile non-interactive variant (`/dark/fbE/new/normal`) cannot be solved via checkbox click. The `playwright-captcha` ClickSolver will click something in the iframe and cause navigation, but the challenge does not resolve. Current strategy avoids triggering this variant entirely via fingerprint tuning + warmup.
+- **Session decay:** Camoufox success rate drops from ~92% (hour 1) to ~10% (hour 3) as the IP/fingerprint gets flagged by Cloudflare. The worker now restarts the entire browser instance on failure to get a fresh fingerprint. This is a stopgap — residential proxies are the permanent fix.
 
-## Env Vars
+## Cookie Reuse (Bypass Cloudflare)
+The worker can load cookies (especially `cf_clearance`) from your real Chrome browser
+to skip Cloudflare challenges. Since your home IP is trusted by CardMarket, Chrome
+gets no challenge. Exporting those cookies to Camoufox lets it piggyback on that trust.
+
+### One-time setup
+```bash
+# Install Playwright locally (not in Docker)
+pip install playwright
+playwright install chromium
+
+# Run the export script — it opens a browser, loads CardMarket, saves cookies
+python scripts/export-cookies.py
+```
+
+This creates `deployment/cookies.json` which is auto-mounted into the container
+via the compose file. The worker loads it on startup and applies the cookies
+to every new browser context.
+
+### Manual export (alternative)
+1. Open Chrome, go to `cardmarket.com`
+2. DevTools → Application → Cookies → `cardmarket.com`
+3. Select all cookies, copy as JSON
+4. Save as `deployment/cookies.json`
+
+### Env Vars
 | Var | Default | Description |
 |-----|---------|-------------|
 | `PORT` | 3002 | HTTP server port |
 | `NAV_TIMEOUT` | 120000 | Page navigation timeout (ms) |
 | `HEADLESS` | true | Browser headless mode |
+| `COOKIES_FILE` | /app/cookies.json | Path to Playwright-format cookies JSON |

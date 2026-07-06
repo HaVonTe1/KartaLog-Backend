@@ -2,7 +2,7 @@
 
 **Generated:** 2026-07-06
 **Commit:** `bcb84c8` (main)
-**Stack:** Spring Boot 4.0.2 · Kotlin 2.2.x · Java 17+ · Gradle 9.0 · PostgreSQL 18 · Playwright 1.58.0
+**Stack:** Spring Boot 4.0.2 · Kotlin 2.2.x · Java 17+ · Gradle 9.0 · PostgreSQL 18 · Playwright 1.61.0
 
 ## Quick Start
 - **Build:** `./gradlew build`
@@ -43,17 +43,19 @@
 - **Entry point:** `KartaLogApplication.kt`
 - **API-first:** `contract/openapi.yaml` → OpenAPI Generator (kotlin-spring, coroutines mode) → `build/generated/src/main/kotlin/`. Controllers in `adapter/inbound/rest/` implement generated interfaces. **Do not edit generated code.**
 - **Database:** PostgreSQL (runtime) + SQLite (embedded, for quicksearch import). Liquibase migrations. Hibernate Envers for entity auditing. Separate DB users: `watcher_mig` (migrations), `watcher_app` (app), `watcher_readonly` (read-only).
-- **Scraping:** Playwright (1.58.0) + Jsoup (1.22.1) → `adapter/out/webscraper/`. Coroutines-based (`suspend` functions). Resilience4j (2.3.0) circuit breaker (50% failure threshold, 60-call sliding window, 30s open) + retry (3 attempts, 10s base, 2x backoff). `NotFoundException` is ignored by circuit breaker via Java config (YAML `ignore-exceptions` is bugged).
+- **Scraping:** Playwright (1.61.0) + Jsoup (1.22.1) → `adapter/out/webscraper/`. Coroutines-based (`suspend` functions). Resilience4j (2.3.0) circuit breaker (50% failure threshold, 60-call sliding window, 30s open) + retry (3 attempts, 10s base, 2x backoff). `NotFoundException` is ignored by circuit breaker via Java config (YAML `ignore-exceptions` is bugged).
 - **Caching:** Caffeine (1h expiry, 1000 max entries) + HTTP ETag/If-None-Match.
 - **Actuator:** Management port 8084 (local) / 8081 (Docker). Endpoints: `health,info,metrics,prometheus,loggers,env,heapdump,threaddump`. Spring Boot Admin client auto-registers to `http://localhost:9090`. Scraper management at `/actuator/scraper/*`.
-- **Scraping strategies (5 total):**
+- **Scraping strategies (6 total):**
   - In-process Java Playwright: `chromium` (lazy init), `camoufox` (lazy init)
   - Out-of-process sidecar: `puppeteer-worker` (port 3000), `playwright-extra-worker` (port 3001), `camoufox-python-worker` (port 3002)
-  - Switch at runtime: `PUT /actuator/scraper/strategy {"strategy":"camoufox-python-worker"}`
+  - Out-of-process real Chrome CDP: `chrome-cdp` (port 9222 host → 9223 socat)
+  - Switch at runtime: `PUT /actuator/scraper/strategy {"strategy":"chrome-cdp"}`
 - **Sidecar workers:** Each self-contained Docker container with its own browser. App delegates via HTTP.
 - **BrowserContextPool:** Accepts `suspend` lambdas for coroutine-friendly context management.
 - **CloudflareChallengeSolver.kt:** Detects Turnstile via JS + polling, attempts checkbox click in iframe. Only works for interactive checkbox variant; non-interactive (`/dark/fbE/new/normal`) cannot be clicked.
 - **Camoufox Python worker:** FastAPI + Camoufox (Stealth Firefox fork) + playwright-captcha ClickSolver. Dodges initial Cloudflare block (200 vs 403 from other strategies) but Turnstile widget fails to initialize (`turnstile` global undefined). Challenge page persists indefinitely. Identified issue: Turnstile API v0/b/80a697ecdece fails silently in Camoufox Firefox.
+- **Chrome CDP strategy (`chrome-cdp`):** Connects to a real Chrome instance running on the Docker host via Playwright's `connectOverCDP`. This is the only strategy that fully bypasses Cloudflare Bot Management because it uses the user's real Chrome with its full profile, trusted fingerprint, cookies, and browsing history. All headless browsers (Camoufox, Playwright Chromium, puppeteer-extra-stealth) are detected by Cloudflare and given a "managed" JavaScript proof-of-work challenge that never completes for headless browsers. The user's real Chrome works because the IP itself is clean — fingerprint mismatch in headless browsers triggers the harder challenge type. Chrome 150+ ignores `--remote-debugging-address=0.0.0.0` on Linux, so `scripts/start-chrome-cdp.sh` uses `socat` to bridge `0.0.0.0:9223` ↔ `127.0.0.1:9222`. The strategy uses a 60s navigation timeout (not 15s like headless strategies) because real Chrome loads CardMarket without Cloudflare but pages with images/JS can take longer. The 15s timeout was causing Resilience4j retries (3 attempts) that triggered duplicate page loads. `PLAYWRIGHT_BROWSERS_PATH=/app/playwright-data` is set in the Dockerfile to persist Playwright browser binaries on the `playwright-data` volume across restarts, avoiding hundreds-of-MB re-downloads on every rebuild. Chrome DevTools HTTP server rejects requests with non-IP `Host` headers, so the CDP URL uses `172.17.0.1` (Docker gateway IP) instead of `host.docker.internal`.
 
 ## CODE MAP
 | Symbol | Type | Location | Role |
@@ -93,8 +95,11 @@
 | `PuppeteerWorkerStrategy` | class | `adapter/out/webscraper/strategy/` | Out-of-process: HTTP → scraper-worker |
 | `PlaywrightExtraWorkerStrategy` | class | `adapter/out/webscraper/strategy/` | Out-of-process: HTTP → playwright-extra worker |
 | `CamoufoxPythonWorkerStrategy` | class | `adapter/out/webscraper/strategy/` | Out-of-process: HTTP → camoufox-python-worker |
+| `ChromeCdpStrategy` | class | `adapter/out/webscraper/strategy/` | Out-of-process: real Chrome via CDP |
 | `ScraperManagementController` | class | `adapter/inbound/rest/strategy/` | /actuator/scraper/* endpoints |
-| `ScrapingStrategyConfig` | class | `config/` | Bean wiring for all 5 strategies |
+| `ScrapingStrategyConfig` | class | `config/` | Bean wiring for all 6 strategies |
+| `start-chrome-cdp.sh` | script | `scripts/` | Launches Chrome + socat on host for CDP |
+| `export-cookies.py` | script | `scripts/` | Exports Chrome cookies for other strategies |
 | `PlaywrightManager` | class | `adapter/out/webscraper/` | Legacy browser lifecycle (not used by strategies) |
 | `BrowserContextPool` | class | `adapter/out/webscraper/` | Browser context reuse |
 | `CacheConfig` | class | `config/` | Caffeine cache setup |

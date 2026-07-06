@@ -22,11 +22,40 @@ logger = logging.getLogger("camoufox-worker")
 
 camoufox: AsyncCamoufox | None = None
 browser = None
+_cookies: list | None = None
 
+
+_restart_count = 0
+_restart_lock = None
+
+COOKIES_FILE = os.getenv("COOKIES_FILE", "")
+
+
+def load_cookies_from_file():
+    global _cookies
+    if not COOKIES_FILE or not os.path.exists(COOKIES_FILE):
+        logger.info("No cookies file found, continuing without pre-loaded cookies")
+        return
+    try:
+        import json
+        with open(COOKIES_FILE) as f:
+            _cookies = json.load(f)
+        cf = [c for c in _cookies if c.get("name") == "cf_clearance"]
+        logger.info(f"Loaded {len(_cookies)} cookies ({len(cf)} cf_clearance) from {COOKIES_FILE}")
+    except Exception as e:
+        logger.warning(f"Failed to load cookies from {COOKIES_FILE}: {e}")
+
+
+async def get_restart_lock():
+    global _restart_lock
+    if _restart_lock is None:
+        _restart_lock = asyncio.Lock()
+    return _restart_lock
 
 async def start_browser():
-    global camoufox, browser
-    logger.info("Starting Camoufox with improved fingerprint...")
+    global camoufox, browser, _restart_count
+    _restart_count += 1
+    logger.info(f"Starting Camoufox (instance #{_restart_count})...")
     # Fingerprint tuned for cardmarket.de: German locale, Windows OS, WebRTC
     # blocked. These settings make the browser appear as a typical German
     # CardMarket user, reducing the chance of triggering a non-interactive
@@ -57,11 +86,22 @@ async def stop_browser():
     logger.info("Camoufox stopped")
 
 
+async def restart_browser():
+    async with await get_restart_lock():
+        if browser is None:
+            logger.info("Browser already stopped, skipping restart")
+            return
+        logger.info("Restarting Camoufox for fresh fingerprint...")
+        await stop_browser()
+        await start_browser()
+
+
 app = FastAPI()
 
 
 @app.on_event("startup")
 async def startup():
+    load_cookies_from_file()
     await start_browser()
 
 
@@ -136,6 +176,12 @@ async def fetch(request: Request):
     # Browser.setDefaultViewport rejects the "isMobile" and "screenSize"
     # fields that Playwright sends with a normal viewport.
     ctx = await browser.new_context(no_viewport=True)
+    if _cookies:
+        try:
+            await ctx.add_cookies(_cookies)
+            logger.info(f"Applied {len(_cookies)} pre-loaded cookies to context")
+        except Exception as e:
+            logger.warning(f"Failed to apply cookies: {e}")
     page = await ctx.new_page()
 
     try:
@@ -173,34 +219,36 @@ async def fetch(request: Request):
 
             await asyncio.sleep(3)
 
-        logger.error("Challenge not resolved after 16 attempts")
+        logger.error("Challenge not resolved after 16 attempts — restarting browser")
         final_content = await page.content()
+        final_url = page.url
+        await page.close()
+        await ctx.close()
+        # Restart the entire browser to get a fresh fingerprint. Research shows
+        # Camoufox session success drops from ~92% (hour 1) to ~10% (hour 3) as
+        # the IP/fingerprint gets flagged. A full browser restart resets both.
+        asyncio.create_task(restart_browser())
         return JSONResponse(
             status_code=200,
             content={
                 "status": 503,
                 "error": "Cloudflare challenge not resolved",
                 "content": final_content,
-                "url": page.url,
-            },
-        )
-
-        logger.error("Challenge not resolved after 12 attempts")
-        final_content = await page.content()
-        return JSONResponse(
-            status_code=503,
-            content={
-                "error": "Cloudflare challenge not resolved",
-                "content": final_content,
-                "url": page.url,
+                "url": final_url,
             },
         )
     except Exception as e:
         logger.error(f"Failed: {e}")
         return JSONResponse(status_code=500, content={"error": str(e)})
     finally:
-        await page.close()
-        await ctx.close()
+        try:
+            await page.close()
+        except Exception:
+            pass
+        try:
+            await ctx.close()
+        except Exception:
+            pass
 
 
 if __name__ == "__main__":

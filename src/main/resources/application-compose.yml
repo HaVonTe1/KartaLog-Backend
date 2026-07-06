@@ -42,7 +42,9 @@ spring:
     compose:
       enabled: false
 scraper:
-  default-strategy: camoufox-python-worker
+  default-strategy: chrome-cdp
+  chrome-cdp:
+    url: ${CHROME_CDP_URL:http://172.17.0.1:9223}
   workers:
     puppeteer:
       url: ${PUPPETEER_WORKER_URL:http://scraper-worker:3000}

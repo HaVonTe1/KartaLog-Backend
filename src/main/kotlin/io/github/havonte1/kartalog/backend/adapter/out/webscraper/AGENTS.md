@@ -16,6 +16,7 @@ webscraper/
 │   ├── ScrapingStrategySelector.kt       # @Component, AtomicReference for runtime switch
 │   ├── ChromiumPlaywrightStrategy.kt     # In-process: Java Playwright + Chromium
 │   ├── CamoufoxPlaywrightStrategy.kt     # In-process: Java Playwright + Camoufox (Firefox fork)
+│   ├── ChromeCdpStrategy.kt             # Out-of-process: real Chrome via CDP (the only Cloudflare-bypassing strategy)
 │   ├── WorkerStrategy.kt                 # Sealed base: HTTP POST to external worker
 │   ├── PuppeteerWorkerStrategy.kt        # Out-of-process: → scraper-worker (puppeteer-extra)
 │   ├── PlaywrightExtraWorkerStrategy.kt  # Out-of-process: → scraper-worker-playwright (playwright-extra)
@@ -37,8 +38,9 @@ webscraper/
 | `puppeteer-worker` | Puppeteer scraper-worker | HTTP → Node.js | `scraper.workers.puppeteer.url` set |
 | `playwright-extra-worker` | playwright-extra scraper-worker | HTTP → Node.js | `scraper.workers.playwright-extra.url` set |
 | `camoufox-python-worker` | Camoufox Python worker (playwright-captcha) | HTTP → Python | `scraper.workers.camoufox-python.url` set |
+| `chrome-cdp` | Real Chrome via CDP | CDP → host Chrome | `scraper.chrome-cdp.url` set (default: enabled) |
 
-Switch at runtime: `PUT /actuator/scraper/strategy` `{"strategy": "camoufox"}`
+Switch at runtime: `PUT /actuator/scraper/strategy` `{"strategy": "chrome-cdp"}`
 
 ## CONVENTIONS
 - Pipeline: Strategy → Fetcher → Parser → Mapper (separate concerns)

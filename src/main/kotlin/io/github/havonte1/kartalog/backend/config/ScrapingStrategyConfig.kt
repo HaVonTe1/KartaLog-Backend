@@ -2,6 +2,7 @@ package io.github.havonte1.kartalog.backend.config
 
 import io.github.havonte1.kartalog.backend.adapter.out.webscraper.strategy.CamoufoxPlaywrightStrategy
 import io.github.havonte1.kartalog.backend.adapter.out.webscraper.strategy.CamoufoxPythonWorkerStrategy
+import io.github.havonte1.kartalog.backend.adapter.out.webscraper.strategy.ChromeCdpStrategy
 import io.github.havonte1.kartalog.backend.adapter.out.webscraper.strategy.ChromiumPlaywrightStrategy
 import io.github.havonte1.kartalog.backend.adapter.out.webscraper.strategy.PlaywrightExtraWorkerStrategy
 import io.github.havonte1.kartalog.backend.adapter.out.webscraper.strategy.PuppeteerWorkerStrategy
@@ -17,6 +18,7 @@ class ScrapingStrategyConfig(
     @Value("\${scraper.workers.puppeteer.url:}") private val puppeteerUrl: String,
     @Value("\${scraper.workers.playwright-extra.url:}") private val playwrightExtraUrl: String,
     @Value("\${scraper.workers.camoufox-python.url:}") private val camoufoxPythonUrl: String,
+    @Value("\${scraper.chrome-cdp.url:}") private val chromeCdpUrl: String,
 ) {
     @Bean
     fun chromiumStrategy(): ChromiumPlaywrightStrategy =
@@ -42,12 +44,16 @@ class ScrapingStrategyConfig(
         CamoufoxPythonWorkerStrategy(camoufoxPythonUrl)
 
     @Bean
+    fun chromeCdpStrategy(): ChromeCdpStrategy = ChromeCdpStrategy(chromeCdpUrl)
+
+    @Bean
     fun strategyRegistry(
         chromiumStrategy: ChromiumPlaywrightStrategy,
         camoufoxStrategy: CamoufoxPlaywrightStrategy,
         puppeteerWorkerStrategy: PuppeteerWorkerStrategy,
         playwrightExtraWorkerStrategy: PlaywrightExtraWorkerStrategy,
         camoufoxPythonWorkerStrategy: CamoufoxPythonWorkerStrategy,
+        chromeCdpStrategy: ChromeCdpStrategy,
     ): ScrapingStrategyRegistry =
         ScrapingStrategyRegistry(
             listOf(
@@ -56,6 +62,7 @@ class ScrapingStrategyConfig(
                 puppeteerWorkerStrategy,
                 playwrightExtraWorkerStrategy,
                 camoufoxPythonWorkerStrategy,
+                chromeCdpStrategy,
             )
         )
 }
