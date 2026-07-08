@@ -75,7 +75,7 @@ services:
       - ./postgres/initdb.d:/docker-entrypoint-initdb.d/
       - ./backups:/backups
       - ./scripts:/scripts:ro
-      - postgres-data:/var/lib/postgresql/data
+      - postgres-data:/var/lib/postgresql
     env_file:
       - ../.env
     healthcheck:

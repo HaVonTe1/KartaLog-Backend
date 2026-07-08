@@ -11,6 +11,7 @@ import jakarta.ws.rs.NotFoundException
 import kotlinx.coroutines.delay
 import org.springframework.http.HttpStatusCode
 import java.net.URI
+import java.util.WeakHashMap
 import kotlin.random.Random
 
 class CamoufoxCdpStrategy(
@@ -28,6 +29,7 @@ class CamoufoxCdpStrategy(
     private var playwrightRef: Playwright? = null
     private var browserRef: Browser? = null
     private var contextPoolRef: BrowserContextPool? = null
+    private val warmedContexts = WeakHashMap<BrowserContext, Boolean>()
 
     @Synchronized
     private fun ensureInitialized() {
@@ -82,6 +84,7 @@ class CamoufoxCdpStrategy(
                         "Upgrade-Insecure-Requests" to "1",
                     )
                 )
+                warmupSession(context, page)
                 randomDelay()
                 val response = page.navigate(url, com.microsoft.playwright.Page.NavigateOptions().setTimeout(20000.0))
                 page.waitForLoadState(LoadState.NETWORKIDLE)
@@ -117,6 +120,16 @@ class CamoufoxCdpStrategy(
         val discoveredPort = discoveredUri.port.takeIf { it != -1 } ?: 9226
         val configuredPort = configuredUri.port.takeIf { it != -1 } ?: 9225
         return "ws://${configuredUri.host}:$configuredPort${discoveredUri.path}"
+    }
+
+    private suspend fun warmupSession(context: BrowserContext, page: com.microsoft.playwright.Page) {
+        if (warmedContexts[context] == true) return
+        try {
+            page.navigate("https://www.cardmarket.com", com.microsoft.playwright.Page.NavigateOptions().setTimeout(15000.0))
+            page.waitForLoadState(LoadState.NETWORKIDLE)
+            warmedContexts[context] = true
+        } catch (_: Exception) {
+        }
     }
 
     private suspend fun randomDelay() {

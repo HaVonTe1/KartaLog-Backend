@@ -16,6 +16,8 @@ HEALTH_PORT="${CAMOUFOX_CDP_HEALTH_PORT:-9224}"
 WS_PORT="${CAMOUFOX_CDP_WS_PORT:-9226}"
 SOCAT_PORT="${CAMOUFOX_CDP_SOCAT_PORT:-9225}"
 SOCAT_HEALTH_PORT="${CAMOUFOX_CDP_SOCAT_HEALTH_PORT:-9227}"
+PROFILE_DIR="${CAMOUFOX_PROFILE_DIR:-$HOME/.camoufox-profile}"
+COOKIES_PATH="${CAMOUFOX_COOKIES_PATH:-$(cd "$(dirname "$0")/.." && pwd)/deployment/cookies.json}"
 BRIDGE_DIR="$(cd "$(dirname "$0")" && pwd)"
 SCRIPTS_DIR="$BRIDGE_DIR"
 
@@ -51,6 +53,30 @@ if ! command -v socat &>/dev/null; then
     echo "ERROR: socat is required. Install it:"
     echo "  sudo apt install socat"
     exit 1
+fi
+
+# Start Xvfb via Docker for headed Camoufox mode
+XVFB_NAME="camoufox-xvfb"
+if ! docker ps --format "{{.Names}}" | grep -q "^${XVFB_NAME}$"; then
+    echo "Starting Xvfb in Docker container for headed Camoufox mode..."
+    X11_PORT=$((6000 + 99))
+    docker rm -f "$XVFB_NAME" 2>/dev/null || true
+    docker run -d --name "$XVFB_NAME" --network host alpine sh -c "
+      apk add xvfb 2>&1 | tail -1
+      Xvfb :99 -screen 0 1280x1024x24 -listen tcp &
+      sleep 2
+      echo 'Xvfb ready'
+      wait
+    " > /dev/null 2>&1
+    for i in $(seq 1 10); do
+        if echo > "/dev/tcp/127.0.0.1/$X11_PORT" 2>/dev/null; then
+            echo "OK: Xvfb (Docker container) ready on display :99 (TCP port $X11_PORT)."
+            break
+        fi
+        sleep 1
+    done
+else
+    echo "OK: Xvfb Docker container already running."
 fi
 
 # Install Playwright in a local temp location if not available
@@ -93,9 +119,17 @@ if [ "$BRIDGE_ALREADY_RUNNING" = false ]; then
     echo "  Playwright WS: port $WS_PORT"
     echo "  Bridge deps: $BRIDGE_DEPS"
 
+    echo "  Profile: $PROFILE_DIR"
+    echo "  Cookies: $COOKIES_PATH"
+    echo "  Headed: yes (via Xvfb Docker)"
+
+    DISPLAY="${DISPLAY:-:99}" \
+    CAMOUFOX_HEADLESS=false \
     nohup env \
     NODE_PATH="$BRIDGE_DEPS/node_modules" \
     CAMOUFOX_BIN="$CAMOUFOX_BIN" \
+    CAMOUFOX_PROFILE_DIR="$PROFILE_DIR" \
+    CAMOUFOX_COOKIES_PATH="$COOKIES_PATH" \
     CAMOUFOX_CDP_HEALTH_PORT="$HEALTH_PORT" \
     CAMOUFOX_CDP_WS_PORT="$WS_PORT" \
     node "$SCRIPTS_DIR/camoufox-bridge.js" > "$BRIDGE_DIR/camoufox-bridge.log" 2>&1 &

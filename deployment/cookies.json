@@ -1,0 +1,82 @@
+[
+  {
+    "name": "PHPSESSID",
+    "value": "49b10naq5ogs71bp686vvu5o4u",
+    "domain": "www.cardmarket.com",
+    "path": "/",
+    "expires": -1,
+    "httpOnly": true,
+    "secure": true,
+    "sameSite": "None"
+  },
+  {
+    "name": "_cfuvid",
+    "value": "wOwmX4o2VcGpDkjxENU97b5EGIL8uOwxwOyODwN1JjE-1783364736.1069796-1.0.1.1-bSBrYXWEJ.gGg3SkYQdXN5b.ljsCRc92jAUIs09qtrg",
+    "domain": ".cardmarket.com",
+    "path": "/",
+    "expires": -1,
+    "httpOnly": true,
+    "secure": true,
+    "sameSite": "None"
+  },
+  {
+    "name": "cf_clearance",
+    "value": "_dzHpL2_rFj896UVfVQ_MYvQOZOHeQ0iLAWTPuBHoCw-1783364736-1.2.1.1-HZmvFK5ciYQpQA6PuxPaFZhsilDsJCvK6zxALbo_7FAqG.anXaGN6QMkvA_d3v96bNfx6AIKXceXy1Di5L3vZGdSyKetalYYjusO.kG1ws95yiaSMBYb6IvK8QKNWR1Mq7MC5Ca7FpIJOt7gHdwUOFZRlSHU.TCXHbhfxzfMJXd0wG4mm9MR.QyO6dHcM55vh645crU8v3w8DqNOSUL775cZ8l0l7wTvMRiu8H6S2WgJd3z1CNgxxAbQz9Mpx66KDzWrYLOG4zDDvhhu7BX93d7V1..nFrC3fB6RHyL8DrAxXnqDqvbYSKaSjgfQhYH8.fKcASZTVfAwDojBbVOtOQ",
+    "domain": ".cardmarket.com",
+    "path": "/",
+    "expires": 1814900736,
+    "httpOnly": true,
+    "secure": true,
+    "sameSite": "None"
+  },
+  {
+    "name": "__cf_bm",
+    "value": "UY3tXLukLV02DzwJuuU65Twe4KWRzubJyTP05wtIZT0-1783364736.6382234-1.0.1.1-gVQjXSX7uryK.R7ans6yM0UdYHeS0Sp7VvCeCDz_XaL88G47NfSS7JQW7SxHdlfhNXV4FvKOuOIzf7G60ejQkzb_ltSw2gr.Zp1wl2gxLfT8pALvogPmuW61kus6dMon",
+    "domain": ".cardmarket.com",
+    "path": "/",
+    "expires": 1783366536,
+    "httpOnly": true,
+    "secure": true,
+    "sameSite": "None"
+  },
+  {
+    "name": "cookie_settings",
+    "value": "preferences%3D1%2Cstatistics%3D1%2Cmarketing%3D1",
+    "domain": "www.cardmarket.com",
+    "path": "/",
+    "expires": 1791313539,
+    "httpOnly": true,
+    "secure": true,
+    "sameSite": "None"
+  },
+  {
+    "name": "_gcl_au",
+    "value": "1.1.66201479.1783364739",
+    "domain": ".cardmarket.com",
+    "path": "/",
+    "expires": 1791140739,
+    "httpOnly": false,
+    "secure": false,
+    "sameSite": "None"
+  },
+  {
+    "name": "_ga",
+    "value": "GA1.1.975422481.1783364738",
+    "domain": ".cardmarket.com",
+    "path": "/",
+    "expires": 1817924739,
+    "httpOnly": false,
+    "secure": false,
+    "sameSite": "None"
+  },
+  {
+    "name": "_ga_G8GDQ4EM48",
+    "value": "GS2.1.s1783364737$o1$g0$t1783364739$j60$l0$h0",
+    "domain": ".cardmarket.com",
+    "path": "/",
+    "expires": 1817924739,
+    "httpOnly": false,
+    "secure": false,
+    "sameSite": "None"
+  }
+]
