@@ -27,6 +27,8 @@ services:
       - PUPPETEER_WORKER_URL=http://scraper-worker:3000
       - PLAYWRIGHT_EXTRA_WORKER_URL=http://scraper-worker-playwright:3001
       - CHROME_CDP_URL=http://172.17.0.1:9223
+      - CAMOUFOX_CDP_URL=ws://172.17.0.1:9225
+      - CAMOUFOX_CDP_HEALTH_URL=http://172.17.0.1:9224
     extra_hosts:
       - host.docker.internal:host-gateway
     healthcheck:

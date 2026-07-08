@@ -103,7 +103,7 @@ echo "  Search: Pikachu (this may take 30-120s)"
 START_TS=$(date +%s%N)
 HTTP_CODE=$(curl -s -o /tmp/pipeline_result.json -w "%{http_code}" \
     --max-time 180 \
-    "$NGINX_URL/collectables/?query=Pikachu&genre=Pokemon&type=Singles&locale=de" 2>/dev/null || echo "000")
+    "$NGINX_URL/collectables/?query=Giflor&genre=Pokemon&type=Singles&locale=de" 2>/dev/null || echo "000")
 END_TS=$(date +%s%N)
 DURATION_MS=$(( (END_TS - START_TS) / 1000000 ))
 

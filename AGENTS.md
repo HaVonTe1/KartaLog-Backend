@@ -1,7 +1,7 @@
 # AGENTS.md – KartaLog Backend
 
-**Generated:** 2026-07-06
-**Commit:** `bcb84c8` (main)
+**Generated:** 2026-07-07
+**Commit:** `f737334` (main)
 **Stack:** Spring Boot 4.0.2 · Kotlin 2.2.x · Java 17+ · Gradle 9.0 · PostgreSQL 18 · Playwright 1.61.0
 
 ## Quick Start
@@ -30,7 +30,7 @@
 | JPA entities | `adapter/out/persistence/entity/` | Hibernate Envers audited |
 | Persistence adapters | `adapter/out/persistence/repository/` | Adapter → JpaRepository pattern |
 | Web scraping | `adapter/out/webscraper/cardmarket/` | Playwright + Jsoup pipeline |
-| Scraping strategies | `adapter/out/webscraper/strategy/` | 4 runtime-switchable strategies + selector |
+| Scraping strategies | `adapter/out/webscraper/strategy/` | 6 runtime-switchable strategies + selector |
 | Scraper management API | `adapter/inbound/rest/strategy/` | `/actuator/scraper/*` |
 | Scraping config | `config/` | `ScrapingStrategyConfig` bean wiring |
 | Configuration | `config/` | Cache, Resilience4j, Health, Genre |
@@ -144,3 +144,4 @@ Sub-modules with their own AGENTS.md:
 - `adapter/out/persistence/` — JPA entities, mappers, repository adapters
 - `adapter/out/webscraper/` — Playwright/JSoup scraping pipeline
 - `deployment/` — Docker, compose, CI, backup scripts
+- `scraper-worker-python/` — Camoufox Python sidecar worker

@@ -22,12 +22,17 @@ webscraper/
 │   ├── PlaywrightExtraWorkerStrategy.kt  # Out-of-process: → scraper-worker-playwright (playwright-extra)
 │   └── CamoufoxPythonWorkerStrategy.kt   # Out-of-process: → scraper-worker-python (camoufox + ClickSolver)
 └── cardmarket/                 # CardMarket-specific implementation
-    ├── CardMarketScraperAdapter.kt   # Port implementation
-    ├── CardMarketWebFetcher.kt       # URL building + delegates to active strategy via selector
-    ├── CardMarketGalleryParser.kt    # Search result HTML parser
-    ├── CardMarketDetailsParser.kt    # Product detail HTML parser
-    ├── CardMarketProductMapper.kt    # DTO → domain model mapper
-    └── Dtos.kt                       # Raw scraping DTOs
+    ├── CardMarketScraperAdapter.kt    # Port implementation
+    ├── CardMarketWebFetcher.kt        # URL building + delegates to active strategy via selector
+    ├── CardMarketWebFetcherPort.kt    # Internal port for strategy delegation
+    ├── CardMarketGalleryParser.kt     # Search result HTML parser
+    ├── CardMarketDetailsParser.kt     # Product detail HTML parser
+    ├── CardMarketProductMapper.kt     # DTO → domain model mapper
+    ├── CardMarketSearchParams.kt      # Search parameter types
+    ├── Dtos.kt                        # Raw scraping DTOs
+    ├── ParseErrors.kt                 # Typed parsing failures (MissingElement, UnexpectedFormat)
+    ├── CloudFlareException.kt         # Anti-bot detection exception
+    └── TranslationMap.kt              # CardMarket locale → domain locale mapping
 ```
 
 ## STRATEGIES
@@ -39,8 +44,9 @@ webscraper/
 | `playwright-extra-worker` | playwright-extra scraper-worker | HTTP → Node.js | `scraper.workers.playwright-extra.url` set |
 | `camoufox-python-worker` | Camoufox Python worker (playwright-captcha) | HTTP → Python | `scraper.workers.camoufox-python.url` set |
 | `chrome-cdp` | Real Chrome via CDP | CDP → host Chrome | `scraper.chrome-cdp.url` set (default: enabled) |
+| `camoufox-cdp` | Camoufox (Firefox fork) via Playwright Server | WS → host Node.js bridge → Camoufox | `scraper.camoufox-cdp.url` set (default: enabled) |
 
-Switch at runtime: `PUT /actuator/scraper/strategy` `{"strategy": "chrome-cdp"}`
+Switch at runtime: `PUT /actuator/scraper/strategy` `{"strategy": "chrome-cdp"}` or `"camoufox-cdp"`
 
 ## CONVENTIONS
 - Pipeline: Strategy → Fetcher → Parser → Mapper (separate concerns)

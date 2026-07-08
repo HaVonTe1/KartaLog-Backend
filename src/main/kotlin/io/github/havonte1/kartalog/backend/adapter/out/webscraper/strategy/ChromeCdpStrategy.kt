@@ -6,6 +6,7 @@ import com.microsoft.playwright.Playwright
 import io.github.havonte1.kartalog.backend.adapter.out.webscraper.BrowserContextPool
 import io.github.havonte1.kartalog.backend.adapter.out.webscraper.cardmarket.CloudFlareException
 import io.github.oshai.kotlinlogging.KotlinLogging
+import kotlinx.coroutines.delay
 import org.springframework.http.HttpStatusCode
 import kotlin.random.Random
 
@@ -24,17 +25,16 @@ class ChromeCdpStrategy(
     private var browserRef: Browser? = null
     private var contextPoolRef: BrowserContextPool? = null
 
+    @Synchronized
     private fun ensureInitialized() {
-        if (playwrightRef == null) {
-            playwrightRef = Playwright.create()
-            browserRef = playwrightRef!!.chromium().connectOverCDP(cdpUrl)
-            contextPoolRef =
-                BrowserContextPool(browserRef!!, poolSize, maxConcurrent) { br ->
-                    val ctx = br.contexts().firstOrNull() ?: br.newContext()
-                    ctx
-                }
-            logger.info { "Chrome CDP strategy initialized (connected to $cdpUrl)" }
-        }
+        if (playwrightRef != null) return
+        playwrightRef = Playwright.create()
+        browserRef = playwrightRef!!.chromium().connectOverCDP(cdpUrl)
+        contextPoolRef =
+            BrowserContextPool(browserRef!!, poolSize, maxConcurrent) { br ->
+                br.newContext()
+            }
+        logger.info { "Chrome CDP strategy initialized (connected to $cdpUrl), pool=$poolSize, maxConcurrent=$maxConcurrent" }
     }
 
     override suspend fun fetch(url: String): String {
@@ -45,11 +45,22 @@ class ChromeCdpStrategy(
             try {
                 randomDelay()
                 try {
-                    page.navigate(url, com.microsoft.playwright.Page.NavigateOptions().setTimeout(60000.0))
+                    page.navigate(url, com.microsoft.playwright.Page.NavigateOptions().setTimeout(15000.0))
                 } catch (_: com.microsoft.playwright.TimeoutError) {
-                    logger.info { "Navigation timed out, starting poll..." }
+                    logger.info { "Navigation timed out" }
                 }
-                val deadline = System.currentTimeMillis() + 90000L
+
+                if (CloudflareChallengeSolver.hasChallenge(page)) {
+                    logger.info { "Cloudflare challenge detected, attempting solve..." }
+                    val solved = CloudflareChallengeSolver.trySolve(page, maxWaitSeconds = 45)
+                    if (solved) {
+                        logger.info { "Cloudflare challenge solved" }
+                    } else {
+                        logger.warn { "Cloudflare challenge not solved, falling back to poll loop" }
+                    }
+                }
+
+                val deadline = System.currentTimeMillis() + 30000L
                 var detected = false
                 while (System.currentTimeMillis() < deadline) {
                     try {
@@ -67,7 +78,7 @@ class ChromeCdpStrategy(
                     } catch (_: Exception) {
                         logger.info { "page.evaluate failed, retrying..." }
                     }
-                    Thread.sleep(2000)
+                    delay(2000)
                 }
                 if (detected) {
                     logger.info { "CardMarket content detected" }
@@ -82,8 +93,8 @@ class ChromeCdpStrategy(
         }
     }
 
-    private fun randomDelay() {
-        Thread.sleep(Random.nextLong(1000L, 3000L))
+    private suspend fun randomDelay() {
+        delay(Random.nextLong(1000L, 3000L))
     }
 
     override fun close() {

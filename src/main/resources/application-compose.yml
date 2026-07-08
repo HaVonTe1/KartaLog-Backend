@@ -45,6 +45,15 @@ scraper:
   default-strategy: chrome-cdp
   chrome-cdp:
     url: ${CHROME_CDP_URL:http://172.17.0.1:9223}
+    pool-size: ${CHROME_CDP_POOL_SIZE:3}
+    # Single concurrent page op — connectOverCDP shares one WebSocket;
+    # parallel page commands collide on the sequence ID counter.
+    max-concurrent: ${CHROME_CDP_MAX_CONCURRENT:1}
+  camoufox-cdp:
+    url: ${CAMOUFOX_CDP_URL:ws://172.17.0.1:9225}
+    health-url: ${CAMOUFOX_CDP_HEALTH_URL:http://172.17.0.1:9224}
+    pool-size: ${CAMOUFOX_CDP_POOL_SIZE:3}
+    max-concurrent: ${CAMOUFOX_CDP_MAX_CONCURRENT:3}
   workers:
     puppeteer:
       url: ${PUPPETEER_WORKER_URL:http://scraper-worker:3000}

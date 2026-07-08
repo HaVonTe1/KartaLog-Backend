@@ -1,5 +1,6 @@
 package io.github.havonte1.kartalog.backend.config
 
+import io.github.havonte1.kartalog.backend.adapter.out.webscraper.strategy.CamoufoxCdpStrategy
 import io.github.havonte1.kartalog.backend.adapter.out.webscraper.strategy.CamoufoxPlaywrightStrategy
 import io.github.havonte1.kartalog.backend.adapter.out.webscraper.strategy.CamoufoxPythonWorkerStrategy
 import io.github.havonte1.kartalog.backend.adapter.out.webscraper.strategy.ChromeCdpStrategy
@@ -19,6 +20,12 @@ class ScrapingStrategyConfig(
     @Value("\${scraper.workers.playwright-extra.url:}") private val playwrightExtraUrl: String,
     @Value("\${scraper.workers.camoufox-python.url:}") private val camoufoxPythonUrl: String,
     @Value("\${scraper.chrome-cdp.url:}") private val chromeCdpUrl: String,
+    @Value("\${scraper.chrome-cdp.pool-size:3}") private val chromeCdpPoolSize: Int,
+    @Value("\${scraper.chrome-cdp.max-concurrent:5}") private val chromeCdpMaxConcurrent: Int,
+    @Value("\${scraper.camoufox-cdp.url:}") private val camoufoxCdpUrl: String,
+    @Value("\${scraper.camoufox-cdp.health-url:}") private val camoufoxCdpHealthUrl: String,
+    @Value("\${scraper.camoufox-cdp.pool-size:3}") private val camoufoxCdpPoolSize: Int,
+    @Value("\${scraper.camoufox-cdp.max-concurrent:3}") private val camoufoxCdpMaxConcurrent: Int,
 ) {
     @Bean
     fun chromiumStrategy(): ChromiumPlaywrightStrategy =
@@ -44,7 +51,21 @@ class ScrapingStrategyConfig(
         CamoufoxPythonWorkerStrategy(camoufoxPythonUrl)
 
     @Bean
-    fun chromeCdpStrategy(): ChromeCdpStrategy = ChromeCdpStrategy(chromeCdpUrl)
+    fun chromeCdpStrategy(): ChromeCdpStrategy =
+        ChromeCdpStrategy(
+            cdpUrl = chromeCdpUrl,
+            poolSize = chromeCdpPoolSize,
+            maxConcurrent = chromeCdpMaxConcurrent,
+        )
+
+    @Bean
+    fun camoufoxCdpStrategy(): CamoufoxCdpStrategy =
+        CamoufoxCdpStrategy(
+            wsUrl = camoufoxCdpUrl,
+            healthUrl = camoufoxCdpHealthUrl,
+            poolSize = camoufoxCdpPoolSize,
+            maxConcurrent = camoufoxCdpMaxConcurrent,
+        )
 
     @Bean
     fun strategyRegistry(
@@ -54,6 +75,7 @@ class ScrapingStrategyConfig(
         playwrightExtraWorkerStrategy: PlaywrightExtraWorkerStrategy,
         camoufoxPythonWorkerStrategy: CamoufoxPythonWorkerStrategy,
         chromeCdpStrategy: ChromeCdpStrategy,
+        camoufoxCdpStrategy: CamoufoxCdpStrategy,
     ): ScrapingStrategyRegistry =
         ScrapingStrategyRegistry(
             listOf(
@@ -63,6 +85,7 @@ class ScrapingStrategyConfig(
                 playwrightExtraWorkerStrategy,
                 camoufoxPythonWorkerStrategy,
                 chromeCdpStrategy,
+                camoufoxCdpStrategy,
             )
         )
 }
