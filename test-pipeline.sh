@@ -98,7 +98,15 @@ fi
 # --- 5. Full pipeline search ---
 echo ""
 echo "--- 5. Live search (nginx → app → scraper → CardMarket) ---"
-echo "  Search: Pikachu (this may take 30-120s)"
+echo "  Search: Giflor (this may take 30-120s)"
+
+# Clear app cache to ensure a fresh scrape
+echo "  Clearing cache..."
+MANAGEMENT_PORT=$(docker port kartalogbackend-app-1 8081 2>/dev/null | head -1 | sed 's/.*://' || echo "")
+if [ -n "$MANAGEMENT_PORT" ]; then
+    curl -s -X DELETE "http://localhost:$MANAGEMENT_PORT/actuator/caches/listCache" -o /dev/null -w "  Cache eviction (listCache): HTTP %{http_code}\n" 2>/dev/null || true
+    curl -s -X DELETE "http://localhost:$MANAGEMENT_PORT/actuator/caches/detailsCache" -o /dev/null -w "  Cache eviction (detailsCache): HTTP %{http_code}\n" 2>/dev/null || true
+fi
 
 START_TS=$(date +%s%N)
 HTTP_CODE=$(curl -s -o /tmp/pipeline_result.json -w "%{http_code}" \
@@ -114,7 +122,10 @@ if [ "$HTTP_CODE" = "200" ]; then
 import json
 with open('/tmp/pipeline_result.json') as f:
     d = json.load(f)
-print(len(d.get('results', [])))
+if isinstance(d, list):
+    print(len(d))
+else:
+    print(len(d.get('products', [])))
 " 2>/dev/null || echo "0")
     pass "search returned $RESULTS results in ${DURATION_MS}ms"
 elif [ "$HTTP_CODE" = "503" ]; then

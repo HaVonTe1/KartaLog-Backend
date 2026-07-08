@@ -20,6 +20,7 @@ class CacheConfig {
                 .expireAfterWrite(1, TimeUnit.HOURS)
                 .maximumSize(1000),
         )
+        cacheManager.setCacheNames(listOf("listCache", "detailsCache"))
         return cacheManager
     }
 }
